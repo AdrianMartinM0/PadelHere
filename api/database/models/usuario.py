@@ -25,14 +25,9 @@ class User(BaseModel):
     @classmethod
     def validate_password(cls, value: str) -> str:
         """ Valida que la contraseña tenga al menos una mayúscula, un número y un carácter especial """
-        if not re.search(r"[A-Z]", value):
-            raise ValueError("La contraseña debe contener al menos una letra mayúscula.")
-        if not re.search(r"\d", value):
-            raise ValueError("La contraseña debe contener al menos un número.")
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
-            raise ValueError("La contraseña debe contener al menos un carácter especial.")
+        if not (re.search(r"[A-Z]", value) and re.search(r"\d", value) and re.search(r"[!@#$%^&*(),.?\":{}|<>]", value)):
+            raise ValueError("La contraseña debe contener al menos una letra mayúscula, un número y un carácter especial.")
         return value
-
 
     def encrypt_sensitive_data(self):
         self.password = cipher_suite.encrypt(self.password.encode()).decode()
