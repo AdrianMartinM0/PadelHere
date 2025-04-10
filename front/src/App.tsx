@@ -8,7 +8,7 @@ function App() {
   return (
     <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
       <Header/>
-      <div className="container h-[700px] m-auto">
+      <div className="container h-[700px] w-[1200px] mx-auto">
           <BrowserRouter>
             <Routes>
               <Route path={'/'} element={<Inicio/>}/>
