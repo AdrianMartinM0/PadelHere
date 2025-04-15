@@ -1,8 +1,18 @@
-from typing import Union
+# from typing import Union
 from fastapi import FastAPI, APIRouter
 from .routes import api_router
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir cualquier origen
+    allow_credentials=True,  # Permitir el envío de cookies o credenciales
+    allow_methods=["*"],  # Permitir cualquier método HTTP (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Permitir cualquier encabezado
+)
+
 router = APIRouter()
 
 app.include_router(api_router.router, prefix='/v1')

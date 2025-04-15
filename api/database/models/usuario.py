@@ -1,22 +1,13 @@
 from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
-from cryptography.fernet import Fernet
-from dotenv import load_dotenv
-import os
 import re
-
-# Cargar las variables de entorno
-load_dotenv()
-
-# Obtener la clave de cifrado
-key = os.getenv('KEY')
-cipher_suite = Fernet(key)
+import bcrypt
 
 class User(BaseModel):
     name: str = Field(...)
     email: EmailStr = Field(...)
-    password: str = Field(...)
-    tel: Optional[int] = None
+    password: str = Field(...)  # Excluir "password" de las respuestas por seguridad
+    tel: int = Field(...)
     img_perfil: Optional[bytes] = None
     desc: Optional[str] = None
     level: float = Field(default=0)
@@ -29,8 +20,10 @@ class User(BaseModel):
             raise ValueError("La contraseña debe contener al menos una letra mayúscula, un número y un carácter especial.")
         return value
 
-    def encrypt_sensitive_data(self):
-        self.password = cipher_suite.encrypt(self.password.encode()).decode()
+    def hash_password(self):
+        """ Hashea la contraseña antes de almacenarla """
+        self.password = bcrypt.hashpw(self.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    def decrypt_sensitive_data(self):
-        self.password = cipher_suite.decrypt(self.password.encode()).decode()
+    def verify_password(self, plain_password: str) -> bool:
+        """ Verifica si la contraseña proporcionada coincide con el hash almacenado """
+        return bcrypt.checkpw(plain_password.encode('utf-8'), self.password.encode('utf-8'))
