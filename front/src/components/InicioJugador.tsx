@@ -6,7 +6,7 @@ const InicioJugador = () => {
         <img className="w-full h-full object-cover rounded-4xl transform scale-x-[-1]" src="./images/eresJugador.jpg" alt="Imagen Jugador de Padel" />
         <div className="bg-[#00000099] w-4/5 h-4/5 rounded-4xl flex flex-col justify-evenly items-center absolute">
           <p className="text-white text-3xl">¿Eres jugador de Padel?</p>
-          <button className="text-white p-2 px-4 bg-[#006FFF] rounded-lg">Registrarse</button>
+          <a href="/register"><button className="text-white p-2 px-4 bg-[#006FFF] rounded-lg">Registrarse</button></a>
         </div>
     </div>
   )
