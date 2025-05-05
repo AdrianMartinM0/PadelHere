@@ -3,7 +3,7 @@
 
 const HeaderSinLog = () => {
     return (
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-col flex-col-reverse sm:flex-row gap-4 items-center">
             <div className="border w-36 max-h-10 flex justify-around items-center p-2 rounded-4xl">
                 <a href="/login"><p className="text-blue-500 hover:underline">Iniciar Sesión</p></a>      
             </div>

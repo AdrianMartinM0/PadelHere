@@ -7,7 +7,7 @@ class User(BaseModel):
     name: str = Field(...)
     email: EmailStr = Field(...)
     password: str = Field(...)  # Excluir "password" de las respuestas por seguridad
-    tel: int = Field(...)
+    tel: Optional[int] = None
     img_perfil: Optional[bytes] = None
     desc: Optional[str] = None
     level: float = Field(default=0)

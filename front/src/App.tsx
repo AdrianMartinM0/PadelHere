@@ -1,24 +1,39 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom"
-import Footer from "./components/Footer"
-import Header from "./components/Header"
-import Inicio from "./components/Inicio"
-import Login from "./components/Login"
-import Register from "./components/Register"
+import Footer from "./components/footer/Footer"
+import Header from "./components/header/Header"
+import Inicio from "./components/Inicio/Inicio"
+import Login from "./components/formsIni/Login"
+import Register from "./components/formsIni/Register"
+import Recover from "./components/formsIni/Recover"
+import Porfile from "./components/Profile/Porfile"
+import Partidos from "./components/Profile/Partidos"
+import Logros from "./components/Profile/Logros"
+import Nivel from "./components/Profile/Nivel"
+import VerifyPasscode from "./components/formsIni/VerifyPasscode"
+import SetNewPassword from "./components/formsIni/SetNewPassword"
 
 function App() {
 
   return (
     <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
       <Header/>
-      <div className="container h-[700px] w-[1200px] mx-auto">
+      <div className="container h-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Outlet />}>
-                <Route index element={<Inicio />} />
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Route>
+                <Route path="/" element={<Outlet />}>
+                  <Route index element={<Inicio />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="register" element={<Register />} />
+                  <Route path="recover" element={<Recover />} />
+                  <Route path="verify-passcode" element={<VerifyPasscode />} />
+                  <Route path="set-new-password" element={<SetNewPassword />} />
+                  <Route path="profile" element={<Porfile />}>
+                  <Route path="partidos" element={<Partidos />} />
+                  <Route path="logros" element={<Logros />} />
+                  <Route path="nivel" element={<Nivel />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Route>
             </Routes>
           </BrowserRouter>
       </div>
