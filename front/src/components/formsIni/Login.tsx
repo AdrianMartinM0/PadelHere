@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import GoogleAuth from "../GoogleAuth";
 
 const Login = () => {
@@ -6,6 +6,7 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({ email: "", password: "" });
     const [isPasswordVisible, setPasswordVisible] = useState(false);
+    const noLoginElement = useRef(null);
 
     const toggleVisibility = () => {
         setPasswordVisible((prev) => !prev);
@@ -40,12 +41,13 @@ const Login = () => {
     };
 
     const handleLogin = async () => {
-        const noLoginElement = document.getElementById("noLogin");
-        if (email == "" || password == "") {
-            noLoginElement.textContent = 'Por favor rellena todos los campos';
-            return;
-        } else {
-            noLoginElement.textContent = '';
+        if(noLoginElement.current){
+            if (email == "" || password == "") {
+                noLoginElement.current.textContent = 'Por favor rellena todos los campos';
+                return;
+            } else {
+                noLoginElement.current.textContent = '';
+            }
         }
 
         if (errors.email || errors.password) return;
@@ -80,7 +82,7 @@ const Login = () => {
         <div className="flex items-center justify-center absolute inset-0 bg-[#0003] px-4 sm:px-0">
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-4">
                 <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
-                <p id="noLogin" className="text-center text-red-500 m-0 text-sm"></p>
+                <p id="noLogin" ref={noLoginElement} className="text-center text-red-500 m-0 text-sm"></p>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();

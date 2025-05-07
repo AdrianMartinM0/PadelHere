@@ -2,7 +2,7 @@ from ..database.db import user_collection
 from ..database.models.usuario import User
 from pydantic import BaseModel
 from fastapi import HTTPException 
-from datetime import timedelta
+from datetime import timedelta, timezone
 from ..utils.token_utils import create_access_token
 import random
 from datetime import datetime
@@ -66,11 +66,31 @@ async def login_user_service(email: str, password: str):
 
 
 async def recover_pass_service(email: str):
-    num = random.randint(100000, 999999)  # Código de recuperación
-    expiration_time = datetime.utcnow() + timedelta(minutes=30)  # 30 minutos de validez
     user = await get_one_user(email)
     if not user:
-        raise Exception("Usuario no encontrado.")
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    
+    # Verificar si ya existe un recovery_code y si aún es válido
+    expiration_time_str = user.get("recovery_expiration")
+    if expiration_time_str:
+        if isinstance(expiration_time_str, datetime):
+            expiration_time = expiration_time_str
+        else:
+            expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+        current_time = datetime.now(expiration_time.tzinfo)
+        if current_time <= expiration_time:
+            raise HTTPException(
+                status_code=400,
+                detail="Ya existe un código de recuperación válido."
+            )
+    else:
+        # Si no hay un valor previo, asignar una zona horaria predeterminada (por ejemplo UTC)
+        current_time = datetime.now()
+
+    # Generar un nuevo código de recuperación
+    num = random.randint(100000, 999999)  # Código de recuperación
+    expiration_time = datetime.now(current_time.tzinfo) + timedelta(minutes=30)  # 30 minutos de validez
+    
     name = user.get("name")
     result = user_collection.update_one(
         {"email": email},
@@ -83,13 +103,33 @@ async def recover_pass_service(email: str):
     )
     
     if result.matched_count == 0:
-        raise Exception("Usuario no encontrado.")
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
     
     return {
         'passcode': num,
         'name': name
     }  # Devuelves el número para mandarlo al usuario por email
 
+async def get_passcode_recover(email: str):
+    user = await get_one_user(email)
+    if not user:
+        raise Exception("Usuario no encontrado.")
+    passcode = user.get("recovery_code")
+    timeout = user.get('recovery_expiration')
+    if not timeout:
+        raise Exception("No se encontró un tiempo de expiración.")
+
+    # Convertir el timeout a un objeto datetime
+    timeout_datetime = datetime.strptime(timeout, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+    # Obtener el tiempo actual en UTC
+    current_time = datetime.now(timeout_datetime.tzinfo)
+
+    # Comprobar si la diferencia entre el tiempo actual y el timeout es mayor a 30 minutos
+    if current_time > timeout_datetime:
+        raise Exception("El código de recuperación ha expirado.")
+    
+    return {"passcode": passcode}
 
 # async def get_google_user(token: str):
 #     try:

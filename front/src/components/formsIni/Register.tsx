@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const Register = () => {
     const [name, setName] = useState("");
@@ -9,6 +9,7 @@ const Register = () => {
     const [errors, setErrors] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
     const [isPasswordVisibleP, setPasswordVisibleP] = useState(true);
     const [isPasswordVisibleC, setPasswordVisibleC] = useState(true);
+    const noRegisterElement = useRef(null);
 
     const toggleVisibilityP = () => {
         setPasswordVisibleP((prev) => !prev);
@@ -45,14 +46,15 @@ const Register = () => {
     };
 
     const handleRegister = async () => {
-        const noRegisterElement = document.getElementById("noRegister");
 
         // Validaciones de campos vacíos
-        if (name === "" || email === "" || phone === "" || password === "" || confirmPassword === "") {
-            noRegisterElement.textContent = "Por favor rellena todos los campos";
-            return;
-        } else {
-            noRegisterElement.textContent = "";
+        if(noRegisterElement.current){
+            if (name === "" || email === "" || phone === "" || password === "" || confirmPassword === "") {
+                noRegisterElement.current.textContent = "Por favor rellena todos los campos";
+                return;
+            } else {
+                noRegisterElement.current.textContent = "";
+            }
         }
 
         if (errors.name || errors.email || errors.phone || errors.password || errors.confirmPassword) return;
@@ -120,7 +122,7 @@ const Register = () => {
         <div className="flex items-center justify-center absolute inset-0 bg-[#0003] px-4 sm:px-0">
             <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md">
                 <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center">Registrarse</h2>
-                <p id="noRegister" className="text-center text-red-500 m-0 text-sm"></p>
+                <p id="noRegister" ref={noRegisterElement} className="text-center text-red-500 m-0 text-sm"></p>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -248,9 +250,9 @@ const Register = () => {
                                     aria-label="Toggle password visibility"
                                 >
                                     {isPasswordVisibleP ? (
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
                                     ) : (
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
                                     )}
                                 </button>
                             </div>
@@ -295,9 +297,9 @@ const Register = () => {
                                     aria-label="Toggle password visibility"
                                 >
                                     {isPasswordVisibleC ? (
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
                                     ) : (
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
                                     )}
                                 </button>
                             </div>
