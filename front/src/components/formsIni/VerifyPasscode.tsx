@@ -1,27 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const VerifyPasscode = () => {
     const [passcode, setPasscode] = useState('');
+    const [passcodeVerify, setPasscodeVerify] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const location = useLocation();
     const email = new URLSearchParams(location.search).get('email');
 
+    useEffect(() => {
+        if (!email) {
+            navigate('/recover');
+            return;
+        }
+        if (email) {
+            fetch(`http://localhost:8000/v1/usuario/passcode?email=${email}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener el código de verificación');
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log('Código de verificación recibido de la bbdd:', data);
+                    setPasscodeVerify(data.passcode);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+    }, []);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        // Simulate passcode verification
-        if (passcode === '123456') {
-            navigate(`/set-new-password?email=${email}`); // Redirige con el email en la URL
+        if (passcode === '') {
+            setError('Por favor, ingresa el código de verificación');
+            return;
+        }
+
+        if (passcode == passcodeVerify) {
+            navigate(`/set-new-password?email=${email}&passcode=${passcode}`); // Redirige con el email en la URL
         } else {
             setError('Código de verificación inválido');
         }
     };
 
     return (
-        <div className="flex items-center justify-center absolute inset-0 bg-[#0003] px-4 sm:px-0">
+        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
             <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
                 <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
                     Verificar Código
@@ -44,7 +72,6 @@ const VerifyPasscode = () => {
                             id="passcode"
                             value={passcode}
                             onChange={(e) => setPasscode(e.target.value)}
-                            required
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Ingresa el código"
                         />

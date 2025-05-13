@@ -27,3 +27,8 @@ class User(BaseModel):
     def verify_password(self, plain_password: str) -> bool:
         """ Verifica si la contraseña proporcionada coincide con el hash almacenado """
         return bcrypt.checkpw(plain_password.encode('utf-8'), self.password.encode('utf-8'))
+    
+    @staticmethod
+    def hash_password_static(password: str) -> str:
+        """Hashea una contraseña sin requerir una instancia"""
+        return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')

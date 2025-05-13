@@ -5,7 +5,7 @@ import InicioNoticias from "./InicioNoticias"
 
 const Inicio = () => {
   return (
-    <div className="h-[700px]">
+    <div className="h-[700px] min-w-full">
       <div className="flex flex-col w-full h-full gap-8 md:gap-4">
         <div className="flex flex-col md:flex-row w-full h-2/3 md:h-1/2 gap-4">
           <div className="h-1/2 w-full md:h-full">

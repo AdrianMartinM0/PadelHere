@@ -120,7 +120,12 @@ async def get_passcode_recover(email: str):
         raise Exception("No se encontró un tiempo de expiración.")
 
     # Convertir el timeout a un objeto datetime
-    timeout_datetime = datetime.strptime(timeout, "%Y-%m-%dT%H:%M:%S.%f%z")
+    if isinstance(timeout, str):
+        timeout_datetime = datetime.strptime(timeout, "%Y-%m-%dT%H:%M:%S.%f%z")
+    elif isinstance(timeout, datetime):
+        timeout_datetime = timeout
+    else:
+        raise ValueError("El formato de 'timeout' no es válido.")
 
     # Obtener el tiempo actual en UTC
     current_time = datetime.now(timeout_datetime.tzinfo)
@@ -130,6 +135,51 @@ async def get_passcode_recover(email: str):
         raise Exception("El código de recuperación ha expirado.")
     
     return {"passcode": passcode}
+
+
+async def change_password_service(email: str, passcode: str, new_password: str):
+    user = await get_one_user(email)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    # Verificar el código de recuperación
+    stored_passcode = user.get("recovery_code")
+    if not stored_passcode or stored_passcode != passcode:
+        raise HTTPException(status_code=400, detail="Código de recuperación inválido.")
+    # Verificar si el código de recuperación ha expirado
+    expiration_time_str = user.get("recovery_expiration")
+    if not expiration_time_str:
+        raise HTTPException(status_code=400, detail="El código de recuperación no tiene tiempo de expiración.")
+
+    if isinstance(expiration_time_str, str):
+            expiration_time = datetime.strptime(expiration_time_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+    elif isinstance(expiration_time_str, datetime):
+            expiration_time = expiration_time_str
+    else:
+        raise ValueError("El formato de 'recovery_expiration' no es válido.")
+
+    current_time = datetime.now(expiration_time.tzinfo)
+    if current_time > expiration_time:
+        raise HTTPException(status_code=400, detail="El código de recuperación ha expirado.")
+
+    # Actualizar la contraseña
+    hashed_password = User.hash_password_static(new_password)  # Usar un método estático para encriptar
+    result = user_collection.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "password": hashed_password
+            },
+            "$unset": {
+                "recovery_code": "",
+                "recovery_expiration": ""
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=500, detail="Error al actualizar la contraseña.")
+
+    return {"message": "Contraseña actualizada correctamente."}
 
 # async def get_google_user(token: str):
 #     try:

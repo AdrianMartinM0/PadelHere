@@ -88,7 +88,7 @@ const Recover = () => {
     };
 
     return (
-        <div className="flex items-center justify-center absolute inset-0 bg-[#0003] px-4 sm:px-0">
+        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
             <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
                 <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
                     Recuperar Contraseña

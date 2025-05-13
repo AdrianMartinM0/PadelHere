@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from ..controllers import usuario_controller
 from ..database.models.usuario import User
-from pydantic import EmailStr
+
+from pydantic import EmailStr, BaseModel
 from fastapi.security import OAuth2AuthorizationCodeBearer
 # from ..services.usuario_service import get_google_user
 
@@ -24,6 +25,21 @@ async def create_user(user: User):
 async def recover_pass(email: EmailStr):
     # return {'email': email}
     return await usuario_controller.recover_password_controller(email)
+
+@usu_router.get('/passcode')
+async def get_passcode(email: EmailStr):
+    return await usuario_controller.get_passcode_controller(email)
+
+class ChangePasswordRequest(BaseModel):
+    email: EmailStr
+    passcode: str
+    new_password: str
+
+@usu_router.post('/changePassword')
+async def change_password(request: ChangePasswordRequest):
+    return await usuario_controller.change_password_service(
+        request.email, request.passcode, request.new_password
+    )
 
 # # Router
 # @usu_router.get("/auth/google")

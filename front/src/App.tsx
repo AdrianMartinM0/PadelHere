@@ -17,7 +17,7 @@ function App() {
   return (
     <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
       <Header/>
-      <div className="container h-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+      <div className="container h-full max-w-[1200px] flex items-center justify-center mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
           <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Outlet />}>

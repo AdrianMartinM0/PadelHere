@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service
+from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service
 from ..database.models.usuario import User
 import re
 from pydantic import EmailStr
@@ -36,6 +36,19 @@ async def recover_password_controller(email):
         raise HTTPException(status_code=400, detail="El usuario no existe")
     return await recover_pass_service(email)
     # return {'email': find_user['email']}
+
+async def get_passcode_controller(email):
+    find_user = await get_one_user(email)
+    if not find_user:
+        raise HTTPException(status_code=400, detail="El usuario no existe")
+    return await get_passcode_recover(email)
+
+
+async def change_password_controller(email: str, passcode: str, new_password: str):
+    find_user = await get_one_user(email)
+    if not find_user:
+        raise HTTPException(status_code=400, detail="El usuario no existe")
+    return await change_password_service(email, passcode, new_password)
 
 # async def google_login_controller(token):
 #     user_info = await get_google_user(token)
