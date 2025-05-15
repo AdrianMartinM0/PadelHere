@@ -11,33 +11,46 @@ import Logros from "./components/Profile/Logros"
 import Nivel from "./components/Profile/Nivel"
 import VerifyPasscode from "./components/formsIni/VerifyPasscode"
 import SetNewPassword from "./components/formsIni/SetNewPassword"
+import Jugar from "./components/principales/Jugar"
 
 function App() {
 
   return (
     <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
-      <Header/>
+      <Header />
       <div className="container h-full max-w-[1200px] flex items-center justify-center mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
-          <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Outlet />}>
-                  <Route index element={<Inicio />} />
-                  <Route path="login" element={<Login />} />
-                  <Route path="register" element={<Register />} />
-                  <Route path="recover" element={<Recover />} />
-                  <Route path="verify-passcode" element={<VerifyPasscode />} />
-                  <Route path="set-new-password" element={<SetNewPassword />} />
-                  <Route path="profile" element={<Porfile />}>
-                  <Route path="partidos" element={<Partidos />} />
-                  <Route path="logros" element={<Logros />} />
-                  <Route path="nivel" element={<Nivel />} />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Inicio />} />
+            <Route path="sesion/" element={<Outlet />}>
+              <Route element={<Outlet />}>
+                <Route index element={<Navigate to="login" />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="recover" element={<Recover />} />
+                <Route path="verify-passcode" element={<VerifyPasscode />} />
+                <Route path="set-new-password" element={<SetNewPassword />} />
+              </Route>
+            </Route>
+            <Route path="app/" element={<Outlet />}>
+              <Route element={<Outlet />}>
+                <Route index element={<Navigate to="jugar" />} />
+                <Route path="jugar/" element={<Jugar />} />
+                <Route path="profile/" element={<Porfile />}>
+                  <Route element={<Outlet />}>
+                    <Route index element={<Navigate to="partidos" />} />
+                    <Route path="partidos" element={<Partidos />} />
+                    <Route path="logros" element={<Logros />} />
+                    <Route path="nivel" element={<Nivel />} />
                   </Route>
-                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
-            </Routes>
-          </BrowserRouter>
+              </Route>
+            </Route>
+            {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+          </Routes>
+        </BrowserRouter>
       </div>
-      <Footer/>
+      <Footer />
     </div>
   )
 }

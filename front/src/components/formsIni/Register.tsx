@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
     const [name, setName] = useState("");
@@ -10,6 +11,7 @@ const Register = () => {
     const [isPasswordVisibleP, setPasswordVisibleP] = useState(false);
     const [isPasswordVisibleC, setPasswordVisibleC] = useState(false);
     const noRegisterElement = useRef(null);
+    const navigate = useNavigate();
 
     const toggleVisibilityP = () => {
         setPasswordVisibleP((prev) => !prev);
@@ -79,7 +81,10 @@ const Register = () => {
             }
 
             const data = await response.json();
-            console.log("Registro exitoso:", data);
+            if (data.token) {
+                localStorage.setItem("jwtToken", data.token);
+                navigate("/jugar");
+            }
         } catch (error) {
             console.error("Error durante el registro:", error);
         }
@@ -229,7 +234,7 @@ const Register = () => {
                     </div>
 
                     {/* Contraseña */}
-                    <div className="mb-4 flex flex-col items-center">
+                    <div className="mb-6">
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                             Contraseña
                         </label>
@@ -329,6 +334,14 @@ const Register = () => {
                         Registrarse
                     </button>
                 </form>
+                <div className="mt-6 flex flex-col gap-4">
+                    <p className="text-center text-sm text-gray-600">
+                        ¿Ya tienes una cuenta?{" "}
+                        <a href="/sesion" className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                            Iniciar Sesión
+                        </a>
+                    </p>
+                </div>
             </div>
         </div>
     );

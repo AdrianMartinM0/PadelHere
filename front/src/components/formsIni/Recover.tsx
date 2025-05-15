@@ -65,7 +65,7 @@ const Recover = () => {
                     console.log(email)
                     console.log(name)
                     console.log(passcode)
-                    navigate(`/verify-passcode?email=${email}`);
+                    navigate(`/sesion/verify-passcode?email=${email}`);
                 },
                 (error) => {
                     console.error("Error al enviar el correo:", error.text);

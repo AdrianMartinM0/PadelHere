@@ -42,7 +42,7 @@ const VerifyPasscode = () => {
         }
 
         if (passcode == passcodeVerify) {
-            navigate(`/set-new-password?email=${email}&passcode=${passcode}`); // Redirige con el email en la URL
+            navigate(`/sesion/set-new-password?email=${email}&passcode=${passcode}`); // Redirige con el email en la URL
         } else {
             setError('Código de verificación inválido');
         }

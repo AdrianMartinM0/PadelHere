@@ -86,6 +86,9 @@ const SetNewPassword = () => {
             }
 
             setSuccess(true);
+            // setTimeout(() => {
+            //     navigate('/login');
+            // }, 2000);
         } catch (error: any) {
             setErrors({ ...errors, general: error.message || 'Hubo un problema al cambiar la contraseña' });
         }
@@ -202,7 +205,19 @@ const SetNewPassword = () => {
 
                     {/* Mensajes */}
                     {errors.general && <p className="mb-4 text-sm text-red-500">{errors.general}</p>}
-                    {success && <p className="mb-4 text-sm text-green-500">¡Contraseña actualizada con éxito!</p>}
+                    {success && (
+                        <div className="fixed inset-0 flex items-center justify-center bg-[#00000060]">
+                            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+                                <p className="mb-4 text-sm text-green-500">¡Contraseña actualizada con éxito!</p>
+                                <button
+                                    onClick={() => navigate('/sesion/login')}
+                                    className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    Aceptar
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Botón */}
                     <button

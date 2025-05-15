@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import GoogleAuth from "../GoogleAuth";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -7,6 +8,7 @@ const Login = () => {
     const [errors, setErrors] = useState({ email: "", password: "" });
     const [isPasswordVisible, setPasswordVisible] = useState(false);
     const noLoginElement = useRef(null);
+    const navigate = useNavigate();
 
     const toggleVisibility = () => {
         setPasswordVisible((prev) => !prev);
@@ -70,7 +72,10 @@ const Login = () => {
             }
 
             const data = await response.json();
-            console.log("Login successful:", data);
+            if (data.token) {
+                localStorage.setItem("jwtToken", data.token);
+                navigate("/jugar");
+            }
         } catch (error) {
             console.error("Error during login:", error);
             if (noLoginElement)
@@ -176,6 +181,20 @@ const Login = () => {
                         <img src="/apple-icon.svg" alt="Apple" className="w-5 h-5 mr-2" />
                         Continuar con AppleID
                     </button>
+                </div>
+                <div className="mt-6 flex flex-col gap-4">
+                    <p className="text-center text-sm text-gray-600">
+                        ¿No tienes una cuenta?{" "}
+                        <a href="/sesion/register" className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                            Regístrate
+                        </a>
+                    </p>
+                    <p className="text-center text-sm text-gray-600">
+                        ¿Olvidaste tu contraseña?{" "}
+                        <a href="/sesion/recover" className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                            Recuperar
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
