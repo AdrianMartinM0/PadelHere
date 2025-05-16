@@ -44,7 +44,7 @@ const Login = () => {
             const data = await response.json();
             if (data.token) {
                 localStorage.setItem("jwtToken", data.token);
-                navigate("/jugar");
+                navigate("/app");
             }
         } catch (error) {
             console.error("Error during login:", error);
