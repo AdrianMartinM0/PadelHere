@@ -1,71 +1,78 @@
 import { useEffect, useRef, useState } from "react";
 import emailjs from 'emailjs-com'
 import { useNavigate } from "react-router-dom";
+import { useFormField, validateEmail } from "../../hooks/useFormHooks";
 
 const Recover = () => {
-    const [email, setEmail] = useState("");
+    const emailField = useFormField("", validateEmail);
     const [name, setName] = useState("");
     const [passcode, setPasscode] = useState("");
-    const [errorMail, setErrorMail] = useState("");
     const navigate = useNavigate();
     const noRecoverElement = useRef(null);
 
     useEffect(() => {
-        if (passcode && name) { // Solo llama a send_mail si los valores no están vacíos
+        if (passcode && name) {
             send_mail();
         }
     }, [passcode, name]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if(noRecoverElement.current){
-            if (email == "") {
+        if (noRecoverElement.current) {
+            if (emailField.value === "") {
                 noRecoverElement.current.textContent = 'El correo electrónico es obligatorio.';
                 return;
-            } else {
-                noRecoverElement.current.textContent = '';
             }
+            // Nueva validación: si el email no es válido, no envía la petición
+            if (emailField.error) {
+                noRecoverElement.current.textContent = emailField.error;
+                return;
+            }
+            noRecoverElement.current.textContent = '';
         }
         let error = false;
-        fetch(`http://localhost:8000/v1/usuario/recover?email=${email}`, {
+        fetch(`http://localhost:8000/v1/usuario/recover?email=${emailField.value}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
             },
         })
-            .then(response => {
-                if (!response.ok)
-                    error = true;
-                return response.json();
+            .then(async response => {
+                const data = await response.json();
+                const error = !response.ok;
+                // Debug: muestra los datos y el error en consola
+                console.log("data:", data, "error:", error);
+                return { data, error };
             })
-            .then(data => {
+            .then(({ data, error }) => {
                 if (error) {
-                    throw new Error(data.detail);
+                    if (noRecoverElement.current) {
+                        noRecoverElement.current.textContent = data.detail || "Usuario no encontrado.";
+                    }
+                    return;
                 }
-                console.log(data)
                 setPasscode(data.passcode);
                 setName(data.name);
-
             })
-            .catch(error => console.log(error));
+            .catch(error => {
+                if (noRecoverElement.current) {
+                    noRecoverElement.current.textContent = "Error al buscar el usuario.";
+                }
+                console.log(error);
+            });
     };
 
     const send_mail = () => {
-        // e.preventDefault();
         emailjs
             .send(
-                "service_pp7ga5x", // Replace with your EmailJS service ID
-                "template_cwfukr7", // Replace with your EmailJS template ID
-                { email, name, passcode }, // Pass the email as a parameter
-                "xJLGPz0Rey9u3ehvb" // Replace with your EmailJS public key
+                "service_pp7ga5x",
+                "template_cwfukr7",
+                { email: emailField.value, name, passcode },
+                "xJLGPz0Rey9u3ehvb"
             )
             .then(
                 (result) => {
-                    console.log("Correo enviado:", result.text);
-                    console.log(email)
-                    console.log(name)
-                    console.log(passcode)
-                    navigate(`/sesion/verify-passcode?email=${email}`);
+                    navigate(`/sesion/verify-passcode?email=${emailField.value}`);
                 },
                 (error) => {
                     console.error("Error al enviar el correo:", error.text);
@@ -73,27 +80,13 @@ const Recover = () => {
             );
     }
 
-    const validateEmail = (value: string) => {
-        if (!value) {
-            return "El correo electrónico es obligatorio.";
-        } else if (!/\S+@\S+\.\S+/.test(value)) {
-            return "El correo electrónico no es válido.";
-        }
-        return "";
-    };
-
-    const handleEmailChange = (value: string) => {
-        setEmail(value);
-        setErrorMail(() => (validateEmail(value)));
-    };
-
     return (
         <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
             <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
                 <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
                     Recuperar Contraseña
                 </h2>
-                <form onSubmit={handleSubmit} >
+                <form noValidate onSubmit={handleSubmit} >
                     <div className="mb-4">
                         <label
                             htmlFor="email"
@@ -105,19 +98,22 @@ const Recover = () => {
                             <input
                                 type="email"
                                 id="email"
-                                value={email}
-                                onChange={(e) => handleEmailChange(e.target.value)}
+                                value={emailField.value}
+                                onChange={(e) => {
+                                    emailField.onChange(e.target.value);
+                                    if (noRecoverElement.current) noRecoverElement.current.textContent = "";
+                                }}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 placeholder="Ingresa tu correo"
                             />
                             <span className="p-2">
-                                {errorMail ? (
+                                {emailField.error ? (
                                     <span className="text-red-500">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </span>
-                                ) : email ? (
+                                ) : emailField.value ? (
                                     <span className="text-green-500">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />

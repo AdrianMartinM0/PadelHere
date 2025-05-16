@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useFormField } from "../../hooks/useFormHooks";
 
 const VerifyPasscode = () => {
-    const [passcode, setPasscode] = useState('');
+    // Valida que el passcode tenga exactamente 6 dígitos numéricos
+    const passcodeField = useFormField("", (v: string) => {
+        if (!v) return "Por favor, ingresa el código de verificación";
+        if (!/^\d{6}$/.test(v)) return "El código debe tener 6 dígitos numéricos";
+        return "";
+    });
     const [passcodeVerify, setPasscodeVerify] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -11,7 +17,7 @@ const VerifyPasscode = () => {
 
     useEffect(() => {
         if (!email) {
-            navigate('/recover');
+            navigate('/sesion/recover');
             return;
         }
         if (email) {
@@ -23,7 +29,6 @@ const VerifyPasscode = () => {
                     return response.json();
                 })
                 .then((data) => {
-                    console.log('Código de verificación recibido de la bbdd:', data);
                     setPasscodeVerify(data.passcode);
                 })
                 .catch((error) => {
@@ -36,13 +41,13 @@ const VerifyPasscode = () => {
         e.preventDefault();
         setError('');
 
-        if (passcode === '') {
-            setError('Por favor, ingresa el código de verificación');
+        if (passcodeField.error) {
+            setError(passcodeField.error);
             return;
         }
 
-        if (passcode == passcodeVerify) {
-            navigate(`/sesion/set-new-password?email=${email}&passcode=${passcode}`); // Redirige con el email en la URL
+        if (passcodeField.value === passcodeVerify) {
+            navigate(`/sesion/set-new-password?email=${email}&passcode=${passcodeField.value}`);
         } else {
             setError('Código de verificación inválido');
         }
@@ -67,16 +72,41 @@ const VerifyPasscode = () => {
                         >
                             Código de Verificación
                         </label>
-                        <input
-                            type="text"
-                            id="passcode"
-                            value={passcode}
-                            onChange={(e) => setPasscode(e.target.value)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Ingresa el código"
-                        />
+                        <div className="flex items-center w-full">
+                            <input
+                                type="text"
+                                id="passcode"
+                                value={passcodeField.value}
+                                onChange={(e) => {
+                                    // Solo permite escribir hasta 6 caracteres numéricos
+                                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                    passcodeField.onChange(val);
+                                    setError('');
+                                }}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Ingresa el código"
+                                maxLength={6}
+                            />
+                            <span className="p-2">
+                                {passcodeField.error ? (
+                                    <span className="text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </span>
+                                ) : passcodeField.value ? (
+                                    <span className="text-green-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                ) : null}
+                            </span>
+                        </div>
                     </div>
-                    {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+                    {(error || passcodeField.error) && (
+                        <p className="mb-4 text-sm text-red-500">{error || passcodeField.error}</p>
+                    )}
                     <button
                         type="submit"
                         className="w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"

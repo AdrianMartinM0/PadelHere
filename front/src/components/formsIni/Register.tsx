@@ -1,57 +1,55 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+    useFormField,
+    validateName,
+    validateEmail,
+    validatePhone,
+    validatePassword,
+    validateConfirmPassword
+} from "../../hooks/useFormHooks";
 
 const Register = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [phone, setPhone] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [errors, setErrors] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
-    const [isPasswordVisibleP, setPasswordVisibleP] = useState(false);
-    const [isPasswordVisibleC, setPasswordVisibleC] = useState(false);
+    const nameField = useFormField<string>("", validateName);
+    const emailField = useFormField<string>("", validateEmail);
+    const phoneField = useFormField<string>("", validatePhone);
+    const passwordField = useFormField<string>("", validatePassword);
+    const confirmPasswordField = useFormField<string>(
+        "",
+        (v) => validateConfirmPassword(v, passwordField.value)
+    );
     const noRegisterElement = useRef(null);
     const navigate = useNavigate();
+    const [isPasswordVisibleP, setPasswordVisibleP] = useState(false);
+    const [isPasswordVisibleC, setPasswordVisibleC] = useState(false);
 
-    const toggleVisibilityP = () => {
-        setPasswordVisibleP((prev) => !prev);
-    };
+    const toggleVisibilityP = () => setPasswordVisibleP((prev) => !prev);
+    const toggleVisibilityC = () => setPasswordVisibleC((prev) => !prev);
 
-    const toggleVisibilityC = () => {
-        setPasswordVisibleC((prev) => !prev);
-    };
-
-    // Validaciones adicionales
-    const handleNameChange = (value: string) => {
-        setName(value);
-        setErrors((prev) => ({ ...prev, name: validateName(value) }));
-    };
-
-    const handleEmailChange = (value: string) => {
-        setEmail(value);
-        setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
-    };
-
-    const handlePhoneChange = (value: string) => {
-        setPhone(value);
-        setErrors((prev) => ({ ...prev, phone: validatePhone(value) }));
-    };
-
+    // Nueva función para manejar el cambio de password y validar ambos campos
     const handlePasswordChange = (value: string) => {
-        setPassword(value);
-        setErrors((prev) => ({ ...prev, password: validatePassword(value) }));
+        passwordField.onChange(value);
+        // Revalida confirmPassword con el nuevo valor de password
+        confirmPasswordField.setError(validateConfirmPassword(confirmPasswordField.value, value));
     };
 
+    // Nueva función para manejar el cambio de confirmPassword y validar ambos campos
     const handleConfirmPasswordChange = (value: string) => {
-        setConfirmPassword(value);
-        setErrors((prev) => ({ ...prev, confirmPassword: validateConfirmPassword(value, password) }));
+        confirmPasswordField.onChange(value);
+        // Revalida password (por si acaso, aunque normalmente solo confirmPassword depende de password)
+        passwordField.setError(validatePassword(passwordField.value));
     };
 
     const handleRegister = async () => {
-
         // Validaciones de campos vacíos
-        if(noRegisterElement.current){
-            if (name === "" || email === "" || phone === "" || password === "" || confirmPassword === "") {
+        if (noRegisterElement.current) {
+            if (
+                !nameField.value ||
+                !emailField.value ||
+                !phoneField.value ||
+                !passwordField.value ||
+                !confirmPasswordField.value
+            ) {
                 noRegisterElement.current.textContent = "Por favor rellena todos los campos";
                 return;
             } else {
@@ -59,7 +57,14 @@ const Register = () => {
             }
         }
 
-        if (errors.name || errors.email || errors.phone || errors.password || errors.confirmPassword) return;
+        if (
+            nameField.error ||
+            emailField.error ||
+            phoneField.error ||
+            passwordField.error ||
+            confirmPasswordField.error
+        )
+            return;
 
         try {
             const response = await fetch("http://localhost:8000/v1/usuario/register", {
@@ -69,10 +74,10 @@ const Register = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    name,
-                    email,
-                    tel: phone,
-                    password,
+                    name: nameField.value,
+                    email: emailField.value,
+                    tel: phoneField.value,
+                    password: passwordField.value,
                 }),
             });
 
@@ -88,39 +93,6 @@ const Register = () => {
         } catch (error) {
             console.error("Error durante el registro:", error);
         }
-    };
-
-    const validateName = (value: string) => {
-        if (!value) return "El nombre completo es obligatorio.";
-        if (value.length < 3) return "El nombre debe tener al menos 3 caracteres.";
-        return "";
-    };
-
-    const validateEmail = (value: string) => {
-        if (!value) return "El correo electrónico es obligatorio.";
-        if (!/\S+@\S+\.\S+/.test(value)) return "El correo electrónico no es válido.";
-        return "";
-    };
-
-    const validatePhone = (value: string) => {
-        if (!value) return "El número de teléfono es obligatorio.";
-        if (!/^\d{9}$/.test(value)) return "El número de teléfono debe tener 9 dígitos.";
-        return "";
-    };
-
-    const validatePassword = (value: string) => {
-        if (!value) return "La contraseña es obligatoria.";
-        if (value.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
-        if (!/[A-Z]/.test(value) || !/\d/.test(value) || !/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
-            return "Debe incluir una letra mayúscula, un número y un carácter especial.";
-        }
-        return "";
-    };
-
-    const validateConfirmPassword = (value: string, password: string) => {
-        if (!value) return "Debes confirmar tu contraseña.";
-        if (value !== password) return "Las contraseñas no coinciden.";
-        return "";
     };
 
     return (
@@ -143,20 +115,22 @@ const Register = () => {
                             <input
                                 type="text"
                                 id="name"
-                                value={name}
-                                onChange={(e) => handleNameChange(e.target.value)}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${errors.name ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
+                                value={nameField.value}
+                                onChange={(e) => nameField.onChange(e.target.value)}
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${nameField.error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
                                     }`}
                             />
                             <span className="p-2">
-                                {errors.name ? (
+                                {nameField.error ? (
                                     <span className="text-red-500">
+                                        {/* ...icono error... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </span>
-                                ) : name ? (
+                                ) : nameField.value ? (
                                     <span className="text-green-500">
+                                        {/* ...icono ok... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                         </svg>
@@ -164,7 +138,7 @@ const Register = () => {
                                 ) : null}
                             </span>
                         </div>
-                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                        {nameField.error && <p className="text-red-500 text-sm mt-1">{nameField.error}</p>}
                     </div>
 
                     {/* Correo Electrónico */}
@@ -176,20 +150,22 @@ const Register = () => {
                             <input
                                 type="email"
                                 id="email"
-                                value={email}
-                                onChange={(e) => handleEmailChange(e.target.value)}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
+                                value={emailField.value}
+                                onChange={(e) => emailField.onChange(e.target.value)}
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${emailField.error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
                                     }`}
                             />
                             <span className="p-2">
-                                {errors.email ? (
+                                {emailField.error ? (
                                     <span className="text-red-500">
+                                        {/* ...icono error... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </span>
-                                ) : email ? (
+                                ) : emailField.value ? (
                                     <span className="text-green-500">
+                                        {/* ...icono ok... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                         </svg>
@@ -197,7 +173,7 @@ const Register = () => {
                                 ) : null}
                             </span>
                         </div>
-                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                        {emailField.error && <p className="text-red-500 text-sm mt-1">{emailField.error}</p>}
                     </div>
 
                     {/* Teléfono */}
@@ -209,20 +185,22 @@ const Register = () => {
                             <input
                                 type="tel"
                                 id="phone"
-                                value={phone}
-                                onChange={(e) => handlePhoneChange(e.target.value)}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${errors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
+                                value={phoneField.value}
+                                onChange={(e) => phoneField.onChange(e.target.value)}
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${phoneField.error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
                                     }`}
                             />
                             <span className="p-2">
-                                {errors.phone ? (
+                                {phoneField.error ? (
                                     <span className="text-red-500">
+                                        {/* ...icono error... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </span>
-                                ) : phone ? (
+                                ) : phoneField.value ? (
                                     <span className="text-green-500">
+                                        {/* ...icono ok... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                         </svg>
@@ -230,7 +208,7 @@ const Register = () => {
                                 ) : null}
                             </span>
                         </div>
-                        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                        {phoneField.error && <p className="text-red-500 text-sm mt-1">{phoneField.error}</p>}
                     </div>
 
                     {/* Contraseña */}
@@ -242,9 +220,9 @@ const Register = () => {
                             <input
                                 type={isPasswordVisibleP ? "text" : "password"}
                                 id="password"
-                                value={password}
+                                value={passwordField.value}
                                 onChange={(e) => handlePasswordChange(e.target.value)}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${errors.password ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${passwordField.error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
                                     }`}
                             />
                             <div className="mt-1 relative">
@@ -255,21 +233,25 @@ const Register = () => {
                                     aria-label="Toggle password visibility"
                                 >
                                     {isPasswordVisibleP ? (
+                                        // ...icono visible...
                                         <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z"/></svg>
                                     ) : (
+                                        // ...icono oculto...
                                         <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
                                     )}
                                 </button>
                             </div>
                             <span className="p-2">
-                                {errors.password ? (
+                                {passwordField.error ? (
                                     <span className="text-red-500">
+                                        {/* ...icono error... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </span>
-                                ) : password ? (
+                                ) : passwordField.value ? (
                                     <span className="text-green-500">
+                                        {/* ...icono ok... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                         </svg>
@@ -277,7 +259,7 @@ const Register = () => {
                                 ) : null}
                             </span>
                         </div>
-                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                        {passwordField.error && <p className="text-red-500 text-sm mt-1">{passwordField.error}</p>}
                     </div>
 
                     {/* Confirmar Contraseña */}
@@ -289,9 +271,9 @@ const Register = () => {
                             <input
                                 type={isPasswordVisibleC ? "text" : "password"}
                                 id="confirmPassword"
-                                value={confirmPassword}
+                                value={confirmPasswordField.value}
                                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${errors.confirmPassword ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${confirmPasswordField.error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
                                     }`}
                             />
                             <div className="mt-1 relative">
@@ -302,21 +284,25 @@ const Register = () => {
                                     aria-label="Toggle password visibility"
                                 >
                                     {isPasswordVisibleC ? (
+                                        // ...icono visible...
                                         <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z"/></svg>
                                     ) : (
+                                        // ...icono oculto...
                                         <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
                                     )}
                                 </button>
                             </div>
                             <span className="p-2">
-                                {errors.confirmPassword ? (
+                                {confirmPasswordField.error ? (
                                     <span className="text-red-500">
+                                        {/* ...icono error... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </span>
-                                ) : confirmPassword ? (
+                                ) : confirmPasswordField.value ? (
                                     <span className="text-green-500">
+                                        {/* ...icono ok... */}
                                         <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
                                         </svg>
@@ -324,7 +310,7 @@ const Register = () => {
                                 ) : null}
                             </span>
                         </div>
-                        {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                        {confirmPasswordField.error && <p className="text-red-500 text-sm mt-1">{confirmPasswordField.error}</p>}
                     </div>
 
                     <button
