@@ -32,6 +32,7 @@ function App() {
                 <Route path="set-new-password" element={<SetNewPassword />} />
               </Route>
             </Route>
+            {}
             <Route path="app/" element={<Outlet />}>
               <Route element={<Outlet />}>
                 <Route index element={<Navigate to="jugar" />} />
@@ -46,6 +47,7 @@ function App() {
                 </Route>
               </Route>
             </Route>
+            <Route path="/jugar" element={<Jugar />} />
             {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
           </Routes>
         </BrowserRouter>

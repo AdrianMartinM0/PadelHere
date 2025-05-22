@@ -6,6 +6,11 @@ from datetime import timedelta, timezone
 from ..utils.token_utils import create_access_token
 import random
 from datetime import datetime
+from fastapi import Request, status
+from jwt import InvalidTokenError
+import jwt
+from api.config import SECRET_KEY, ALGORITHM
+from ..database.db import club_collection
 # from google.oauth2 import id_token
 # from google.auth.transport import requests
 
@@ -29,12 +34,25 @@ async def create_user(data):
     # Convertir ObjectId a string antes de retornarlo
     if created_user:
         created_user["_id"] = str(created_user["_id"])
-    
+        # Generar token de acceso JWT
+        access_token = create_access_token(
+            data={"sub": created_user["email"]}, user_type="user"
+        )
+        return {
+            "user": created_user,
+            "access_token": access_token,
+            "token_type": "bearer"
+        }
     return created_user
 
 async def get_one_user(email):
     users_collection = user_collection
     user = users_collection.find_one({"email": email})
+    return user
+
+async def get_one_user_by_tel(tel):
+    users_collection = user_collection
+    user = users_collection.find_one({"tel": tel})
     return user
 
 async def login_user_service(email: str, password: str):
@@ -57,9 +75,8 @@ async def login_user_service(email: str, password: str):
         raise HTTPException(status_code=400, detail="Email o contraseña incorrectos.")
 
     # Crear un token de acceso JWT
-    access_token_expires = timedelta(hours=1)
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data={"sub": user.email}, user_type="user"
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
@@ -180,6 +197,47 @@ async def change_password_service(email: str, passcode: str, new_password: str):
         raise HTTPException(status_code=500, detail="Error al actualizar la contraseña.")
 
     return {"message": "Contraseña actualizada correctamente."}
+
+
+
+async def verify_jwt_service(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        user_type: str = payload.get("type")
+        if email is None or user_type is None:
+            raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido.",
+            headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Comprobar existencia del usuario según el tipo
+        if user_type == "user":
+            user = user_collection.find_one({"email": email})
+        elif user_type == "club":
+            user = club_collection.find_one({"email": email})
+        else:
+            raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Tipo de usuario inválido.",
+            headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Usuario no encontrado.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return {"valid": True, "email": email, "user_type": user_type}
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 # async def get_google_user(token: str):
 #     try:

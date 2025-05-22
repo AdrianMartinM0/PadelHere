@@ -1,0 +1,44 @@
+from fastapi import APIRouter, Depends
+from ..controllers import club_controller
+from ..database.models.club import Club
+
+from pydantic import EmailStr, BaseModel
+from fastapi.security import OAuth2AuthorizationCodeBearer, OAuth2PasswordBearer
+# from ..services.clubario_service import get_google_user
+
+club_router = APIRouter()
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl="https://accounts.google.com/o/oauth2/auth",
+    tokenUrl="https://oauth2.googleapis.com/token"
+)
+
+oauth2_scheme_password = OAuth2PasswordBearer(tokenUrl="token")
+
+@club_router.post("/login")
+async def login_user(login_request: dict):
+    return await club_controller.login_controller(login_request)
+
+@club_router.post('/register')
+async def create_user(club: Club):
+    return await club_controller.create_club_controller(club)
+
+@club_router.get('/recover')
+async def recover_pass(email: EmailStr):
+    # return {'email': email}
+    return await club_controller.recover_password_controller(email)
+
+@club_router.get('/passcode')
+async def get_passcode(email: EmailStr):
+    return await club_controller.get_passcode_controller(email)
+
+class ChangePasswordRequest(BaseModel):
+    email: EmailStr
+    passcode: str
+    new_password: str
+
+@club_router.post('/changePassword')
+async def change_password(request: ChangePasswordRequest):
+    return await club_controller.change_password_service(
+        request.email, request.passcode, request.new_password
+    )

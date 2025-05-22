@@ -1,27 +1,39 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-    useFormField,
-    validateName,
-    validateEmail,
-    validatePhone,
-    validatePassword,
-    validateConfirmPassword
-} from "../../hooks/useFormHooks";
+import { useFormField, validateName, validateEmail, validatePhone, validatePassword, validateConfirmPassword } from "../../hooks/useFormHooks";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 const Register = () => {
     const nameField = useFormField<string>("", validateName);
     const emailField = useFormField<string>("", validateEmail);
     const phoneField = useFormField<string>("", validatePhone);
+    const addressField = useFormField<string>(
+        "",
+        (v) => isClub ? (v.trim() ? "" : "La dirección es obligatoria") : ""
+    );
     const passwordField = useFormField<string>("", validatePassword);
     const confirmPasswordField = useFormField<string>(
         "",
         (v) => validateConfirmPassword(v, passwordField.value)
     );
-    const noRegisterElement = useRef(null);
+    const noRegisterElement = useRef<HTMLParagraphElement>(null);
     const navigate = useNavigate();
     const [isPasswordVisibleP, setPasswordVisibleP] = useState(false);
     const [isPasswordVisibleC, setPasswordVisibleC] = useState(false);
+    const [isClub, setIsClub] = useState(false);
+
+    const { login, isLoggedIn } = useContext(AuthContext)!;
+    
+      useEffect(() => {
+            if (isLoggedIn) {
+                navigate('/app', { replace: true });
+            }
+        }, []);
+
+    const handleToggle = () => {
+        setIsClub(!isClub);
+    };
 
     const toggleVisibilityP = () => setPasswordVisibleP((prev) => !prev);
     const toggleVisibilityC = () => setPasswordVisibleC((prev) => !prev);
@@ -43,31 +55,44 @@ const Register = () => {
     const handleRegister = async () => {
         // Validaciones de campos vacíos
         if (noRegisterElement.current) {
-            if (
-                !nameField.value ||
-                !emailField.value ||
-                !phoneField.value ||
-                !passwordField.value ||
-                !confirmPasswordField.value
-            ) {
-                noRegisterElement.current.textContent = "Por favor rellena todos los campos";
-                return;
+            if (isClub) {
+                if (
+                    !nameField.value ||
+                    !emailField.value ||
+                    !passwordField.value ||
+                    !confirmPasswordField.value ||
+                    !addressField.value
+                ) {
+                    noRegisterElement.current.textContent = "Por favor rellena todos los campos";
+                    return;
+                }
             } else {
-                noRegisterElement.current.textContent = "";
+                if (
+                    !nameField.value ||
+                    !emailField.value ||
+                    !passwordField.value ||
+                    !confirmPasswordField.value
+                ) {
+                    noRegisterElement.current.textContent = "Por favor rellena todos los campos";
+                    return;
+                }
             }
+            noRegisterElement.current.textContent = "";
         }
 
         if (
             nameField.error ||
             emailField.error ||
             phoneField.error ||
+            addressField.error ||
             passwordField.error ||
             confirmPasswordField.error
-        )
+        ) {
             return;
+        }
 
         try {
-            const response = await fetch("http://localhost:8000/v1/usuario/register", {
+            const response = await fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/register`, {
                 mode: "cors",
                 method: "POST",
                 headers: {
@@ -77,24 +102,48 @@ const Register = () => {
                     name: nameField.value,
                     email: emailField.value,
                     tel: phoneField.value,
+                    direccion: addressField.value,
                     password: passwordField.value,
                 }),
             });
 
-            if (!response.ok) {
-                throw new Error("Error al registrarse.");
+            let data;
+            try {
+                data = await response.json();
+            } catch {
+                data = null;
             }
 
-            const data = await response.json();
+            if (!response.ok) {
+                // Si el backend devuelve un detalle, úsalo.
+                console.log(data)
+                const errorMsg = data?.detail
+                    || data?.message
+                    || JSON.stringify(data)
+                    || `Error HTTP ${response.status}`;
+                noRegisterElement.current!.textContent = errorMsg;
+                throw new Error(errorMsg);
+            }
+
             if (data.token) {
-                localStorage.setItem("jwtToken", data.token);
+                login(data.token);
+                // localStorage.setItem("jwtToken", data.token);
                 navigate("/jugar");
             }
         } catch (error) {
-            console.error("Error durante el registro:", error);
+            let msg: string;
+            if (error instanceof Error) {
+                msg = error.message;
+            } else if (typeof error === "string") {
+                msg = error;
+            } else {
+                msg = "Ocurrió un error desconocido";
+            }
+            console.error("Error durante el registro:", msg);
+            noRegisterElement.current!.textContent = msg;
+            // alert(msg);
         }
-    };
-
+    }
     return (
         <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
             <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md">
@@ -211,6 +260,41 @@ const Register = () => {
                         {phoneField.error && <p className="text-red-500 text-sm mt-1">{phoneField.error}</p>}
                     </div>
 
+                    {/* Dirección */}
+                    {isClub ? <div className="mb-4">
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                            Dirección
+                        </label>
+                        <div className="flex items-center">
+                            <input
+                                type="text"
+                                id="address"
+                                value={addressField.value}
+                                onChange={(e) => addressField.onChange(e.target.value)}
+                                className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none sm:text-sm ${addressField.error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-indigo-500"
+                                    }`}
+                            />
+                            <span className="p-2">
+                                {addressField.error ? (
+                                    <span className="text-red-500">
+                                        {/* ...icono error... */}
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-red-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </span>
+                                ) : addressField.value ? (
+                                    <span className="text-green-500">
+                                        {/* ...icono ok... */}
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                ) : null}
+                            </span>
+                        </div>
+                        {addressField.error && <p className="text-red-500 text-sm mt-1">{addressField.error}</p>}
+                    </div> : null}
+
                     {/* Contraseña */}
                     <div className="mb-6">
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -234,10 +318,10 @@ const Register = () => {
                                 >
                                     {isPasswordVisibleP ? (
                                         // ...icono visible...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
                                     ) : (
                                         // ...icono oculto...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
                                     )}
                                 </button>
                             </div>
@@ -285,10 +369,10 @@ const Register = () => {
                                 >
                                     {isPasswordVisibleC ? (
                                         // ...icono visible...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
                                     ) : (
                                         // ...icono oculto...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z"/></svg>
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
                                     )}
                                 </button>
                             </div>
@@ -312,7 +396,23 @@ const Register = () => {
                         </div>
                         {confirmPasswordField.error && <p className="text-red-500 text-sm mt-1">{confirmPasswordField.error}</p>}
                     </div>
+                    <div className="mb-4 justify-center gap-2 flex items-center">
+                        <p>¿Eres un Club?</p>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked={isClub} onChange={handleToggle} className="sr-only peer" />
+                            <div className={`ring-0 rounded-full outline-none duration-300 w-6 h-6 shadow-md flex items-center justify-center relative ${isClub ? 'bg-emerald-500' : 'bg-rose-400'}`}>
+                                {/* ❌ SVG - visible cuando NO está marcado */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 text-white transition-opacity duration-200 absolute ${isClub ? 'opacity-0' : 'opacity-100'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
 
+                                {/* ✔️ SVG - visible cuando SÍ está marcado */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 text-white transition-opacity duration-200 absolute ${isClub ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </label>
+                    </div>
                     <button
                         type="submit"
                         className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

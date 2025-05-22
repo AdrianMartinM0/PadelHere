@@ -1,14 +1,27 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import emailjs from 'emailjs-com'
 import { useNavigate } from "react-router-dom";
 import { useFormField, validateEmail } from "../../hooks/useFormHooks";
+import { AuthContext } from "../../context/AuthContext";
 
 const Recover = () => {
-    const emailField = useFormField("", validateEmail);
+    const emailField = useFormField<string>("", validateEmail);
     const [name, setName] = useState("");
     const [passcode, setPasscode] = useState("");
     const navigate = useNavigate();
-    const noRecoverElement = useRef(null);
+    const noRecoverElement = useRef<HTMLParagraphElement>(null);
+    const [isClub, setIsClub] = useState(false);
+    const { isLoggedIn } = useContext(AuthContext)!;
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigate('/app', { replace: true });
+        }
+    }, []);
+
+    const handleToggle = () => {
+        setIsClub(!isClub);
+    };
 
     useEffect(() => {
         if (passcode && name) {
@@ -30,8 +43,8 @@ const Recover = () => {
             }
             noRecoverElement.current.textContent = '';
         }
-        let error = false;
-        fetch(`http://localhost:8000/v1/usuario/recover?email=${emailField.value}`, {
+        // let error = false;
+        fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/recover?email=${emailField.value}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -71,8 +84,8 @@ const Recover = () => {
                 "xJLGPz0Rey9u3ehvb"
             )
             .then(
-                (result) => {
-                    navigate(`/sesion/verify-passcode?email=${emailField.value}`);
+                () => {
+                    navigate(`/sesion/verify-passcode?club=${isClub}&email=${emailField.value}`, { replace: true });
                 },
                 (error) => {
                     console.error("Error al enviar el correo:", error.text);
@@ -123,6 +136,23 @@ const Recover = () => {
                             </span>
                         </div>
                         <p ref={noRecoverElement} id="noRecover" className=" text-red-500 m-0 text-sm"></p>
+                    </div>
+                    <div className="mb-4 justify-center gap-2 flex items-center">
+                        <p>¿Eres un Club?</p>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked={isClub} onChange={handleToggle} className="sr-only peer" />
+                            <div className={`ring-0 rounded-full outline-none duration-300 w-6 h-6 shadow-md flex items-center justify-center relative ${isClub ? 'bg-emerald-500' : 'bg-rose-400'}`}>
+                                {/* ❌ SVG - visible cuando NO está marcado */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 text-white transition-opacity duration-200 absolute ${isClub ? 'opacity-0' : 'opacity-100'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+
+                                {/* ✔️ SVG - visible cuando SÍ está marcado */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 text-white transition-opacity duration-200 absolute ${isClub ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </label>
                     </div>
                     <button
                         type="submit"

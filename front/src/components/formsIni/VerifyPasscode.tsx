@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFormField } from "../../hooks/useFormHooks";
+import { AuthContext } from '../../context/AuthContext';
 
 const VerifyPasscode = () => {
     // Valida que el passcode tenga exactamente 6 dígitos numéricos
@@ -14,14 +15,20 @@ const VerifyPasscode = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const email = new URLSearchParams(location.search).get('email');
+    const isClub = new URLSearchParams(location.search).get('club');
+    const { isLoggedIn } = useContext(AuthContext)!;
 
+    
     useEffect(() => {
+        if (isLoggedIn) {
+            navigate('/app', { replace: true });
+        }
         if (!email) {
-            navigate('/sesion/recover');
+            navigate(-1);
             return;
         }
         if (email) {
-            fetch(`http://localhost:8000/v1/usuario/passcode?email=${email}`)
+            fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/passcode?email=${email}`)
                 .then((response) => {
                     if (!response.ok) {
                         throw new Error('Error al obtener el código de verificación');
@@ -47,7 +54,7 @@ const VerifyPasscode = () => {
         }
 
         if (passcodeField.value === passcodeVerify) {
-            navigate(`/sesion/set-new-password?email=${email}&passcode=${passcodeField.value}`);
+            navigate(`/sesion/set-new-password?club=${isClub}&email=${email}&passcode=${passcodeField.value}`, { replace: true });
         } else {
             setError('Código de verificación inválido');
         }

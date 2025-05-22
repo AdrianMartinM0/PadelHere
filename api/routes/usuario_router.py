@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from ..controllers import usuario_controller
 from ..database.models.usuario import User
 
 from pydantic import EmailStr, BaseModel
-from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.security import OAuth2AuthorizationCodeBearer, OAuth2PasswordBearer
 # from ..services.usuario_service import get_google_user
 
 usu_router = APIRouter()
@@ -12,6 +12,8 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
     authorizationUrl="https://accounts.google.com/o/oauth2/auth",
     tokenUrl="https://oauth2.googleapis.com/token"
 )
+
+oauth2_scheme_password = OAuth2PasswordBearer(tokenUrl="token")
 
 @usu_router.post("/login")
 async def login_user(login_request: dict):
@@ -40,6 +42,10 @@ async def change_password(request: ChangePasswordRequest):
     return await usuario_controller.change_password_service(
         request.email, request.passcode, request.new_password
     )
+
+@usu_router.get("/verify-jwt")
+async def verify_jwt(token: str):
+    return await usuario_controller.verify_jwt_controller(token)
 
 # # Router
 # @usu_router.get("/auth/google")

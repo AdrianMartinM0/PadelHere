@@ -1,15 +1,11 @@
 import jwt
 from datetime import datetime, timedelta, timezone
+from api.config import SECRET_KEY, ALGORITHM
 
-SECRET_KEY = "TU_CLAVE_SECRETA"
-ALGORITHM = "HS256"
-
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)):
-    """
-    Genera un token de acceso JWT.
-    """
+def create_access_token(data: dict, user_type: str):
+    expires_delta = timedelta(days=15)
     to_encode = data.copy()
     expire = datetime.now(tz=timezone.utc) + expires_delta
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "type": user_type})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

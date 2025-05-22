@@ -3,14 +3,15 @@ from typing import Optional
 import re
 import bcrypt
 
-class User(BaseModel):
+class Club(BaseModel):
     name: str = Field(...)
     email: EmailStr = Field(...)
     password: str = Field(...)
-    tel: Optional[int] = None
+    tel: int = Field(...)
     img_perfil: Optional[bytes] = None
     desc: Optional[str] = None
-    level: float = Field(default=0)
+    direccion: str = Field(...)
+    
 
     @field_validator("password")
     @classmethod

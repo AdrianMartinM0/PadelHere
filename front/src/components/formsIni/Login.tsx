@@ -1,14 +1,30 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GoogleAuth from "../GoogleAuth";
 import { useNavigate } from "react-router-dom";
 import { useFormField, validateEmail, validatePassword } from "../../hooks/useFormHooks";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 const Login = () => {
     const emailField = useFormField<string>("", validateEmail);
     const passwordField = useFormField<string>("", validatePassword);
     const [isPasswordVisible, setPasswordVisible] = useState(false);
-    const noLoginElement = useRef(null);
+    const noLoginElement = useRef<HTMLParagraphElement>(null);
     const navigate = useNavigate();
+    const [isClub, setIsClub] = useState(false);
+
+
+    const { login, isLoggedIn } = useContext(AuthContext)!;
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            navigate('/app', { replace: true });
+        }
+    }, []);
+
+    const handleToggle = () => {
+        setIsClub(!isClub);
+    };
 
     const toggleVisibility = () => {
         setPasswordVisible((prev) => !prev);
@@ -30,7 +46,7 @@ const Login = () => {
         if (emailField.error || passwordField.error) return;
 
         try {
-            const response = await fetch("http://localhost:8000/v1/usuario/login", {
+            const response = await fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/login`, {
                 mode: "cors",
                 method: "POST",
                 headers: {
@@ -43,7 +59,8 @@ const Login = () => {
 
             const data = await response.json();
             if (data.token) {
-                localStorage.setItem("jwtToken", data.token);
+                login(data.token);
+                // localStorage.setItem("jwtToken", data.token);
                 navigate("/app");
             }
         } catch (error) {
@@ -121,7 +138,23 @@ const Login = () => {
                         </div>
                         {passwordField.error && <p className="w-full text-red-500 text-sm mt-1">{passwordField.error}</p>}
                     </div>
+                    <div className="mb-4 justify-center gap-2 flex items-center">
+                        <p>¿Eres un Club?</p>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked={isClub} onChange={handleToggle} className="sr-only peer" />
+                            <div className={`ring-0 rounded-full outline-none duration-300 w-6 h-6 shadow-md flex items-center justify-center relative ${isClub ? 'bg-emerald-500' : 'bg-rose-400'}`}>
+                                {/* ❌ SVG - visible cuando NO está marcado */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 text-white transition-opacity duration-200 absolute ${isClub ? 'opacity-0' : 'opacity-100'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
 
+                                {/* ✔️ SVG - visible cuando SÍ está marcado */}
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`w-5 h-5 text-white transition-opacity duration-200 absolute ${isClub ? 'opacity-100' : 'opacity-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </label>
+                    </div>
                     <button
                         type="submit"
                         className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

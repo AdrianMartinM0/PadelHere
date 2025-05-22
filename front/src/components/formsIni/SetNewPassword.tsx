@@ -1,19 +1,38 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useFormField, validatePassword, validateConfirmPassword } from "../../hooks/useFormHooks";
+import { AuthContext } from '../../context/AuthContext';
 
 const SetNewPassword = () => {
     const location = useLocation();
     const email = new URLSearchParams(location.search).get('email');
     const passcode = new URLSearchParams(location.search).get('passcode');
+    const { isLoggedIn } = useContext(AuthContext)!;
 
-    const newPasswordField = useFormField("", validatePassword);
+
+useEffect(() => {
+    if (isLoggedIn) {
+        navigate('/app', { replace: true });
+    }
+    if (!email || email === "" || !passcode || passcode === "") {
+            navigate(-1);
+        }
+    }, []);
+
+    const isClub = new URLSearchParams(location.search).get('club');
+    const navigate = useNavigate();
+    const newPasswordField = useFormField<string>("", validatePassword);
     const confirmPasswordField = useFormField(
         "",
         (v) => validateConfirmPassword(v, newPasswordField.value)
     );
     const [error, setError] = React.useState('');
     const [success, setSuccess] = React.useState(false);
+    const [isPasswordVisibleP, setPasswordVisibleP] = useState(false);
+    const [isPasswordVisibleC, setPasswordVisibleC] = useState(false);
+
+    const toggleVisibilityP = () => setPasswordVisibleP((prev) => !prev);
+    const toggleVisibilityC = () => setPasswordVisibleC((prev) => !prev);
 
     // Validar ambos campos cuando cambie uno de los dos
     const handleNewPasswordChange = (value: string) => {
@@ -39,7 +58,7 @@ const SetNewPassword = () => {
             return;
         }
 
-        fetch('http://localhost:8000/v1/usuario/changePassword', {
+        fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/changePassword`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -56,16 +75,24 @@ const SetNewPassword = () => {
                 }
                 return response.json();
             })
-            .then((data) => {
+            .then(() => {
                 setSuccess(true);
             })
-            .catch((error) => {
+            .catch(() => {
                 setError('Hubo un problema al cambiar la contraseña');
             });
     };
 
+    useEffect(() => {
+        if (success)
+            setTimeout(() => {
+                navigate("/sesion", { replace: true });
+            }, 1000);
+    }, [success]);
+
+
     return (
-        <div className="flex items-center justify-center absolute inset-0 bg-[#0003] px-4 sm:px-0">
+        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
             <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
                 <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
                     Crear Nueva Contraseña
@@ -85,15 +112,30 @@ const SetNewPassword = () => {
                         </label>
                         <div className="flex items-center w-full">
                             <input
-                                type="password"
+                                type={isPasswordVisibleP ? "text" : "password"}
                                 id="newPassword"
                                 value={newPasswordField.value}
                                 onChange={(e) => handleNewPasswordChange(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                    newPasswordField.error ? "border-red-500" : "border-gray-300"
-                                }`}
+                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${newPasswordField.error ? "border-red-500" : "border-gray-300"
+                                    }`}
                                 placeholder="Ingresa la nueva contraseña"
                             />
+                            <div className="mt-1 relative">
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    onClick={toggleVisibilityP}
+                                    aria-label="Toggle password visibility"
+                                >
+                                    {isPasswordVisibleP ? (
+                                        // ...icono visible...
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
+                                    ) : (
+                                        // ...icono oculto...
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
+                                    )}
+                                </button>
+                            </div>
                             <span className="p-2">
                                 {newPasswordField.error ? (
                                     <span className="text-red-500">
@@ -123,15 +165,30 @@ const SetNewPassword = () => {
                         </label>
                         <div className="flex items-center w-full">
                             <input
-                                type="password"
+                                type={isPasswordVisibleC ? "text" : "password"}
                                 id="confirmPassword"
                                 value={confirmPasswordField.value}
                                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                                    confirmPasswordField.error ? "border-red-500" : "border-gray-300"
-                                }`}
+                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${confirmPasswordField.error ? "border-red-500" : "border-gray-300"
+                                    }`}
                                 placeholder="Confirma la nueva contraseña"
                             />
+                            <div className="mt-1 relative">
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    onClick={toggleVisibilityC}
+                                    aria-label="Toggle password visibility"
+                                >
+                                    {isPasswordVisibleC ? (
+                                        // ...icono visible...
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
+                                    ) : (
+                                        // ...icono oculto...
+                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
+                                    )}
+                                </button>
+                            </div>
                             <span className="p-2">
                                 {confirmPasswordField.error ? (
                                     <span className="text-red-500">

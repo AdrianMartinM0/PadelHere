@@ -1,9 +1,20 @@
 import InicioClub from "./InicioClub"
 import InicioJugador from "./InicioJugador"
 import InicioNoticias from "./InicioNoticias"
-
+import { AuthContext } from "../../context/AuthContext";
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Inicio = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn } = useContext(AuthContext)!;
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/app", { replace: true });
+    }
+  }, []);
+
   return (
     <div className="h-[700px] min-w-full">
       <div className="flex flex-col w-full h-full gap-8 md:gap-4">

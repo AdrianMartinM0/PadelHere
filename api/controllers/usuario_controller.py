@@ -1,8 +1,12 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service
+from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel
 from ..database.models.usuario import User
 import re
 from pydantic import EmailStr
+from fastapi import Depends
+from jwt import PyJWTError
+import jwt
+from ..utils.token_utils import SECRET_KEY, ALGORITHM
 
 async def create_user_controller(usuario: User):
     # Verifica si el usuario ya existe
@@ -11,9 +15,9 @@ async def create_user_controller(usuario: User):
         raise HTTPException(status_code=400, detail="El usuario ya existe")
     
     # Verifica si el teléfono ya está registrado
-    # existing_user_by_phone = await get_one_user(usuario.tel)
-    # if (existing_user_by_phone):
-    #     raise HTTPException(status_code=400, detail="El número de teléfono ya está registrado")
+    existing_user_by_phone = await get_one_user_by_tel(usuario.tel)
+    if (existing_user_by_phone):
+        raise HTTPException(status_code=400, detail="El número de teléfono ya está registrado")
     
     # Crea el usuario
     created_user = await create_user(usuario)
@@ -49,6 +53,11 @@ async def change_password_controller(email: str, passcode: str, new_password: st
     if not find_user:
         raise HTTPException(status_code=400, detail="El usuario no existe")
     return await change_password_service(email, passcode, new_password)
+
+
+async def verify_jwt_controller(token: str):
+    return await verify_jwt_service(token)
+
 
 # async def google_login_controller(token):
 #     user_info = await get_google_user(token)
