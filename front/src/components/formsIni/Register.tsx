@@ -140,7 +140,7 @@ const Register = () => {
                 msg = "Ocurrió un error desconocido";
             }
             console.error("Error durante el registro:", msg);
-            noRegisterElement.current!.textContent = msg;
+            noRegisterElement.current!.textContent = "Error inesperado, intentelo de nuevo más tarde";
             // alert(msg);
         }
     }

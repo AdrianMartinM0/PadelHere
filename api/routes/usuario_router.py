@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, Form
 from ..controllers import usuario_controller
 from ..database.models.usuario import User
 
@@ -39,13 +39,25 @@ class ChangePasswordRequest(BaseModel):
 
 @usu_router.post('/changePassword')
 async def change_password(request: ChangePasswordRequest):
-    return await usuario_controller.change_password_service(
-        request.email, request.passcode, request.new_password
-    )
+    return await usuario_controller.change_password_service(request.email, request.passcode, request.new_password)
 
 @usu_router.get("/verify-jwt")
 async def verify_jwt(token: str):
     return await usuario_controller.verify_jwt_controller(token)
+
+@usu_router.get("/user")
+async def get_user(email: EmailStr):
+    return await usuario_controller.get_one_user_controller(email)
+
+@usu_router.post("/update-desc")
+async def update_desc(email: EmailStr = Form(...), desc: str = Form(...)):
+    return await usuario_controller.update_desc_controller(email, desc)
+
+@usu_router.post("/update-profile-picture")
+async def update_profile_picture(email: EmailStr = Form(...), picture: UploadFile = File(...)):
+    picture_bytes = await picture.read()
+    return await usuario_controller.update_profile_picture_service(email, picture_bytes)
+
 
 # # Router
 # @usu_router.get("/auth/google")

@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom"
+import { Navigate, Outlet, Route, Routes } from "react-router-dom"
 import Footer from "./components/footer/Footer"
 import Header from "./components/header/Header"
 import Inicio from "./components/Inicio/Inicio"
@@ -12,16 +12,21 @@ import Nivel from "./components/Profile/Nivel"
 import VerifyPasscode from "./components/formsIni/VerifyPasscode"
 import SetNewPassword from "./components/formsIni/SetNewPassword"
 import Jugar from "./components/principales/Jugar"
+// import { AuthContext } from "./context/AuthContext"
+// import { useContext } from "react"
 
 function App() {
+
+  // const { isLoggedIn } = useContext(AuthContext)!;
+  
 
   return (
     <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
       <Header />
       <div className="container h-full max-w-[1200px] flex items-center justify-center mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
-        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Inicio />} />
+            {/* {!isLoggedIn?  */}
             <Route path="sesion/" element={<Outlet />}>
               <Route element={<Outlet />}>
                 <Route index element={<Navigate to="login" />} />
@@ -32,7 +37,7 @@ function App() {
                 <Route path="set-new-password" element={<SetNewPassword />} />
               </Route>
             </Route>
-            {}
+            {/* : */}
             <Route path="app/" element={<Outlet />}>
               <Route element={<Outlet />}>
                 <Route index element={<Navigate to="jugar" />} />
@@ -47,10 +52,10 @@ function App() {
                 </Route>
               </Route>
             </Route>
-            <Route path="/jugar" element={<Jugar />} />
-            {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+            {/* } */}
+            {/* <Route path="/jugar" element={<Jugar />} /> */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-        </BrowserRouter>
       </div>
       <Footer />
     </div>

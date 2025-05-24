@@ -25,18 +25,18 @@ async def create_club(data):
     created_club = club_collection.find_one({"_id": result.inserted_id})
 
     # Convertir ObjectId a string antes de retornarlo
-    if created_club:
-        created_club["_id"] = str(created_club["_id"])
+    # if created_club:
+    #     created_club["_id"] = str(created_club["_id"])
         
-        # Generar token de acceso JWT
-        access_token = create_access_token(
-            data={"sub": created_club["email"]}, user_type="club"
-        )
-        return {
-            "user": created_club,
-            "access_token": access_token,
-            "token_type": "bearer"
-        }
+    #     # Generar token de acceso JWT
+    #     access_token = create_access_token(
+    #         data={"sub": created_club["email"]}, user_type="club"
+    #     )
+    #     return {
+    #         "user": created_club,
+    #         "access_token": access_token,
+    #         "token_type": "bearer"
+    #     }
     
     return created_club
 
@@ -65,7 +65,7 @@ async def login_club_service(email: str, password: str):
 
     # Crear un token de acceso JWT
     access_token = create_access_token(
-        data={"sub": club.email}, user_type="club"
+        email=club.email, user_type="club"
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
