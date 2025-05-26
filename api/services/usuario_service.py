@@ -291,6 +291,20 @@ async def update_profile_picture_service(email: str, profile_picture_blob: bytes
             status_code=500, detail="Error al actualizar la foto de perfil.")
     return {"message": "Foto de perfil actualizada correctamente.", "profile_picture": profile_picture_base64}
 
+async def update_level_service(email: str, level: int):
+    user = await get_one_user(email)
+    if not user:
+        raise HTTPException(
+            status_code=404, detail="Usuario no encontrado.")
+    result = user_collection.update_one(
+        {"email": email},
+        {"$set": {"level": level}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=500, detail="Error al actualizar el nivel.")
+    return {"message": "Nivel actualizado correctamente."}
+
 # async def get_google_user(token: str):
 #     try:
 #         # Verificar el token de Google

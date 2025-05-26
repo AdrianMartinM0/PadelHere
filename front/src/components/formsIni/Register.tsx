@@ -127,8 +127,7 @@ const Register = () => {
 
             if (data.token) {
                 login(data.token);
-                // localStorage.setItem("jwtToken", data.token);
-                navigate("/jugar");
+                navigate("/app" + (isClub ? "" : "/quiz"));
             }
         } catch (error) {
             let msg: string;

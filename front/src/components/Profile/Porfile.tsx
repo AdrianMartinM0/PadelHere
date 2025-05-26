@@ -193,7 +193,7 @@ const Porfile = () => {
               </div>
             ) : (
               <>
-              <p className="text-gray-600 max-w-130">{userData.desc? userData.desc : "Agrega una descripción a tu perfil para que otros jugadores te conozcan mejor.👌"}</p>
+              <p className="text-gray-600 max-w-130">{userData.desc? userData.desc : "Agrega una descripción a tu perfil para que te conozcan mejor.👌"}</p>
               <button
               className="group bg-blue-500 rounded-lg border-2 border-blue-500 hover:bg-transparent hover:rounded-full transition-all duration-500"
               onClick={handleEditDesc}

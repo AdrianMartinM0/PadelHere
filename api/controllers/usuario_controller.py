@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel, update_profile_picture_service, update_desc_service
+from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel, update_profile_picture_service, update_desc_service, update_level_service
 from ..database.models.usuario import User
 import re
 from pydantic import EmailStr
@@ -83,6 +83,11 @@ async def update_profile_picture_controller(email: str, profile_picture_blob: by
         raise HTTPException(status_code=400, detail="El usuario no existe")
     return await update_profile_picture_service(email, profile_picture_blob)
 
+async def update_level_controller(email: str, level: int):
+    user = await get_one_user(email)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    return await update_level_service(email, level)
 
 # async def google_login_controller(token):
 #     user_info = await get_google_user(token)

@@ -12,6 +12,7 @@ import Nivel from "./components/Profile/Nivel"
 import VerifyPasscode from "./components/formsIni/VerifyPasscode"
 import SetNewPassword from "./components/formsIni/SetNewPassword"
 import Jugar from "./components/principales/Jugar"
+import QuizLevel from "./components/formsIni/QuizLevel"
 // import { AuthContext } from "./context/AuthContext"
 // import { useContext } from "react"
 
@@ -39,6 +40,7 @@ function App() {
             </Route>
             {/* : */}
             <Route path="app/" element={<Outlet />}>
+              <Route path="quiz/" element={<QuizLevel/>} />
               <Route element={<Outlet />}>
                 <Route index element={<Navigate to="jugar" />} />
                 <Route path="jugar/" element={<Jugar />} />

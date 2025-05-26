@@ -58,6 +58,10 @@ async def update_profile_picture(email: EmailStr = Form(...), picture: UploadFil
     picture_bytes = await picture.read()
     return await usuario_controller.update_profile_picture_service(email, picture_bytes)
 
+@usu_router.post("/update-level")
+async def update_level(email: EmailStr = Form(...), level: int = Form(...)):
+    return await usuario_controller.update_level_controller(email, level)
+
 
 # # Router
 # @usu_router.get("/auth/google")
