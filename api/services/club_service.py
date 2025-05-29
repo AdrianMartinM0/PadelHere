@@ -41,7 +41,11 @@ async def create_club(data):
     return created_club
 
 async def get_one_club(email):
-    club = club_collection.find_one({"email": email})
+    clubs_collection = club_collection
+    club = clubs_collection.find_one({"email": email})
+    if club and "_id" in club:
+        club.pop("_id")
+        club.pop("password")  # Eliminar la contraseña del resultado
     return club
 
 async def get_one_club_by_tel(tel):

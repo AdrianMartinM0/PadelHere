@@ -42,3 +42,7 @@ async def change_password(request: ChangePasswordRequest):
     return await club_controller.change_password_service(
         request.email, request.passcode, request.new_password
     )
+
+@club_router.get("/club")
+async def get_club(email: EmailStr):
+    return await club_controller.get_one_club_controller(email)

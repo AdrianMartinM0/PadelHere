@@ -29,6 +29,13 @@ async def create_club_controller(club: Club):
     login_request = {"email": club.email, "password": club.password}
     return await login_controller(login_request)
 
+async def get_one_club_controller(email: EmailStr):
+    club = await get_one_club(email)
+    if not club:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return club
+
+
 async def login_controller(login_request):
     club = await login_club_service(login_request["email"], login_request["password"])
     if not club:
