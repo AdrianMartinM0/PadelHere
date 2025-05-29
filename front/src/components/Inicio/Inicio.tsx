@@ -13,7 +13,7 @@ const Inicio = () => {
     if (isLoggedIn) {
       navigate("/app", { replace: true });
     }
-  }, []);
+  }, [isLoggedIn]);
 
   return (
     <div className="h-[700px] min-w-full">

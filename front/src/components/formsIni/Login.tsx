@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import GoogleAuth from "../GoogleAuth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useFormField, validateEmail, validatePassword } from "../../hooks/useFormHooks";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
@@ -176,15 +176,15 @@ const Login = () => {
                 <div className="mt-6 flex flex-col gap-4">
                     <p className="text-center text-sm text-gray-600">
                         ¿No tienes una cuenta?{" "}
-                        <a href="/sesion/register" className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                        <Link to={"/sesion/register"} className="text-indigo-600 hover:text-indigo-500 font-semibold">
                             Regístrate
-                        </a>
+                        </Link>
                     </p>
                     <p className="text-center text-sm text-gray-600">
                         ¿Olvidaste tu contraseña?{" "}
-                        <a href="/sesion/recover" className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                        <Link to={"/sesion/recover"} className="text-indigo-600 hover:text-indigo-500 font-semibold">
                             Recuperar
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

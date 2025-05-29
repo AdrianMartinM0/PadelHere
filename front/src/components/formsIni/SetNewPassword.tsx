@@ -58,7 +58,7 @@ useEffect(() => {
             return;
         }
 
-        fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/changePassword`, {
+        fetch(`http://localhost:8000/v1/${isClub == 'true' ? "club" : "usuario"}/changePassword`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

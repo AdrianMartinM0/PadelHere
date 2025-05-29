@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useFormField, validateName, validateEmail, validatePhone, validatePassword, validateConfirmPassword } from "../../hooks/useFormHooks";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
@@ -422,9 +422,9 @@ const Register = () => {
                 <div className="mt-6 flex flex-col gap-4">
                     <p className="text-center text-sm text-gray-600">
                         ¿Ya tienes una cuenta?{" "}
-                        <a href="/sesion" className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                        <Link to={"/sesion"} className="text-indigo-600 hover:text-indigo-500 font-semibold">
                             Iniciar Sesión
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

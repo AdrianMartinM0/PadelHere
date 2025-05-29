@@ -13,12 +13,13 @@ import VerifyPasscode from "./components/formsIni/VerifyPasscode"
 import SetNewPassword from "./components/formsIni/SetNewPassword"
 import Jugar from "./components/principales/Jugar"
 import QuizLevel from "./components/formsIni/QuizLevel"
-// import { AuthContext } from "./context/AuthContext"
-// import { useContext } from "react"
+import { AuthContext } from "./context/AuthContext"
+import { useContext } from "react"
+import ClubProfile from "./components/Profile/ClubProfile"
 
 function App() {
 
-  // const { isLoggedIn } = useContext(AuthContext)!;
+  const { isLoggedIn, userType } = useContext(AuthContext)!;
   
 
   return (
@@ -27,7 +28,7 @@ function App() {
       <div className="container h-full max-w-[1200px] flex items-center justify-center mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
           <Routes>
             <Route path="/" element={<Inicio />} />
-            {/* {!isLoggedIn?  */}
+            {!isLoggedIn? 
             <Route path="sesion/" element={<Outlet />}>
               <Route element={<Outlet />}>
                 <Route index element={<Navigate to="login" />} />
@@ -38,12 +39,15 @@ function App() {
                 <Route path="set-new-password" element={<SetNewPassword />} />
               </Route>
             </Route>
-            {/* : */}
+            :
             <Route path="app/" element={<Outlet />}>
               <Route path="quiz/" element={<QuizLevel/>} />
               <Route element={<Outlet />}>
                 <Route index element={<Navigate to="jugar" />} />
                 <Route path="jugar/" element={<Jugar />} />
+                {userType === "club"?
+                <Route path="profile/" element={<ClubProfile />}/>
+                :
                 <Route path="profile/" element={<Porfile />}>
                   <Route element={<Outlet />}>
                     <Route index element={<Navigate to="partidos" />} />
@@ -52,9 +56,10 @@ function App() {
                     <Route path="nivel" element={<Nivel />} />
                   </Route>
                 </Route>
+                }
               </Route>
             </Route>
-            {/* } */}
+            }
             {/* <Route path="/jugar" element={<Jugar />} /> */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
