@@ -14,21 +14,26 @@ type Reserva = { day: string, from: number, to: number, name: string, phone: str
 export default function Pistas() {
   const [courts, setCourts] = useState(defaultCourts);
   const [selectedCourt, setSelectedCourt] = useState(courts[0].id);
+  const weekDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  const defaultDayConfig = { open: "08:00", close: "23:00", closed: false, hasBreak: true, break: { from: "14:00", to: "16:00" } };
+  // Cambia el estado inicial:
   const [globalConfig, setGlobalConfig] = useState({
-    open:"08:00", close:"23:00", hasBreak:true, break:{from:"14:00",to:"16:00"}
+    days: Object.fromEntries(weekDays.map(day => [day, { ...defaultDayConfig }])),
+    overrides: {} 
   });
-  const [courtConfigs, setCourtConfigs] = useState<{[courtId:string]: {trainings: Training[], reservas: Reserva[]}}>({
+
+  const [courtConfigs, setCourtConfigs] = useState<{ [courtId: string]: { trainings: Training[], reservas: Reserva[] } }>({
     c1: { trainings: [], reservas: [] },
     c2: { trainings: [], reservas: [] }
   });
 
   // Para reservas
-  const [modal, setModal] = useState<{show:boolean,day:string,from:number,to:number}>({show:false,day:"",from:0,to:0});
+  const [modal, setModal] = useState<{ show: boolean, day: string, from: number, to: number }>({ show: false, day: "", from: 0, to: 0 });
 
   function handleReserve(day: string, from: number, to: number) {
-    setModal({show:true, day, from, to});
+    setModal({ show: true, day, from, to });
   }
-  function confirmReserve(name:string,phone:string) {
+  function confirmReserve(name: string, phone: string) {
     setCourtConfigs(prev => {
       const prevCfg = prev[selectedCourt];
       const nuevasReservas = [...(prevCfg.reservas || []), { day: modal.day, from: modal.from, to: modal.to, name, phone }];
@@ -37,7 +42,7 @@ export default function Pistas() {
         [selectedCourt]: { ...prevCfg, reservas: nuevasReservas }
       };
     });
-    setModal({show:false, day:"", from:0, to:0});
+    setModal({ show: false, day: "", from: 0, to: 0 });
   }
 
   // Añadir pista
@@ -61,7 +66,7 @@ export default function Pistas() {
         court={courts.find(c => c.id === selectedCourt)}
         config={globalConfig}
         setConfig={setGlobalConfig}
-        trainings={courtConfigs[selectedCourt]?.trainings ?? []}
+        // trainings={courtConfigs[selectedCourt]?.trainings ?? []}
         setTrainings={trainings =>
           setCourtConfigs(prev => ({
             ...prev,
@@ -76,7 +81,7 @@ export default function Pistas() {
         day={modal.day}
         from={modal.from}
         to={modal.to}
-        onClose={()=>setModal({show:false, day:"", from:0, to:0})}
+        onClose={() => setModal({ show: false, day: "", from: 0, to: 0 })}
         onConfirm={confirmReserve}
       />
     </div>

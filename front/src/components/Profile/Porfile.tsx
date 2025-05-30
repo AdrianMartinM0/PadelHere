@@ -1,7 +1,7 @@
 import { useContext, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import DefaultAvatar from "./Club/DefaultAvatar";
+import DefaultAvatar from "./DefaultAvatar";
 
 const Porfile = () => {
   const location = useLocation();

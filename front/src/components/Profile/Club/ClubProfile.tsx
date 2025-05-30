@@ -4,7 +4,7 @@ import { useContext, useRef, useState } from "react"
 // import { Link, Outlet, useLocation } from "react-router-dom"
 import { AuthContext } from "../../../context/AuthContext"
 import { ExternalLink, MapPin, Phone } from "lucide-react"
-import DefaultAvatar from "./DefaultAvatar"
+import DefaultAvatar from "../DefaultAvatar"
 import Pistas from "./Pistas"
 
 const ClubProfile = () => {

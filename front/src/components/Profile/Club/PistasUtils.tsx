@@ -40,19 +40,37 @@ export function splitLibreReubicando(from: number, to: number) {
   return res;
 }
 
-export function getBlocks(cfg: any, day: string): Block[] {
+export function getNext14Days(): { label: string, date: string }[] {
+  const daysOfWeek = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+  const today = new Date();
+  let result = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const yyyy = d.getFullYear();
+    const mm = (d.getMonth()+1).toString().padStart(2, "0");
+    const dd = d.getDate().toString().padStart(2, "0");
+    result.push({
+      label: daysOfWeek[d.getDay()],
+      date: `${yyyy}-${mm}-${dd}`,
+    });
+  }
+  return result;
+}
+
+export function getBlocks(cfg: any, date: string): Block[] {
   const open = toMinutes(cfg.open);
   let close = toMinutes(cfg.close);
   if (close <= open) close += 24*60;
   let breakFrom = cfg.hasBreak && cfg.break?.from ? toMinutes(cfg.break.from) : null;
   let breakTo = cfg.hasBreak && cfg.break?.to ? toMinutes(cfg.break.to) : null;
   if (breakFrom !== null && breakTo !== null && breakTo <= breakFrom) breakTo += 24*60;
-  let entrenos = cfg.trainings.filter((t: any) => t.day === day).map((t: any) => {
+  let entrenos = (cfg.trainings || []).map((t: any) => {
     let from = toMinutes(t.from), to = from + t.duration;
     if (to <= from) to += 24*60;
-    return {from, to, type: "entrenamiento" as const};
+    return {from, to, type: "reserva" as const};
   });
-  let reservas = (cfg.reservas || []).filter((r: any) => r.day === day).map((r: any) => ({from: r.from, to: r.to, type: "reserva" as const}));
+  let reservas = (cfg.reservas || []).filter((r: any) => r.day === date).map((r: any) => ({from: r.from, to: r.to, type: "reserva" as const}));
   let blocks: {from:number, to:number, type:"libre"|"break"|"entrenamiento"|"reserva"}[] = [];
   if (cfg.hasBreak && breakFrom !== null && breakTo !== null)
     blocks.push({from: breakFrom, to: breakTo, type: "break"});
