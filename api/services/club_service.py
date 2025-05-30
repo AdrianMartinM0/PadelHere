@@ -205,3 +205,40 @@ async def update_profile_picture_service(email: str, profile_picture_blob: bytes
         raise HTTPException(
             status_code=500, detail="Error al actualizar la foto de perfil.")
     return {"message": "Foto de perfil actualizada correctamente.", "profile_picture": profile_picture_base64}
+
+async def get_club_config_by_id(club_id):
+    """Obtener la configuración general del club."""
+    club = club_collection.find_one({"_id": club_id})
+    if not club:
+        raise HTTPException(status_code=404, detail="Club no encontrado.")
+    config = club.get("config", {})
+    return config
+
+async def update_club_config_by_id(club_id, config_data: dict):
+    """Actualizar la configuración general del club."""
+    result = club_collection.update_one(
+        {"_id": club_id},
+        {"$set": {"config": config_data}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Club no encontrado o sin cambios.")
+    return {"message": "Configuración actualizada correctamente."}
+
+async def get_club_courts(club_id):
+    """Listar todas las pistas de un club."""
+    club = club_collection.find_one({"_id": club_id})
+    if not club:
+        raise HTTPException(status_code=404, detail="Club no encontrado.")
+    # Asume que el club tiene una lista de pistas en el campo 'pistas'
+    pistas = club.get("pistas", [])
+    return pistas
+
+async def add_court_to_club(club_id, court_data: dict):
+    """Agregar una nueva pista al club."""
+    result = club_collection.update_one(
+        {"_id": club_id},
+        {"$push": {"pistas": court_data}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Club no encontrado.")
+    return {"message": "Pista añadida correctamente."}

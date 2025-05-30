@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service
+from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_info_by_id, update_club_info_by_id, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club
 from ..database.models.club import Club
 import re
 from pydantic import EmailStr
@@ -73,3 +73,24 @@ async def update_profile_picture_controller(email: str, profile_picture_blob: by
     if not find_club:
         raise HTTPException(status_code=400, detail="El usuario no existe")
     return await update_profile_picture_service(email, profile_picture_blob)
+
+async def get_club_config_controller(club_id):
+    config = await get_club_config_by_id(club_id)
+    if config is None:
+        raise HTTPException(status_code=404, detail="Club no encontrado")
+    return config
+
+async def update_club_config_controller(club_id, config_data: dict):
+    config = await get_club_config_by_id(club_id)
+    if config is None:
+        raise HTTPException(status_code=404, detail="Club no encontrado")
+    return await update_club_config_by_id(club_id, config_data)
+
+async def get_club_courts_controller(club_id):
+    pistas = await get_club_courts(club_id)
+    if pistas is None:
+        raise HTTPException(status_code=404, detail="Club no encontrado")
+    return pistas
+
+async def add_court_to_club_controller(club_id, court_data: dict):
+    return await add_court_to_club(club_id, court_data)

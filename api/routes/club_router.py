@@ -55,3 +55,19 @@ async def update_desc(email: EmailStr = Form(...), desc: str = Form(...)):
 async def update_profile_picture(email: EmailStr = Form(...), picture: UploadFile = File(...)):
     picture_bytes = await picture.read()
     return await club_controller.update_profile_picture_service(email, picture_bytes)
+
+@club_router.get("/club/{club_id}/config")
+async def get_club_config(club_id: str):
+    return await club_controller.get_club_config_controller(club_id)
+
+@club_router.put("/club/{club_id}/config")
+async def update_club_config(club_id: str, config_data: dict):
+    return await club_controller.update_club_config_controller(club_id, config_data)
+
+@club_router.get("/club/{club_id}/pistas")
+async def get_club_courts(club_id: str):
+    return await club_controller.get_club_courts_controller(club_id)
+
+@club_router.post("/club/{club_id}/pistas")
+async def add_court_to_club(club_id: str, court_data: dict):
+    return await club_controller.add_court_to_club_controller(club_id, court_data)

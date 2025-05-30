@@ -2,8 +2,21 @@ from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
 import re
 import bcrypt
+from bson import ObjectId
+
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError("Invalid ObjectId")
+        return ObjectId(v)
 
 class User(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     email: EmailStr = Field(...)
     password: str = Field(...)
@@ -32,3 +45,8 @@ class User(BaseModel):
     def hash_password_static(password: str) -> str:
         """Hashea una contraseña sin requerir una instancia"""
         return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
