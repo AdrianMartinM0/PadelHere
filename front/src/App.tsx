@@ -15,7 +15,7 @@ import Jugar from "./components/principales/Jugar"
 import QuizLevel from "./components/formsIni/QuizLevel"
 import { AuthContext } from "./context/AuthContext"
 import { useContext } from "react"
-import ClubProfile from "./components/Profile/ClubProfile"
+import ClubProfile from "./components/Profile/Club/ClubProfile"
 
 function App() {
 

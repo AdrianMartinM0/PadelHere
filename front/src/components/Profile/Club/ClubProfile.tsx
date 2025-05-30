@@ -2,7 +2,7 @@ import type React from "react"
 
 import { useContext, useRef, useState } from "react"
 // import { Link, Outlet, useLocation } from "react-router-dom"
-import { AuthContext } from "../../context/AuthContext"
+import { AuthContext } from "../../../context/AuthContext"
 import { ExternalLink, MapPin, Phone } from "lucide-react"
 import DefaultAvatar from "./DefaultAvatar"
 import Pistas from "./Pistas"
@@ -116,10 +116,10 @@ const ClubProfile = () => {
         <div className="flex gap-12 items-center mb-4 w-1/2 mx-auto">
           <div className="relative">
             {getProfilePictureSrc() === "" ? (
-              <DefaultAvatar className="min-w-28 p-0 min-h-28 max-w-28 rounded-full" />
+              <DefaultAvatar className="w-28 p-0 h-28 rounded-full" />
             ) :
               <img
-                className="min-w-28 p-0 min-h-28 max-w-28 rounded-full object-cover"
+                className="w-28 h-28 rounded-full object-cover"
                 src={getProfilePictureSrc()}
                 alt="Logo del club"
               />
