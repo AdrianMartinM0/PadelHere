@@ -1,13 +1,11 @@
 from ..database.db import club_collection
-from ..database.models.club import Club  # Asegúrate de tener el modelo Club en models/club.py
+from ..database.models.club import Club
 from fastapi import HTTPException, status
 from datetime import timedelta
 from ..utils.token_utils import create_access_token
 import random
 from datetime import datetime
-from jwt import InvalidTokenError
-import jwt
-from api.config import SECRET_KEY, ALGORITHM
+import base64
 
 # Asume que club_collection es tu colección de clubes
 # y Club es tu modelo de datos para un club
@@ -23,20 +21,6 @@ async def create_club(data):
     club = club.model_dump()
     result = club_collection.insert_one(club)
     created_club = club_collection.find_one({"_id": result.inserted_id})
-
-    # Convertir ObjectId a string antes de retornarlo
-    # if created_club:
-    #     created_club["_id"] = str(created_club["_id"])
-        
-    #     # Generar token de acceso JWT
-    #     access_token = create_access_token(
-    #         data={"sub": created_club["email"]}, user_type="club"
-    #     )
-    #     return {
-    #         "user": created_club,
-    #         "access_token": access_token,
-    #         "token_type": "bearer"
-    #     }
     
     return created_club
 
@@ -188,3 +172,36 @@ async def change_password_service(email: str, passcode: str, new_password: str):
         raise HTTPException(status_code=500, detail="Error al actualizar la contraseña.")
 
     return {"message": "Contraseña actualizada correctamente."}
+
+
+async def update_desc_service(email: str, desc: str):
+    club = await get_one_club(email)
+    if not club:
+        raise HTTPException(
+            status_code=404, detail="Usuario no encontrado.")
+    result = club_collection.update_one(
+        {"email": email},
+        {"$set": {"desc": desc}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=500, detail="Error al actualizar la descripción.")
+    return {"message": "Descripción actualizada correctamente."}
+
+
+async def update_profile_picture_service(email: str, profile_picture_blob: bytes):
+    club = await get_one_club(email)
+    if not club:
+        raise HTTPException(
+            status_code=404, detail="Usuario no encontrado.")
+    # Convertir el blob a base64 para almacenarlo como string en MongoDB
+    profile_picture_base64 = base64.b64encode(
+        profile_picture_blob).decode('utf-8')
+    result = club_collection.update_one(
+        {"email": email},
+        {"$set": {"img_perfil": profile_picture_base64}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=500, detail="Error al actualizar la foto de perfil.")
+    return {"message": "Foto de perfil actualizada correctamente.", "profile_picture": profile_picture_base64}

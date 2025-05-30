@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, UploadFile, File, Form
 from ..controllers import club_controller
 from ..database.models.club import Club
 
@@ -46,3 +46,12 @@ async def change_password(request: ChangePasswordRequest):
 @club_router.get("/club")
 async def get_club(email: EmailStr):
     return await club_controller.get_one_club_controller(email)
+
+@club_router.post("/update-desc")
+async def update_desc(email: EmailStr = Form(...), desc: str = Form(...)):
+    return await club_controller.update_desc_controller(email, desc)
+
+@club_router.post("/update-profile-picture")
+async def update_profile_picture(email: EmailStr = Form(...), picture: UploadFile = File(...)):
+    picture_bytes = await picture.read()
+    return await club_controller.update_profile_picture_service(email, picture_bytes)

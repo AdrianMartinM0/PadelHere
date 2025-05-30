@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel
+from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service
 from ..database.models.club import Club
 import re
 from pydantic import EmailStr
@@ -61,3 +61,15 @@ async def change_password_controller(email: str, passcode: str, new_password: st
     if not find_club:
         raise HTTPException(status_code=400, detail="El club no existe")
     return await change_password_service(email, passcode, new_password)
+
+async def update_desc_controller(email: str, desc: str):
+    club = await get_one_club(email)
+    if not club:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    return await update_desc_service(email, desc)
+
+async def update_profile_picture_controller(email: str, profile_picture_blob: bytes):
+    find_club = await get_one_club(email)
+    if not find_club:
+        raise HTTPException(status_code=400, detail="El usuario no existe")
+    return await update_profile_picture_service(email, profile_picture_blob)

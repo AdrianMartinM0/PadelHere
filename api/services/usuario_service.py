@@ -33,18 +33,6 @@ async def create_user(data):
     result = users_collection.insert_one(user)
     created_user = users_collection.find_one({"_id": result.inserted_id})
 
-    # Convertir ObjectId a string antes de retornarlo
-    # if created_user:
-    #     created_user["_id"] = str(created_user["_id"])
-    #     # Generar token de acceso JWT
-    #     access_token = create_access_token(
-    #         data={"sub": created_user["email"]}, user_type="user", user_id=created_user["_id"]
-    #     )
-    #     return {
-    #         "user": created_user,
-    #         "access_token": access_token,
-    #         "token_type": "bearer"
-    #     }
     return created_user
 
 
