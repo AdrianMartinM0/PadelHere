@@ -11,20 +11,26 @@ const defaultCourts = [
 type Training = { day: string, from: string, duration: number };
 type Reserva = { day: string, from: number, to: number, name: string, phone: string };
 
+const weekDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const defaultDayConfig = { open: "08:00", close: "23:00", closed: false, hasBreak: true, break: { from: "14:00", to: "16:00" } };
+
+function makeDefaultConfig() {
+  return {
+    days: Object.fromEntries(weekDays.map(day => [day, { ...defaultDayConfig }])),
+    overrides: {},
+    trainings: [],
+    reservas: [],
+  };
+}
+
 export default function Pistas() {
   const [courts, setCourts] = useState(defaultCourts);
   const [selectedCourt, setSelectedCourt] = useState(courts[0].id);
-  const weekDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-  const defaultDayConfig = { open: "08:00", close: "23:00", closed: false, hasBreak: true, break: { from: "14:00", to: "16:00" } };
-  // Cambia el estado inicial:
-  const [globalConfig, setGlobalConfig] = useState({
-    days: Object.fromEntries(weekDays.map(day => [day, { ...defaultDayConfig }])),
-    overrides: {} 
-  });
 
-  const [courtConfigs, setCourtConfigs] = useState<{ [courtId: string]: { trainings: Training[], reservas: Reserva[] } }>({
-    c1: { trainings: [], reservas: [] },
-    c2: { trainings: [], reservas: [] }
+  // Cada pista tiene TODA su config
+  const [courtConfigs, setCourtConfigs] = useState<{ [courtId: string]: any }>({
+    c1: makeDefaultConfig(),
+    c2: makeDefaultConfig(),
   });
 
   // Para reservas
@@ -49,8 +55,16 @@ export default function Pistas() {
   function addCourt(name: string) {
     const newId = `c${courts.length + 1}`;
     setCourts(prev => [...prev, { id: newId, name, desc: "Nueva pista" }]);
-    setCourtConfigs(prev => ({ ...prev, [newId]: { trainings: [], reservas: [] } }));
+    setCourtConfigs(prev => ({ ...prev, [newId]: makeDefaultConfig() }));
     setSelectedCourt(newId);
+  }
+
+  // Cambiar trainings SOLO para la pista seleccionada
+  function setTrainingsForSelectedCourt(trainings: Training[]) {
+    setCourtConfigs(prev => ({
+      ...prev,
+      [selectedCourt]: { ...prev[selectedCourt], trainings }
+    }));
   }
 
   return (
@@ -64,15 +78,9 @@ export default function Pistas() {
       />
       <CourtPanel
         court={courts.find(c => c.id === selectedCourt)}
-        config={globalConfig}
-        setConfig={setGlobalConfig}
-        // trainings={courtConfigs[selectedCourt]?.trainings ?? []}
-        setTrainings={trainings =>
-          setCourtConfigs(prev => ({
-            ...prev,
-            [selectedCourt]: { ...prev[selectedCourt], trainings }
-          }))
-        }
+        config={courtConfigs[selectedCourt]}
+        setConfig={cfg => setCourtConfigs(prev => ({ ...prev, [selectedCourt]: cfg }))}
+        setTrainings={setTrainingsForSelectedCourt}
         reservas={courtConfigs[selectedCourt]?.reservas ?? []}
         onReserve={handleReserve}
       />
