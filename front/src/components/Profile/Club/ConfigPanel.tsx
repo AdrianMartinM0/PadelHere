@@ -1,4 +1,3 @@
-import { Trash2 } from "lucide-react";
 import { useState } from "react";
 
 // Tipos
@@ -22,15 +21,21 @@ type DayConfig = {
   trainings?: Training[];
 };
 
-type CourtConfig = {
-  days: {[day: string]: DayConfig;};
-  overrides?: { [date: string]: DayConfig };
-  trainings: (Training & { day: string })[];
+// Separamos la config global y la de pista
+type ConfigPanelProps = {
+  globalDays: { [day: string]: DayConfig };
+  setGlobalDays: (days: { [day: string]: DayConfig }) => void;
+  cfg: {
+    overrides?: { [date: string]: DayConfig };
+    trainings: (Training & { day: string })[];
+  };
+  setCfg: (c: { overrides?: { [date: string]: DayConfig }; trainings: (Training & { day: string })[] }) => void;
+  saveGlobalOverride?: (date: string, override: DayConfig) => void; // <-- FALTABA ESTA LÍNEA
 };
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
-function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfig) => void }) {
+function ConfigPanel({ globalDays, setGlobalDays, cfg, setCfg, saveGlobalOverride }: ConfigPanelProps) {
   const [newTraining, setNewTraining] = useState<Training & { day: string }>({ day: days[0], from: "10:00", duration: 60 });
 
   // Estado para nueva excepción (override)
@@ -46,18 +51,10 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
   // Estado para nuevo entrenamiento en override
   const [overrideNewTraining, setOverrideNewTraining] = useState<Training>({ from: "10:00", duration: 60 });
 
-  // Si seleccionas una excepción para editarla, cargar sus datos en el formulario:
-  const handleEditOverride = (date: string, conf: DayConfig) => {
-    setOverrideDate(date);
-    setOverrideConfig({
-      ...conf,
-      trainings: conf.trainings ? [...conf.trainings] : [],
-    });
-  };
-
   return (
     <div className="mb-4 p-4 bg-gray-50 rounded border">
-      <h2 className="font-semibold mb-2 text-lg">Configuración de apertura por día</h2>
+      {/* --- Configuración GLOBAL (tabla de días) --- */}
+      <h2 className="font-semibold mb-2 text-lg">Configuración de apertura por día (global para el club)</h2>
       <table className="mb-4 w-full text-sm">
         <thead>
           <tr>
@@ -75,24 +72,24 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
               <td>
                 <input
                   type="time"
-                  value={cfg.days[day].open}
-                  onChange={e => setCfg({
-                    ...cfg,
-                    days: { ...cfg.days, [day]: { ...cfg.days[day], open: e.target.value } }
+                  value={globalDays[day].open}
+                  onChange={e => setGlobalDays({
+                    ...globalDays,
+                    [day]: { ...globalDays[day], open: e.target.value }
                   })}
-                  disabled={cfg.days[day].closed}
+                  disabled={globalDays[day].closed}
                   className="border rounded px-2 py-1"
                 />
               </td>
               <td>
                 <input
                   type="time"
-                  value={cfg.days[day].close}
-                  onChange={e => setCfg({
-                    ...cfg,
-                    days: { ...cfg.days, [day]: { ...cfg.days[day], close: e.target.value } }
+                  value={globalDays[day].close}
+                  onChange={e => setGlobalDays({
+                    ...globalDays,
+                    [day]: { ...globalDays[day], close: e.target.value }
                   })}
-                  disabled={cfg.days[day].closed}
+                  disabled={globalDays[day].closed}
                   className="border rounded px-2 py-1"
                 />
               </td>
@@ -100,47 +97,41 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
                 <label>
                   <input
                     type="checkbox"
-                    checked={cfg.days[day].hasBreak}
-                    onChange={e => setCfg({
-                      ...cfg,
-                      days: { ...cfg.days, [day]: { ...cfg.days[day], hasBreak: e.target.checked } }
+                    checked={globalDays[day].hasBreak}
+                    onChange={e => setGlobalDays({
+                      ...globalDays,
+                      [day]: { ...globalDays[day], hasBreak: e.target.checked }
                     })}
-                    disabled={cfg.days[day].closed}
+                    disabled={globalDays[day].closed}
                   />{" "}
-                  {cfg.days[day].hasBreak && (
+                  {globalDays[day].hasBreak && (
                     <>
                       <input
                         type="time"
-                        value={cfg.days[day].break.from}
-                        onChange={e => setCfg({
-                          ...cfg,
-                          days: {
-                            ...cfg.days,
-                            [day]: {
-                              ...cfg.days[day],
-                              break: { ...cfg.days[day].break, from: e.target.value }
-                            }
+                        value={globalDays[day].break.from}
+                        onChange={e => setGlobalDays({
+                          ...globalDays,
+                          [day]: {
+                            ...globalDays[day],
+                            break: { ...globalDays[day].break, from: e.target.value }
                           }
                         })}
                         className="border rounded px-1 mx-1"
-                        disabled={cfg.days[day].closed}
+                        disabled={globalDays[day].closed}
                       />
                       -
                       <input
                         type="time"
-                        value={cfg.days[day].break.to}
-                        onChange={e => setCfg({
-                          ...cfg,
-                          days: {
-                            ...cfg.days,
-                            [day]: {
-                              ...cfg.days[day],
-                              break: { ...cfg.days[day].break, to: e.target.value }
-                            }
+                        value={globalDays[day].break.to}
+                        onChange={e => setGlobalDays({
+                          ...globalDays,
+                          [day]: {
+                            ...globalDays[day],
+                            break: { ...globalDays[day].break, to: e.target.value }
                           }
                         })}
                         className="border rounded px-1 mx-1"
-                        disabled={cfg.days[day].closed}
+                        disabled={globalDays[day].closed}
                       />
                     </>
                   )}
@@ -149,10 +140,10 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
               <td>
                 <input
                   type="checkbox"
-                  checked={cfg.days[day].closed}
-                  onChange={e => setCfg({
-                    ...cfg,
-                    days: { ...cfg.days, [day]: { ...cfg.days[day], closed: e.target.checked } }
+                  checked={globalDays[day].closed}
+                  onChange={e => setGlobalDays({
+                    ...globalDays,
+                    [day]: { ...globalDays[day], closed: e.target.checked }
                   })}
                 />
               </td>
@@ -162,9 +153,9 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
       </table>
 
       {/* --- Sección de excepciones (overrides) por fecha concreta --- */}
-      <hr className="my-4"/>
+      <hr className="my-4" />
       <div className="mb-2">
-        <span className="font-semibold">Excepciones por fecha concreta:</span>
+        <span className="font-semibold">Excepciones por fecha concreta (solo para esta pista):</span>
         <div className="flex gap-2 items-center my-2">
           <input type="date" value={overrideDate} onChange={e => setOverrideDate(e.target.value)} className="border rounded px-1" />
           <input type="time" value={overrideConfig.open} onChange={e => setOverrideConfig({ ...overrideConfig, open: e.target.value })} disabled={overrideConfig.closed} />
@@ -180,41 +171,41 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
             </>
           )}
           <label>
-            <input type="checkbox" checked={overrideConfig.closed} onChange={e => setOverrideConfig({ ...overrideConfig, closed: e.target.checked })}/>
+            <input type="checkbox" checked={overrideConfig.closed} onChange={e => setOverrideConfig({ ...overrideConfig, closed: e.target.checked })} />
             Cerrado
           </label>
         </div>
-       {/* Entrenamientos para la excepción */}
-<div className="flex items-center gap-4 mt-2 pl-4 border-l">
-  <span className="text-xs font-semibold whitespace-nowrap">Entrenamientos para esta fecha:</span>
-  <ul className="flex gap-2 flex-wrap mb-0">
-    {(overrideConfig.trainings || []).map((tr, i) => (
-      <li key={i} className="flex gap-2 items-center text-xs border px-2 rounded-xl bg-gray-100">
-        {tr.from} ({tr.duration} min)
-        <button type="button" className="text-red-500" onClick={() => {
-          setOverrideConfig({
-            ...overrideConfig,
-            trainings: (overrideConfig.trainings || []).filter((_, j) => i !== j)
-          });
-        }}>✕</button>
-      </li>
-    ))}
-  </ul>
-  <div className="flex gap-2 items-center">
-    <input type="time" value={overrideNewTraining.from} onChange={e => setOverrideNewTraining({ ...overrideNewTraining, from: e.target.value })} />
-    <input type="number" min={15} max={180} step={15} value={overrideNewTraining.duration}
-      onChange={e => setOverrideNewTraining({ ...overrideNewTraining, duration: +e.target.value })} className="w-16" />
-    <button type="button" className="bg-blue-600 text-white px-2 py-1 rounded"
-      onClick={() => {
-        setOverrideConfig({
-          ...overrideConfig,
-          trainings: [...(overrideConfig.trainings || []), { ...overrideNewTraining }]
-        });
-        setOverrideNewTraining({ from: "10:00", duration: 60 });
-      }}
-    >+ Añadir</button>
-  </div>
-</div>
+        {/* Entrenamientos para la excepción */}
+        <div className="flex items-center gap-4 mt-2 pl-4 border-l">
+          <span className="text-xs font-semibold whitespace-nowrap">Entrenamientos para esta fecha:</span>
+          <ul className="flex gap-2 flex-wrap mb-0">
+            {(overrideConfig.trainings || []).map((tr, i) => (
+              <li key={i} className="flex gap-2 items-center text-xs border px-2 rounded-xl bg-gray-100 ">
+                {tr.from} ({tr.duration} min)
+                <button type="button" className="text-red-500" onClick={() => {
+                  setOverrideConfig({
+                    ...overrideConfig,
+                    trainings: (overrideConfig.trainings || []).filter((_, j) => i !== j)
+                  });
+                }}>✕</button>
+              </li>
+            ))}
+          </ul>
+          <div className="flex gap-2 items-center">
+            <input type="time" value={overrideNewTraining.from} onChange={e => setOverrideNewTraining({ ...overrideNewTraining, from: e.target.value })} />
+            <input type="number" min={15} max={180} step={15} value={overrideNewTraining.duration}
+              onChange={e => setOverrideNewTraining({ ...overrideNewTraining, duration: +e.target.value })} className="w-16" />
+            <button type="button" className="bg-blue-600 text-white px-2 py-1 rounded"
+              onClick={() => {
+                setOverrideConfig({
+                  ...overrideConfig,
+                  trainings: [...(overrideConfig.trainings || []), { ...overrideNewTraining }]
+                });
+                setOverrideNewTraining({ from: "10:00", duration: 60 });
+              }}
+            >+ Añadir</button>
+          </div>
+        </div>
         <button
           onClick={() => {
             if (!overrideDate) return;
@@ -223,7 +214,8 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
               overrides: {
                 ...(cfg.overrides || {}),
                 [overrideDate]: { ...overrideConfig }
-              }
+              },
+              trainings: cfg.trainings // mantener entrenamientos
             });
             setOverrideDate("");
             setOverrideConfig({
@@ -237,25 +229,35 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
           }}
           className="bg-blue-600 text-white px-2 py-1 rounded mt-2"
         >Añadir / Actualizar</button>
-        {/* Lista de excepciones */}
-        <ul className="mb-2 flex gap-2 flex-wrap">
-          {Object.entries(cfg.overrides || {}).map(([date, conf]) =>
-            <li key={date} className="flex gap-3 items-center text-xs border px-2 rounded-xl">
-              {date}: {conf.closed ? <span className="text-red-500">Cerrado</span> : `${conf.open} - ${conf.close}`}
-              <button className="text-red-500" onClick={() => {
-                const { [date]: _, ...rest } = cfg.overrides || {};
-                setCfg({ ...cfg, overrides: rest });
-              }}><Trash2 className="w-4" /></button>
-              <button className="text-blue-600 underline" onClick={() => handleEditOverride(date, conf)}>
-                Editar
-              </button>
-            </li>
-          )}
-        </ul>
+        {overrideConfig.hasBreak || overrideConfig.closed? (
+          <button
+            type="button"
+            className="bg-blue-600 text-white px-2 py-1 rounded mt-2 ml-2"
+            onClick={() => {
+              if (!overrideDate) return;
+              if (saveGlobalOverride) {
+                saveGlobalOverride(overrideDate, overrideConfig);
+              }
+              setOverrideDate("");
+              setOverrideConfig({
+                open: "08:00",
+                close: "23:00",
+                closed: false,
+                hasBreak: false,
+                break: { from: "", to: "" },
+                trainings: [],
+              });
+            }}
+          >
+            Aplicar a todo el club (excepción global)
+          </button>
+
+        ) : null}
       </div>
 
+      {/* Entrenaminetos fijos por dia de la semana (solo para esta pista) */}
       <div className="mb-2">
-        <span className="font-semibold">Entrenamientos:</span>
+        <span className="font-semibold">Entrenamientos de esta pista:</span>
         <div className="flex gap-2 items-center mb-2">
           <select value={newTraining.day} onChange={e => setNewTraining({ ...newTraining, day: e.target.value })} className="border rounded px-1">
             {days.map((d: string) => <option key={d} value={d}>{d}</option>)}
@@ -269,7 +271,7 @@ function ConfigPanel({ cfg, setCfg }: { cfg: CourtConfig, setCfg: (c: CourtConfi
         </div>
         <ul className="mb-2 flex gap-2 flex-wrap">
           {cfg.trainings?.map((tr: Training & { day: string }, i: number) =>
-            <li key={i} className="flex gap-2 items-center text-xs">
+            <li key={i} className="flex gap-2 items-center text-xs border px-2 py-1 rounded-xl">
               {tr.day} {tr.from} ({tr.duration} min)
               <button type="button" className="text-red-500" onClick={() => {
                 setCfg({ ...cfg, trainings: cfg.trainings.filter((_: Training, j: number) => i !== j) });

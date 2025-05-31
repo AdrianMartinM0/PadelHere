@@ -9,6 +9,9 @@ async def get_pista_by_id(pista_id):
     pista = pista_collection.find_one({"_id": ObjectId(pista_id)})
     if not pista:
         raise HTTPException(status_code=404, detail="Pista no encontrada.")
+    pista['_id'] = str(pista['_id'])
+    if 'club_id' in pista and isinstance(pista['club_id'], ObjectId):
+        pista['club_id'] = str(pista['club_id'])
     return pista
 
 async def update_pista_by_id(pista_id, pista_data: dict):
@@ -42,7 +45,7 @@ async def update_pista_config_by_id(pista_id, config_data: dict):
     """Actualizar la configuración específica de una pista."""
     result = pista_collection.update_one(
         {"_id": ObjectId(pista_id)},
-        {"$set": {"config": config_data}}
+        {"$set": {"config": config_data["config"]}}
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Pista no encontrada o sin cambios.")
@@ -55,9 +58,13 @@ async def get_reservas_by_pista(pista_id, filtro: dict = None):
     query = {"pista_id": ObjectId(pista_id)}
     if filtro:
         query.update(filtro)
-    # Puedes usar una colección reservas, o si están embebidas, ajusta aquí
     from ..database.db import reserva_collection
     reservas = list(reserva_collection.find(query))
+    # Convertir _id y pista_id a str para cada reserva
+    for reserva in reservas:
+        reserva['_id'] = str(reserva['_id'])
+        if 'pista_id' in reserva and isinstance(reserva['pista_id'], ObjectId):
+            reserva['pista_id'] = str(reserva['pista_id'])
     return reservas
 
 async def create_reserva_for_pista(pista_id, reserva_data: dict):
@@ -66,6 +73,10 @@ async def create_reserva_for_pista(pista_id, reserva_data: dict):
     reserva_data["pista_id"] = ObjectId(pista_id)
     result = reserva_collection.insert_one(reserva_data)
     created = reserva_collection.find_one({"_id": result.inserted_id})
+    # Convertir _id y pista_id a str
+    created['_id'] = str(created['_id'])
+    if 'pista_id' in created and isinstance(created['pista_id'], ObjectId):
+        created['pista_id'] = str(created['pista_id'])
     return created
 
 async def get_reserva_detail(pista_id, reserva_id):
@@ -77,6 +88,9 @@ async def get_reserva_detail(pista_id, reserva_id):
     })
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva no encontrada.")
+    reserva['_id'] = str(reserva['_id'])
+    if 'pista_id' in reserva and isinstance(reserva['pista_id'], ObjectId):
+        reserva['pista_id'] = str(reserva['pista_id'])
     return reserva
 
 async def update_reserva_by_id(pista_id, reserva_id, reserva_data: dict):
@@ -107,10 +121,14 @@ async def get_pista_disponibilidad(pista_id, fecha: str = None):
     Consultar huecos libres de la pista para una fecha concreta (opcional).
     Implementa lógica de disponibilidad según tu modelo de reservas/configuración.
     """
-    # Ejemplo básico: devuelve todas las reservas de la fecha para que el front calcule los huecos.
     from ..database.db import reserva_collection
     query = {"pista_id": ObjectId(pista_id)}
     if fecha:
         query["fecha"] = fecha
     reservas = list(reserva_collection.find(query))
+    # Convertir _id y pista_id a str para cada reserva
+    for reserva in reservas:
+        reserva['_id'] = str(reserva['_id'])
+        if 'pista_id' in reserva and isinstance(reserva['pista_id'], ObjectId):
+            reserva['pista_id'] = str(reserva['pista_id'])
     return reservas

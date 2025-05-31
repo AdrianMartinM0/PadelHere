@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_info_by_id, update_club_info_by_id, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club
+from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club, update_club_courts, get_overrides, set_override_for_date, delete_override
 from ..database.models.club import Club
 import re
 from pydantic import EmailStr
@@ -94,3 +94,27 @@ async def get_club_courts_controller(club_id):
 
 async def add_court_to_club_controller(club_id, court_data: dict):
     return await add_court_to_club(club_id, court_data)
+
+async def update_club_courts_controller(club_id: str, data: dict):
+    result = await update_club_courts(club_id, data)
+    if not result:
+        raise HTTPException(status_code=404, detail="Club no encontrado o no actualizado")
+    return {"ok": True, "message": "Pistas actualizadas correctamente"}
+
+async def get_overrides_controller(club_id: str):
+    overrides = await get_overrides(club_id)
+    if overrides is None:
+        raise HTTPException(404, "Club no encontrado")
+    return overrides
+
+async def set_override_for_date_controller(club_id: str, date: str, override: dict):
+    ok = await set_override_for_date(club_id, date, override)
+    if not ok:
+        raise HTTPException(404, "Club no encontrado")
+    return {"message": f"Override para {date} actualizado correctamente."}
+
+async def delete_override_controller(club_id: str, date: str):
+    ok = await delete_override(club_id, date)
+    if not ok:
+        raise HTTPException(404, "Club no encontrado")
+    return {"message": f"Override para {date} eliminado correctamente."}

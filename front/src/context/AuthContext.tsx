@@ -10,6 +10,7 @@ interface UserData {
 }
 
 interface ClubData {
+  id: string
   name: string
   tel: number
   desc: string | null
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (userType === "club") {
         return {
+          id: data._id,
           name: data.name,
           tel: data.tel,
           desc: data.desc || null,

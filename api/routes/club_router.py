@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Body, Depends
 from ..controllers import club_controller
 from ..database.models.club import Club
 
@@ -56,18 +56,34 @@ async def update_profile_picture(email: EmailStr = Form(...), picture: UploadFil
     picture_bytes = await picture.read()
     return await club_controller.update_profile_picture_service(email, picture_bytes)
 
-@club_router.get("/club/{club_id}/config")
+@club_router.get("/{club_id}/config")
 async def get_club_config(club_id: str):
     return await club_controller.get_club_config_controller(club_id)
 
-@club_router.put("/club/{club_id}/config")
+@club_router.put("/{club_id}/config")
 async def update_club_config(club_id: str, config_data: dict):
     return await club_controller.update_club_config_controller(club_id, config_data)
 
-@club_router.get("/club/{club_id}/pistas")
+@club_router.get("/{club_id}/pistas")
 async def get_club_courts(club_id: str):
     return await club_controller.get_club_courts_controller(club_id)
 
-@club_router.post("/club/{club_id}/pistas")
+@club_router.post("/{club_id}/pistas")
 async def add_court_to_club(club_id: str, court_data: dict):
     return await club_controller.add_court_to_club_controller(club_id, court_data)
+
+@club_router.put("/{club_id}/pistas")
+async def update_club_courts(club_id: str, data: dict = Body(...)):
+    return await club_controller.update_club_courts_controller(club_id, data)
+
+@club_router.get("/{club_id}/overrides")
+async def get_overrides_route(club_id: str):
+    return await club_controller.get_overrides_controller(club_id)
+
+@club_router.put("/{club_id}/overrides/{date}")
+async def set_override_for_date_route(club_id: str, date: str, override: dict = Body(...)):
+    return await club_controller.set_override_for_date_controller(club_id, date, override)
+
+@club_router.delete("/{club_id}/overrides/{date}")
+async def delete_override_route(club_id: str, date: str):
+    return await club_controller.delete_override_controller(club_id, date)

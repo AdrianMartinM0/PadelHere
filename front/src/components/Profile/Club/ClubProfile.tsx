@@ -1,7 +1,5 @@
 import type React from "react"
-
 import { useContext, useRef, useState } from "react"
-// import { Link, Outlet, useLocation } from "react-router-dom"
 import { AuthContext } from "../../../context/AuthContext"
 import { ExternalLink, MapPin, Phone } from "lucide-react"
 import DefaultAvatar from "../DefaultAvatar"
@@ -10,7 +8,6 @@ import Pistas from "./Pistas"
 const ClubProfile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Usar el contexto para obtener los datos
   const { email, clubData, refreshUserData } = useContext(AuthContext)!
 
   const [imgPreview, setImgPreview] = useState<string | null>(null)
@@ -268,7 +265,7 @@ const ClubProfile = () => {
         </div>
 
         {/* Pistas */}
-          <Pistas/>
+          <Pistas clubId={clubData.id}/>
 
       </section>
     </main>

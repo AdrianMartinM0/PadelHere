@@ -10,3 +10,5 @@ db = MongoClient(uri)
 database = db.padel_here
 user_collection = database.get_collection("usuario")
 club_collection = database.get_collection("club")
+pista_collection = database.get_collection("pista")
+reserva_collection = database.get_collection("reserva")

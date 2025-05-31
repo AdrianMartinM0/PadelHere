@@ -1,14 +1,12 @@
-from ..database.db import club_collection
+from ..database.db import club_collection, pista_collection
 from ..database.models.club import Club
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from datetime import timedelta
 from ..utils.token_utils import create_access_token
 import random
 from datetime import datetime
 import base64
-
-# Asume que club_collection es tu colección de clubes
-# y Club es tu modelo de datos para un club
+from bson import ObjectId
 
 
 async def create_club(data):
@@ -21,15 +19,15 @@ async def create_club(data):
     club = club.model_dump()
     result = club_collection.insert_one(club)
     created_club = club_collection.find_one({"_id": result.inserted_id})
-    
+
     return created_club
 
 async def get_one_club(email):
     clubs_collection = club_collection
     club = clubs_collection.find_one({"email": email})
     if club and "_id" in club:
-        club.pop("_id")
-        club.pop("password")  # Eliminar la contraseña del resultado
+        club["_id"] = str(club["_id"])
+        club.pop("password")
     return club
 
 async def get_one_club_by_tel(tel):
@@ -40,7 +38,7 @@ async def get_one_club_by_tel(tel):
 async def login_club_service(email: str, password: str):
     # Buscar el club en la base de datos por email
     club_data = club_collection.find_one({"email": email})
-    
+
     if not club_data:
         raise HTTPException(status_code=400, detail="Email o contraseña incorrectos.")
 
@@ -62,7 +60,7 @@ async def recover_pass_service(email: str):
     club = await get_one_club(email)
     if not club:
         raise HTTPException(status_code=404, detail="Club no encontrado.")
-    
+
     # Verificar si ya existe un recovery_code y si aún es válido
     expiration_time_str = club.get("recovery_expiration")
     if expiration_time_str:
@@ -83,7 +81,7 @@ async def recover_pass_service(email: str):
     # Generar un nuevo código de recuperación
     num = random.randint(100000, 999999)  # Código de recuperación
     expiration_time = datetime.now(current_time.tzinfo) + timedelta(minutes=30)  # 30 minutos de validez
-    
+
     name = club.get("name")
     result = club_collection.update_one(
         {"email": email},
@@ -94,10 +92,10 @@ async def recover_pass_service(email: str):
             }
         }
     )
-    
+
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Club no encontrado.")
-    
+
     return {
         'passcode': num,
         'name': name
@@ -126,7 +124,7 @@ async def get_passcode_recover(email: str):
     # Comprobar si la diferencia entre el tiempo actual y el timeout es mayor a 30 minutos
     if current_time > timeout_datetime:
         raise Exception("El código de recuperación ha expirado.")
-    
+
     return {"passcode": passcode}
 
 async def change_password_service(email: str, passcode: str, new_password: str):
@@ -208,7 +206,11 @@ async def update_profile_picture_service(email: str, profile_picture_blob: bytes
 
 async def get_club_config_by_id(club_id):
     """Obtener la configuración general del club."""
-    club = club_collection.find_one({"_id": club_id})
+    try:
+        club_oid = ObjectId(club_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de club no válido.")
+    club = club_collection.find_one({"_id": club_oid})
     if not club:
         raise HTTPException(status_code=404, detail="Club no encontrado.")
     config = club.get("config", {})
@@ -216,8 +218,12 @@ async def get_club_config_by_id(club_id):
 
 async def update_club_config_by_id(club_id, config_data: dict):
     """Actualizar la configuración general del club."""
+    try:
+        club_oid = ObjectId(club_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de club no válido.")
     result = club_collection.update_one(
-        {"_id": club_id},
+        {"_id": club_oid},
         {"$set": {"config": config_data}}
     )
     if result.matched_count == 0:
@@ -225,20 +231,57 @@ async def update_club_config_by_id(club_id, config_data: dict):
     return {"message": "Configuración actualizada correctamente."}
 
 async def get_club_courts(club_id):
-    """Listar todas las pistas de un club."""
-    club = club_collection.find_one({"_id": club_id})
-    if not club:
-        raise HTTPException(status_code=404, detail="Club no encontrado.")
-    # Asume que el club tiene una lista de pistas en el campo 'pistas'
-    pistas = club.get("pistas", [])
-    return pistas
+    """Listar todas las pistas de un club (colección separada)."""
+    # No hace falta validar ObjectId si club_id es string puro en la colección de pistas
+    pistas = list(pista_collection.find({"club_id": club_id}))
+    for pista in pistas:
+        pista["id"] = str(pista["_id"])
+        pista.pop("_id", None)  # Elimina _id para no duplicar
+    return {
+        "courts": pistas
+    }
 
 async def add_court_to_club(club_id, court_data: dict):
-    """Agregar una nueva pista al club."""
+    """Agregar una nueva pista al club (colección separada)."""
+    try:
+        club_oid = ObjectId(club_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de club no válido.")
+    pista = court_data.copy()
+    pista["club_id"] = str(club_oid)
+    result = pista_collection.insert_one(pista)
+    return {
+        "message": "Pista añadida correctamente.",
+        "pista_id": str(result.inserted_id)
+    }
+
+async def update_club_courts(club_id: str, data: dict):
+    """
+    Actualiza el array courts del club (si quieres mantenerlo en club, pero no configs).
+    data = { courts: [...] }
+    """
     result = club_collection.update_one(
-        {"_id": club_id},
-        {"$push": {"pistas": court_data}}
+        {"_id": ObjectId(club_id)},
+        {"$set": {
+            "courts": data.get("courts", [])
+        }}
     )
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Club no encontrado.")
-    return {"message": "Pista añadida correctamente."}
+    return result.modified_count > 0
+
+async def get_overrides(club_id: str):
+    club = club_collection.find_one({"_id": ObjectId(club_id)})
+    return club.get("overrides", {}) if club else {}
+
+async def set_override_for_date(club_id: str, date: str, override: dict):
+    result = club_collection.update_one(
+        {"_id": ObjectId(club_id)},
+        {"$set": {f"overrides.{date}": override}}
+    )
+    return result.matched_count > 0
+
+async def delete_override(club_id: str, date: str):
+    result = club_collection.update_one(
+        {"_id": ObjectId(club_id)},
+        {"$unset": {f"overrides.{date}": ""}}
+    )
+    return result.matched_count > 0

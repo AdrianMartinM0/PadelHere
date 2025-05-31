@@ -1,10 +1,16 @@
+import { toTimeStr } from "./PistasUtils";
 
-function pad(n: number) { return n.toString().padStart(2, "0"); }
-function toTimeStr(m: number) { const x = m % (24*60); return `${pad(Math.floor(x/60))}:${pad(x%60)}`; }
-
-
-// Slot visual adaptativo y reservable
-function SlotBlock({from,to,type,onReserve,disabled,reservable}:{from:number,to:number,type:"libre"|"break"|"entrenamiento"|"reserva"|"noreservable",onReserve?:()=>void,disabled?:boolean,reservable?:boolean}) {
+function SlotBlock({
+  from, to, type, onReserve, disabled, reservable, onClick
+}:{
+  from: number,
+  to: number,
+  type: "libre"|"break"|"entrenamiento"|"reserva"|"noreservable",
+  onReserve?: () => void,
+  disabled?: boolean,
+  reservable?: boolean,
+  onClick?: () => void 
+}) {
   // 45px por cada 30min
   const width = ((to-from)/30)*45;
   let bg = "bg-green-500";
@@ -20,12 +26,11 @@ function SlotBlock({from,to,type,onReserve,disabled,reservable}:{from:number,to:
       className={`h-10 rounded ${bg} text-xs text-white font-medium flex items-center justify-center focus:outline-none ${clickable ? "hover:bg-green-600" : ""}`}
       style={{minWidth:width, maxWidth:width, marginRight:2, cursor: clickable ? "pointer" : "default", opacity: disabled ? 0.5 : 1}}
       title={label}
-      disabled={!clickable}
-      onClick={clickable ? onReserve : undefined}
+      disabled={type==="libre" ? !clickable : false}
+      onClick={onClick ? onClick : clickable ? onReserve : undefined}
     >
       {toTimeStr(from)}-{toTimeStr(to)}
     </button>
   );
 }
-
 export default SlotBlock;
