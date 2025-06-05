@@ -2,6 +2,7 @@
 from fastapi import FastAPI, APIRouter
 from .routes import api_router
 from fastapi.middleware.cors import CORSMiddleware
+from .websockets import reservas_ws, partido_ws, chat_ws
 
 app = FastAPI()
 
@@ -17,23 +18,9 @@ router = APIRouter()
 
 app.include_router(api_router.router, prefix='/v1')
 
-# Arrancar server: fastapi dev main.py
+# Incluye routers de WebSocket
+app.include_router(reservas_ws.router)
+app.include_router(partido_ws.router)
+app.include_router(chat_ws.router)
 
-# IMPORTANTEEEEEEE
-# Para los Pagos usamos Redsys, eliminamos datos de cuenta bancarai de la BBDD
-# Creamos una tabla de pagos que almacene {
-#   "_id": ObjectId("6608a8f5c5a1b77f7d3e7a01"),
-#   "reserva_id": ObjectId("66089bcd234567890abcdef1"),
-#   "usuario_id": ObjectId("66089abc1234567890def123"),
-#   "id_transaccion": "TXN123456",
-#   "estado_pago": "Aprobado",
-#   "metodo_pago": "Online",
-#   "ultimos_4": "1234",
-#   "monto": 50.00,
-#   "fecha_pago": ISODate("2025-03-31T12:00:00Z")
-#   "evento_id": ObjectId("66089def34567890abcdef12")
-# }
-# En canso de pago presencial se quedan vacios los campos de:
-#   "id_transaccion": "TXN123456",
-#   "estado_pago": "Aprobado",
-#   "ultimos_4": "1234",
+# Arrancar server: fastapi run main.py

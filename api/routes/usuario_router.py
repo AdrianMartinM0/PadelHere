@@ -1,10 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Depends
 from ..controllers import usuario_controller
 from ..database.models.usuario import User
-
 from pydantic import EmailStr, BaseModel
 from fastapi.security import OAuth2AuthorizationCodeBearer, OAuth2PasswordBearer
-# from ..services.usuario_service import get_google_user
 
 usu_router = APIRouter()
 
@@ -14,6 +12,9 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
 )
 
 oauth2_scheme_password = OAuth2PasswordBearer(tokenUrl="token")
+
+class GoogleLoginRequest(BaseModel):
+    token: str
 
 @usu_router.post("/login")
 async def login_user(login_request: dict):
@@ -62,9 +63,18 @@ async def update_profile_picture(email: EmailStr = Form(...), picture: UploadFil
 async def update_level(email: EmailStr = Form(...), level: int = Form(...)):
     return await usuario_controller.update_level_controller(email, level)
 
+@usu_router.put("/{user_id}/reservas/{reserva_id}")
+async def add_reserva_id_route(user_id: str, reserva_id: str):
+    return await usuario_controller.add_reserva_to_user_controller(user_id, reserva_id)
 
-# # Router
-# @usu_router.get("/auth/google")
-# async def google_login(token: str = Depends(oauth2_scheme)):
-#     return await usuario_controller.google_login_controller(token)
+@usu_router.get("/{user_id}")
+async def get_user_by_id(user_id: str):
+    return await usuario_controller.get_user_by_id_controller(user_id)
 
+@usu_router.post("/auth/google")
+async def google_login(data: GoogleLoginRequest):
+    return await usuario_controller.google_login_controller(data.token)
+
+@usu_router.delete("/{user_id}")
+async def delete_user(user_id: str):
+    return await usuario_controller.delete_user_controller(user_id)

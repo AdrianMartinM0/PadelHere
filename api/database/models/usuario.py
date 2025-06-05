@@ -10,35 +10,40 @@ class PyObjectId(ObjectId):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v, info=None):  # <-- Añadido info para compatibilidad pydantic v2
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
-        return ObjectId(v)
+        return ObjectId(str(v))
 
 class User(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     email: EmailStr = Field(...)
-    password: str = Field(...)
+    password: Optional[str] = Field(default=None)  # <-- Ahora es opcional y por defecto None
     tel: Optional[int] = None
     img_perfil: Optional[bytes] = None
     desc: Optional[str] = None
     level: float = Field(default=0)
+    reservas: Optional[list] = Field(default_factory=list)
 
     @field_validator("password")
     @classmethod
-    def validate_password(cls, value: str) -> str:
+    def validate_password(cls, value: Optional[str]) -> Optional[str]:
         """ Valida que la contraseña tenga al menos una mayúscula, un número y un carácter especial """
-        if not (re.search(r"[A-Z]", value) and re.search(r"\d", value) and re.search(r"[!@#$%^&*(),.?\":{}|<>]", value)):
-            raise ValueError("La contraseña debe contener al menos una letra mayúscula, un número y un carácter especial.")
+        # Solo valida si existe (no para usuarios OAuth)
+        if value is not None:
+            if not (re.search(r"[A-Z]", value) and re.search(r"\d", value) and re.search(r"[!@#$%^&*(),.?\":{}|<>]", value)):
+                raise ValueError("La contraseña debe contener al menos una letra mayúscula, un número y un carácter especial.")
         return value
 
     def hash_password(self):
         """ Hashea la contraseña antes de almacenarla """
-        self.password = bcrypt.hashpw(self.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        if self.password is not None:
+            self.password = bcrypt.hashpw(self.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     def verify_password(self, plain_password: str) -> bool:
         """ Verifica si la contraseña proporcionada coincide con el hash almacenado """
+        if self.password is None:
+            return False
         return bcrypt.checkpw(plain_password.encode('utf-8'), self.password.encode('utf-8'))
     
     @staticmethod

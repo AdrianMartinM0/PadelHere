@@ -16,53 +16,69 @@ import QuizLevel from "./components/formsIni/QuizLevel"
 import { AuthContext } from "./context/AuthContext"
 import { useContext } from "react"
 import ClubProfile from "./components/Profile/Club/ClubProfile"
+import Clubs from "./components/principales/Clubs"
+import ClubView from "./components/principales/ClubView"
+import Reservas from "./components/principales/Reservas"
+import UsuView from "./components/principales/UsuView"
+import MisPartidos from "./components/principales/MisPartidos"
+import ReservasClub from "./components/principales/ReservasClub"
+import { ChatPanel } from "./components/principales/ChatPanel"
 
 function App() {
 
   const { isLoggedIn, userType } = useContext(AuthContext)!;
-  
+
 
   return (
     <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
       <Header />
       <div className="container h-full max-w-[1200px] flex items-center justify-center mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
-          <Routes>
-            <Route path="/" element={<Inicio />} />
-            {!isLoggedIn? 
-            <Route path="sesion/" element={<Outlet />}>
-              <Route element={<Outlet />}>
-                <Route index element={<Navigate to="login" />} />
-                <Route path="login" element={<Login />} />
-                <Route path="register" element={<Register />} />
-                <Route path="recover" element={<Recover />} />
-                <Route path="verify-passcode" element={<VerifyPasscode />} />
-                <Route path="set-new-password" element={<SetNewPassword />} />
-              </Route>
-            </Route>
-            :
-            <Route path="app/" element={<Outlet />}>
-              <Route path="quiz/" element={<QuizLevel/>} />
-              <Route element={<Outlet />}>
-                <Route index element={<Navigate to="jugar" />} />
-                <Route path="jugar/" element={<Jugar />} />
-                {userType === "club"?
-                <Route path="profile/" element={<ClubProfile />}/>
-                :
-                <Route path="profile/" element={<Porfile />}>
-                  <Route element={<Outlet />}>
-                    <Route index element={<Navigate to="partidos" />} />
-                    <Route path="partidos" element={<Partidos />} />
-                    <Route path="logros" element={<Logros />} />
-                    <Route path="nivel" element={<Nivel />} />
-                  </Route>
+        <Routes>
+          <Route path="/" element={<Outlet />} >
+            <Route index element={!isLoggedIn? <Inicio /> : <Navigate to="app/"/>} />
+            {!isLoggedIn ?
+              <Route path="sesion/" element={<Outlet />}>
+                <Route element={<Outlet />}>
+                  <Route index element={<Navigate to="login" />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="register" element={<Register />} />
+                  <Route path="recover" element={<Recover />} />
+                  <Route path="verify-passcode" element={<VerifyPasscode />} />
+                  <Route path="set-new-password" element={<SetNewPassword />} />
                 </Route>
-                }
               </Route>
-            </Route>
+              :
+              <Route path="app/" element={<Outlet />}>
+                <Route path="quiz/" element={<QuizLevel />} />
+                <Route element={<Outlet />}>
+                  <Route index element={userType === 'club' ? <Navigate to="profile" /> : <Navigate to="jugar" />} />
+                  <Route path="clubs/" element={<Clubs />} />
+                  <Route path="club/:club_id" element={<ClubView />} />
+                  <Route path="usuario/:usu_id" element={<UsuView />} />
+                  <Route path="chats/:chat_id?" element={<ChatPanel />} />
+                  {userType !== 'club' ?
+                    <Route path="jugar/" element={<Jugar />} /> : null
+                  }
+                  {userType !== 'club' ?
+                    <Route path="reservas/" element={<Reservas />} /> : null
+                  }
+                  {userType !== 'club' ?
+                    <Route path="mis-partidos/" element={<MisPartidos />} /> : null
+                  }
+                  {userType === "club" ?
+                    <>
+                      <Route path="profile/" element={<ClubProfile />} />
+                      <Route path="club-reservas/" element={<ReservasClub />} />
+                    </>
+                    :
+                    <Route path="profile/" element={<Porfile />} />
+                  }
+                </Route>
+              </Route>
             }
-            {/* <Route path="/jugar" element={<Jugar />} /> */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
       <Footer />
     </div>

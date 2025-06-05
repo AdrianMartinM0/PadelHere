@@ -4,8 +4,9 @@ import TimeRuler from "./TimeRuler";
 import DayRow from "./DayRow";
 import { toMinutes, toTimeStr } from "./PistasUtils";
 import { getNext14Days } from "./PistasUtils";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Trash2 } from "lucide-react";
+import { AuthContext } from "../../../context/AuthContext";
 
 const weekDays = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -27,6 +28,8 @@ type Training = {
 type CourtConfig = {
   overrides?: { [date: string]: DayConfig };
   trainings: Training[];
+  pistaPricePerPerson?: number;
+  pricePerPerson?: number; // Añadido para soportar ambos nombres
 };
 
 export default function CourtPanel({
@@ -96,54 +99,76 @@ export default function CourtPanel({
   const allOverrides: { [date: string]: { conf: DayConfig; type: "pista" | "global" } } = {
     ...(globalOverrides
       ? Object.fromEntries(
-          Object.entries(globalOverrides).map(([date, conf]) => [date, { conf, type: "global" as const }])
-        )
+        Object.entries(globalOverrides).map(([date, conf]) => [date, { conf, type: "global" as const }])
+      )
       : {}),
     ...(config.overrides
       ? Object.fromEntries(
-          Object.entries(config.overrides).map(([date, conf]) => [date, { conf, type: "pista" as const }])
-        )
+        Object.entries(config.overrides).map(([date, conf]) => [date, { conf, type: "pista" as const }])
+      )
       : {}),
   };
+  const { userType } = useContext(AuthContext)!;
+
+  // ----------- MOSTRAR PRECIO POR PERSONA PARA EL USUARIO (Fuera de ConfigPanel) -----------
+  // Ahora soporta ambos nombres de campo
+  const pistaPrice = config.pricePerPerson ?? config.pistaPricePerPerson;
+  // -----------------------------------------------------------------------------------------
 
   return (
     <>
       <p className="mb-6 text-sm text-gray-600">{court.desc}</p>
-      <ConfigPanel
-        globalDays={globalDays}
-        setGlobalDays={setGlobalDays}
-        cfg={config}
-        setCfg={setConfig}
-        saveGlobalOverride={saveGlobalOverride}
-      />
+
+      {/* Mostrar precio SOLO si está definido y fuera del panel de configuración */}
+      <div className="mb-6">
+        <span className="inline-block px-4 py-2 rounded bg-blue-50 border border-blue-300 text-blue-700 font-semibold">
+          Precio por persona:{" "}
+          <span className="font-bold">
+            {typeof pistaPrice === "number" && !isNaN(pistaPrice)
+              ? `${pistaPrice}€`
+              : "Por definir"}
+          </span>
+        </span>
+      </div>
+
+      {userType === "club" && (
+        <ConfigPanel
+          globalDays={globalDays}
+          setGlobalDays={setGlobalDays}
+          cfg={config}
+          setCfg={setConfig}
+          saveGlobalOverride={saveGlobalOverride}
+        />)}
       <Legend />
 
       {/* Lista de excepciones combinando globales y pista */}
-      <div className="mb-6">
-        <span className="font-semibold">Excepciones activas por fecha (verde = global, azul = solo esta pista):</span>
-        <ul className="mb-2 flex gap-2 mt-2 flex-wrap">
-          {Object.entries(allOverrides)
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([date, { conf, type }]) =>
-            <li key={date} className={`flex gap-3 items-center text-xs border px-2 rounded-xl ${type === "global" ? "border-green-400 bg-green-50" : "border-blue-400 bg-blue-50"}`}>
-              {date}: {conf.closed ? <span className="text-red-500">Cerrado</span> : `${conf.open} - ${conf.close}`}
-              <span className={type === "global" ? "text-green-600 font-bold" : "text-blue-600 font-bold"}>{type === "global" ? "Global" : "Pista"}</span>
-              {type === "pista" && (
-                <>
-                  <button className="text-red-500" onClick={() => {
-                    const { [date]: _, ...rest } = config.overrides || {};
-                    setConfig({ ...config, overrides: rest, trainings: config.trainings });
-                  }} title="Eliminar excepción de pista"><Trash2 className="w-4" /></button>
-                  {/* Botón editar excepción de pista*/}
-                </>
+      {userType === "club" && (
+        <div className="mb-6">
+          <span className="font-semibold">Excepciones activas por fecha (verde = global, azul = solo esta pista):</span>
+          <ul className="mb-2 flex gap-2 mt-2 flex-wrap">
+            {Object.entries(allOverrides)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([date, { conf, type }]) =>
+                <li key={date} className={`flex gap-3 items-center text-xs border px-2 rounded-xl ${type === "global" ? "border-green-400 bg-green-50" : "border-blue-400 bg-blue-50"}`}>
+                  {date}: {conf.closed ? <span className="text-red-500">Cerrado</span> : `${conf.open} - ${conf.close}`}
+                  <span className={type === "global" ? "text-green-600 font-bold" : "text-blue-600 font-bold"}>{type === "global" ? "Global" : "Pista"}</span>
+                  {type === "pista" && (
+                    <>
+                      <button className="text-red-500" onClick={() => {
+                        const { [date]: _, ...rest } = config.overrides || {};
+                        setConfig({ ...config, overrides: rest, trainings: config.trainings });
+                      }} title="Eliminar excepción de pista"><Trash2 className="w-4" /></button>
+                      {/* Botón editar excepción de pista*/}
+                    </>
+                  )}
+                  {type === "global" && deleteGlobalOverride && (
+                    <button className="text-red-500" onClick={() => deleteGlobalOverride(date)} title="Eliminar excepción global"><Trash2 className="w-4" /></button>
+                  )}
+                </li>
               )}
-              {type === "global" && deleteGlobalOverride && (
-                <button className="text-red-500" onClick={() => deleteGlobalOverride(date)} title="Eliminar excepción global"><Trash2 className="w-4" /></button>
-              )}
-            </li>
-          )}
-        </ul>
-      </div>
+          </ul>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mb-2 px-2">
         <button

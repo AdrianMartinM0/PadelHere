@@ -1,4 +1,4 @@
-from ..database.db import club_collection, pista_collection
+from ..database.db import club_collection, pista_collection, reserva_collection
 from ..database.models.club import Club
 from fastapi import HTTPException
 from datetime import timedelta
@@ -7,6 +7,7 @@ import random
 from datetime import datetime
 import base64
 from bson import ObjectId
+from ..websockets.reservas_ws import notify_new_reserva
 
 
 async def create_club(data):
@@ -228,19 +229,42 @@ async def update_club_config_by_id(club_id, config_data: dict):
     )
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Club no encontrado o sin cambios.")
+    
+    await notify_new_reserva(club_id)
     return {"message": "Configuración actualizada correctamente."}
 
 async def get_club_courts(club_id):
-    """Listar todas las pistas de un club (colección separada)."""
-    # No hace falta validar ObjectId si club_id es string puro en la colección de pistas
+    """Listar todas las pistas de un club y popular reservas."""
     pistas = list(pista_collection.find({"club_id": club_id}))
     for pista in pistas:
         pista["id"] = str(pista["_id"])
         pista.pop("_id", None)  # Elimina _id para no duplicar
+
+        # --- POPULAR reservas ---
+        reservas_ids = pista.get("config", {}).get("reservas", [])
+        # Solo si hay reservas
+        if reservas_ids:
+            # Asegurarse de extraer el id string si reservas_ids contiene dicts
+            ids = [
+                rid["_id"] if isinstance(rid, dict) and "_id" in rid else rid
+                for rid in reservas_ids
+            ]
+            reservas_objs = list(reserva_collection.find({
+                "_id": {"$in": [ObjectId(rid) for rid in ids]}
+            }))
+            # Convierte los ObjectId a string
+            for reserva in reservas_objs:
+                reserva["_id"] = str(reserva["_id"])
+                if "pista_id" in reserva and isinstance(reserva["pista_id"], ObjectId):
+                    reserva["pista_id"] = str(reserva["pista_id"])
+                if "user_id" in reserva and isinstance(reserva["user_id"], ObjectId):
+                    reserva["user_id"] = str(reserva["user_id"])
+            pista["config"]["reservas"] = reservas_objs
+        else:
+            pista["config"]["reservas"] = []
     return {
         "courts": pistas
     }
-
 async def add_court_to_club(club_id, court_data: dict):
     """Agregar una nueva pista al club (colección separada)."""
     try:
@@ -266,6 +290,9 @@ async def update_club_courts(club_id: str, data: dict):
             "courts": data.get("courts", [])
         }}
     )
+    
+    await notify_new_reserva(club_id)
+    
     return result.modified_count > 0
 
 async def get_overrides(club_id: str):
@@ -277,6 +304,8 @@ async def set_override_for_date(club_id: str, date: str, override: dict):
         {"_id": ObjectId(club_id)},
         {"$set": {f"overrides.{date}": override}}
     )
+    
+    await notify_new_reserva(club_id)
     return result.matched_count > 0
 
 async def delete_override(club_id: str, date: str):
@@ -284,4 +313,25 @@ async def delete_override(club_id: str, date: str):
         {"_id": ObjectId(club_id)},
         {"$unset": {f"overrides.{date}": ""}}
     )
+    
+    await notify_new_reserva(club_id)
     return result.matched_count > 0
+
+async def get_all_clubs():
+    clubs = list(club_collection.find())
+    for club in clubs:
+        club["_id"] = str(club["_id"])
+        club.pop("password", None)  # Elimina la contraseña del resultado
+    return clubs
+
+async def get_one_club_by_id(club_id: str):
+    try:
+        club_oid = ObjectId(club_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de club no válido.")
+    club = club_collection.find_one({"_id": club_oid})
+    if not club:
+        raise HTTPException(status_code=404, detail="Club no encontrado.")
+    club["_id"] = str(club["_id"])
+    club.pop("password", None)
+    return club

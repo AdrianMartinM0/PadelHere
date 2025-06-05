@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 
 
 function pad(n: number) { return n.toString().padStart(2, "0"); }
@@ -6,8 +7,17 @@ function toTimeStr(m: number) { const x = m % (24*60); return `${pad(Math.floor(
 
 // PopUp de reserva
 function ReserveModal({show, from, to, day, onClose, onConfirm}:{show:boolean,from:number,to:number,day:string,onClose:()=>void,onConfirm:(name:string,phone:string)=>void}) {
+  const { userType, userData } = useContext(AuthContext)!;
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  
+  useEffect(() => {
+    if (userType && userType !== "club") {
+      setName(userData?.name || "");
+      setPhone(userData?.tel?.toString() || "");
+    }
+  }
+  , [userData, userType]);
   if (!show) return null;
   return (
     <div className="fixed inset-0 bg-[#0004] flex items-center justify-center z-50">
@@ -16,11 +26,11 @@ function ReserveModal({show, from, to, day, onClose, onConfirm}:{show:boolean,fr
         <p className="mb-2 text-sm">Horario: {toTimeStr(from)} - {toTimeStr(to)}</p>
         <div className="mb-3">
           <label className="block text-sm font-semibold">Nombre:</label>
-          <input className="border rounded px-2 py-1 w-full" value={name} onChange={e=>setName(e.target.value)} />
+          <input disabled={userType !== "club"} className="border rounded px-2 py-1 w-full" value={name} onChange={e=>setName(e.target.value)} />
         </div>
         <div className="mb-4">
           <label className="block text-sm font-semibold">Teléfono:</label>
-          <input className="border rounded px-2 py-1 w-full" value={phone} onChange={e=>setPhone(e.target.value)} />
+          <input disabled={!(userType === "club" || (userType === "usuario" && !userData?.tel))} className="border rounded px-2 py-1 w-full" value={phone} onChange={e=>setPhone(e.target.value)} />
         </div>
         <div className="flex justify-end gap-2">
           <button className="px-3 py-1 bg-gray-300 rounded" onClick={onClose}>Cancelar</button>

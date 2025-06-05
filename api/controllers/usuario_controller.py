@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel, update_profile_picture_service, update_desc_service, update_level_service
+from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel, update_profile_picture_service, update_desc_service, update_level_service, add_reserva_id_to_user, get_user_by_id, get_google_user, delete_user_service
 from ..database.models.usuario import User
 import re
 from pydantic import EmailStr
@@ -89,11 +89,29 @@ async def update_level_controller(email: str, level: int):
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
     return await update_level_service(email, level)
 
-# async def google_login_controller(token):
-#     user_info = await get_google_user(token)
-#     if not user_info:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Invalid or expired Google token"
-#         )
-#     return {"message": "Google login successful", "user": user_info}
+async def add_reserva_to_user_controller(user_id: str, reserva_id: str):
+    ok = await add_reserva_id_to_user(user_id, reserva_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado o reserva ya añadida")
+    return {"ok": True, "user_id": user_id, "reserva_id": reserva_id}
+
+async def get_user_by_id_controller(user_id: str):
+    user = await get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return user
+
+async def google_login_controller(token):
+    user_info = await get_google_user(token)
+    if not user_info:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired Google token"
+        )
+    return {"message": "Google login successful", "user": user_info}
+
+async def delete_user_controller(user_id: str):
+    user = await get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return await delete_user_service(user_id)

@@ -13,116 +13,116 @@ const questions: Question[] = [
     id: "experience",
     question: "¿Cuánto tiempo llevas jugando al pádel?",
     options: [
-      { text: "Menos de 6 meses", points: 20 },
-      { text: "6 meses - 1 año", points: 40 },
-      { text: "1-2 años", points: 70 },
-      { text: "2-5 años", points: 100 },
-      { text: "Más de 5 años", points: 130 },
+      { text: "Menos de 6 meses", points: 120 },
+      { text: "6 meses - 1 año", points: 272 },
+      { text: "1-2 años", points: 425 },
+      { text: "2-5 años", points: 627 },
+      { text: "Más de 5 años", points: 830 },
     ],
   },
   {
     id: "frequency",
     question: "¿Con qué frecuencia juegas?",
     options: [
-      { text: "Ocasionalmente (menos de 1 vez al mes)", points: 15 },
-      { text: "1-2 veces al mes", points: 30 },
-      { text: "1 vez por semana", points: 60 },
-      { text: "2-3 veces por semana", points: 90 },
-      { text: "Más de 3 veces por semana", points: 120 },
+      { text: "Ocasionalmente (menos de 1 vez al mes)", points: 120 },
+      { text: "1-2 veces al mes", points: 272 },
+      { text: "1 vez por semana", points: 425 },
+      { text: "2-3 veces por semana", points: 627 },
+      { text: "Más de 3 veces por semana", points: 830 },
     ],
   },
   {
     id: "forehand",
     question: "¿Cómo evalúas tu golpe de derecha?",
     options: [
-      { text: "Muy básico, a menudo fallo", points: 20 },
-      { text: "Básico pero consistente", points: 45 },
-      { text: "Bueno, con control de dirección", points: 70 },
-      { text: "Muy bueno, con potencia y precisión", points: 95 },
-      { text: "Excelente, puedo variar efectos", points: 115 },
+      { text: "Muy básico, a menudo fallo", points: 120 },
+      { text: "Básico pero consistente", points: 272 },
+      { text: "Bueno, con control de dirección", points: 425 },
+      { text: "Muy bueno, con potencia y precisión", points: 627 },
+      { text: "Excelente, puedo variar efectos", points: 830 },
     ],
   },
   {
     id: "backhand",
     question: "¿Cómo evalúas tu golpe de revés?",
     options: [
-      { text: "Muy básico, a menudo fallo", points: 20 },
-      { text: "Básico pero consistente", points: 45 },
-      { text: "Bueno, con control de dirección", points: 70 },
-      { text: "Muy bueno, con potencia y precisión", points: 95 },
-      { text: "Excelente, puedo variar efectos", points: 115 },
+      { text: "Muy básico, a menudo fallo", points: 120 },
+      { text: "Básico pero consistente", points: 272 },
+      { text: "Bueno, con control de dirección", points: 425 },
+      { text: "Muy bueno, con potencia y precisión", points: 627 },
+      { text: "Excelente, puedo variar efectos", points: 830 },
     ],
   },
   {
     id: "volley",
     question: "¿Qué tal se te dan las voleas?",
     options: [
-      { text: "Muy difíciles, evito ir a la red", points: 15 },
-      { text: "Básicas, solo golpes simples", points: 35 },
-      { text: "Buenas, me defiendo en la red", points: 65 },
-      { text: "Muy buenas, controlo bien la red", points: 90 },
-      { text: "Excelentes, domino la red", points: 110 },
+      { text: "Muy difíciles, evito ir a la red", points: 120 },
+      { text: "Básicas, solo golpes simples", points: 272 },
+      { text: "Buenas, me defiendo en la red", points: 425 },
+      { text: "Muy buenas, controlo bien la red", points: 627 },
+      { text: "Excelentes, domino la red", points: 830 },
     ],
   },
   {
     id: "serve",
     question: "¿Cómo es tu saque?",
     options: [
-      { text: "Básico, solo meto la bola", points: 20 },
-      { text: "Consistente pero sin variación", points: 40 },
-      { text: "Bueno, puedo variar la dirección", points: 65 },
-      { text: "Muy bueno, con potencia y precisión", points: 85 },
-      { text: "Excelente, domino diferentes tipos", points: 105 },
+      { text: "Básico, solo meto la bola", points: 120 },
+      { text: "Consistente pero sin variación", points: 272 },
+      { text: "Bueno, puedo variar la dirección", points: 425 },
+      { text: "Muy bueno, con potencia y precisión", points: 627 },
+      { text: "Excelente, domino diferentes tipos", points: 830 },
     ],
   },
   {
     id: "tactics",
     question: "¿Cómo es tu conocimiento táctico del juego?",
     options: [
-      { text: "Básico, solo juego la bola", points: 15 },
-      { text: "Entiendo lo básico", points: 35 },
-      { text: "Bueno, sé cuándo atacar/defender", points: 60 },
-      { text: "Muy bueno, leo bien el juego", points: 80 },
-      { text: "Excelente, anticipo las jugadas", points: 100 },
+      { text: "Básico, solo juego la bola", points: 120 },
+      { text: "Entiendo lo básico", points: 272 },
+      { text: "Bueno, sé cuándo atacar/defender", points: 425 },
+      { text: "Muy bueno, leo bien el juego", points: 627 },
+      { text: "Excelente, anticipo las jugadas", points: 830 },
     ],
   },
   {
     id: "smash",
-    question: "¿Qué tal tus remates?",
+    question: "¿Qué tal tus remates?", 
     options: [
-      { text: "Muy básicos, a menudo fallo", points: 15 },
-      { text: "Básicos pero efectivos", points: 35 },
-      { text: "Buenos, con buena potencia", points: 60 },
-      { text: "Muy buenos, precisos y potentes", points: 80 },
-      { text: "Excelentes, punto casi seguro", points: 100 },
+      { text: "Muy básicos, a menudo fallo", points: 120 },
+      { text: "Básicos pero efectivos", points: 272 },
+      { text: "Buenos, con buena potencia", points: 425 },
+      { text: "Muy buenos, precisos y potentes", points: 627 },
+      { text: "Excelentes, punto casi seguro", points: 830 },
     ],
   },
   {
     id: "competition",
     question: "¿Has participado en competiciones?",
     options: [
-      { text: "Nunca he competido", points: 10 },
-      { text: "Algún torneo social", points: 30 },
-      { text: "Torneos locales ocasionalmente", points: 55 },
-      { text: "Compito regularmente", points: 75 },
-      { text: "Competición federada/alta", points: 95 },
+      { text: "Nunca he competido", points: 120 },
+      { text: "Algún torneo social", points: 272 },
+      { text: "Torneos locales ocasionalmente", points: 425 },
+      { text: "Compito regularmente", points: 627 },
+      { text: "Competición federada/alta", points: 830 },
     ],
   },
   {
     id: "fitness",
     question: "¿Cómo es tu condición física para el pádel?",
     options: [
-      { text: "Me canso rápido", points: 15 },
-      { text: "Aguanto un set completo", points: 30 },
-      { text: "Buena resistencia", points: 50 },
-      { text: "Muy buena, aguanto partidos largos", points: 70 },
-      { text: "Excelente condición física", points: 85 },
+      { text: "Me canso rápido", points: 120 },
+      { text: "Aguanto un set completo", points: 272 },
+      { text: "Buena resistencia", points: 425 },
+      { text: "Muy buena, aguanto partidos largos", points: 627 },
+      { text: "Excelente condición física", points: 830 },
     ],
   },
-]
+];
 
 const getLevelInfo = (score: number) => {
-  const percentage = (score / 950) * 100
+  const percentage = (score / 9800) * 100
 
   if (percentage < 25) {
     return {
@@ -333,11 +333,11 @@ function PadelLevelQuiz() {
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-5xl font-bold text-blue-600">{totalScore} / 950 puntos</p>
+                  <p className="text-5xl font-bold text-blue-600">{totalScore} / 10000 puntos</p>
                   <div className="w-full bg-gray-200 rounded-full h-4">
                     <div
                       className="bg-blue-600 h-4 rounded-full transition-all duration-500"
-                      style={{ width: `${(totalScore / 950) * 100}%` }}
+                      style={{ width: `${(totalScore / 9800) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -382,23 +382,23 @@ function PadelLevelQuiz() {
                   <div className="space-y-2 bg-gray-50 p-4 rounded-lg text-sm">
                     <p className="flex justify-between">
                       <span>🔴 Avanzado (Cat. 1):</span>
-                      <span className="font-semibold">808-950 pts</span>
+                      <span className="font-semibold">8340-10000 pts</span>
                     </p>
                     <p className="flex justify-between">
                       <span>🟠 Intermedio Alto (Cat. 2):</span>
-                      <span className="font-semibold">665-807 pts</span>
+                      <span className="font-semibold">6860-8339 pts</span>
                     </p>
                     <p className="flex justify-between">
                       <span>🟡 Intermedio Bajo (Cat. 3):</span>
-                      <span className="font-semibold">475-664 pts</span>
+                      <span className="font-semibold">4900-6859 pts</span>
                     </p>
                     <p className="flex justify-between">
                       <span>🟢 Principiante (Cat. 4):</span>
-                      <span className="font-semibold">238-474 pts</span>
+                      <span className="font-semibold">2450-4899 pts</span>
                     </p>
                     <p className="flex justify-between">
                       <span>⚪ Iniciación (Cat. 5):</span>
-                      <span className="font-semibold">0-237 pts</span>
+                      <span className="font-semibold">0-2449 pts</span>
                     </p>
                   </div>
                 </div>

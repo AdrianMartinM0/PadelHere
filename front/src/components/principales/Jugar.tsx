@@ -1,19 +1,227 @@
-import type React from "react"
+import { useContext, useEffect, useRef, useState } from "react"
+import { Plus, MapPin, Calendar, Clock, X } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
+import { AuthContext } from "../../context/AuthContext"
 
-import { useState } from "react"
-import { Plus, MapPin, Calendar, Clock, Users } from "lucide-react"
+type Club = {
+  id: string
+  name: string
+  desc?: string
+}
+
+type UserProfile = {
+  _id: string
+  name: string
+  img_perfil?: string
+}
+
+type Partido = {
+  _id: string
+  localizacion: string
+  fecha: string
+  hora: string
+  created_by: string
+  pareja1_jugador1?: string
+  pareja1_jugador2?: string
+  pareja2_jugador1?: string
+  pareja2_jugador2?: string
+  created_at: string
+  updated_at: string
+}
+
+// --- Utilidad para mostrar fecha/hora en la zona de Madrid ---
+const formatDateMadrid = (dateString: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
+};
+
+// --- CAMBIO CLAVE: El filtro ahora usa hora de España automáticamente ---
+const getNowInMadrid = () => {
+  // Devuelve un objeto Date en la zona horaria de Madrid (Europe/Madrid)
+  const madridStr = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).replace(" ", "T");
+  return new Date(madridStr);
+};
+
+const isPartidoFuturo = (partido: Partido) => {
+  if (!partido.fecha || !partido.hora) return false
+  // El partido guardado debe estar en hora de España (Europe/Madrid)
+  const partidoDate = new Date(`${partido.fecha}T${partido.hora}:00`);
+  const nowMadrid = getNowInMadrid();
+  return partidoDate.getTime() > nowMadrid.getTime();
+}
+
+const isPartidoConHuecos = (partido: Partido) => {
+  return !(
+    partido.pareja1_jugador1 &&
+    partido.pareja1_jugador2 &&
+    partido.pareja2_jugador1 &&
+    partido.pareja2_jugador2
+  )
+}
+
+const getPartidoDate = (partido: Partido) => {
+  if (!partido.fecha || !partido.hora) return new Date(0)
+  // Siempre en hora de España (Europe/Madrid)
+  return new Date(`${partido.fecha}T${partido.hora}:00`)
+}
 
 const Jugar = () => {
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [selectedClub, setSelectedClub] = useState<Club | null>(null)
   const [formData, setFormData] = useState({
-    location: "",
-    date: "",
-    time: "",
+    localizacion: "",
+    fecha: "",
+    hora: "",
     maxPlayers: 4,
-    description: "",
   })
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+
+  const [partidos, setPartidos] = useState<Partido[]>([])
+  const [loadingPartidos, setLoadingPartidos] = useState(true)
+  const [userCache, setUserCache] = useState<Record<string, UserProfile>>({})
+
+  const { userData } = useContext(AuthContext)!;
+  const navigate = useNavigate()
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // --- fetchSlotsOnly: solo refresca los slots (botones) de todos los partidos ---
+  const fetchSlotsOnly = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/v1/partido/")
+      if (!res.ok) throw new Error("No se pudieron cargar los partidos")
+      let data = await res.json()
+      data = data
+        .filter((p: Partido) => isPartidoFuturo(p) && isPartidoConHuecos(p))
+        .sort((a: Partido, b: Partido) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
+      setPartidos(prevPartidos =>
+        prevPartidos.map(partidoPrev => {
+          const partidoNuevo = data.find((p: Partido) => p._id === partidoPrev._id)
+          if (!partidoNuevo) return partidoPrev
+          return {
+            ...partidoPrev,
+            pareja1_jugador1: partidoNuevo.pareja1_jugador1,
+            pareja1_jugador2: partidoNuevo.pareja1_jugador2,
+            pareja2_jugador1: partidoNuevo.pareja2_jugador1,
+            pareja2_jugador2: partidoNuevo.pareja2_jugador2,
+            updated_at: partidoNuevo.updated_at
+          }
+        }).filter(p => isPartidoFuturo(p) && isPartidoConHuecos(p))
+        .sort((a, b) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
+      )
+      const allIds = new Set<string>()
+      data.forEach((p: Partido) => {
+        [p.pareja1_jugador1, p.pareja1_jugador2, p.pareja2_jugador1, p.pareja2_jugador2]
+          .forEach((slot) => {
+            if (slot && typeof slot === "string") allIds.add(slot)
+          })
+      })
+      const idsToFetch = Array.from(allIds).filter(id => !(id in userCache))
+      if (idsToFetch.length > 0) {
+        Promise.all(
+          idsToFetch.map(id =>
+            fetch(`http://localhost:8000/v1/usuario/${id}`)
+              .then(res => res.ok ? res.json() : null)
+              .then(profile => profile ? { id, profile } : null)
+          )
+        ).then(results => {
+          const newCache: Record<string, UserProfile> = {}
+          results.forEach(res => {
+            if (res && res.profile) {
+              newCache[res.id] = res.profile
+            }
+          })
+          setUserCache(prev => ({ ...prev, ...newCache }))
+        })
+      }
+    } catch (error) {
+      // Si falla, no cambia nada
+    }
+  }
+
+  const fetchPartidos = async () => {
+    setLoadingPartidos(true)
+    try {
+      const res = await fetch("http://localhost:8000/v1/partido/")
+      if (!res.ok) throw new Error("No se pudieron cargar los partidos")
+      let data = await res.json()
+      data = data
+        .filter((p: Partido) => isPartidoFuturo(p) && isPartidoConHuecos(p))
+        .sort((a: Partido, b: Partido) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
+      setPartidos(data)
+      const allIds = new Set<string>()
+      data.forEach((p: Partido) => {
+        [p.pareja1_jugador1, p.pareja1_jugador2, p.pareja2_jugador1, p.pareja2_jugador2]
+          .forEach((slot) => {
+            if (slot && typeof slot === "string") allIds.add(slot)
+          })
+      })
+      const idsToFetch = Array.from(allIds).filter(id => !(id in userCache))
+      if (idsToFetch.length > 0) {
+        Promise.all(
+          idsToFetch.map(id =>
+            fetch(`http://localhost:8000/v1/usuario/${id}`)
+              .then(res => res.ok ? res.json() : null)
+              .then(profile => profile ? { id, profile } : null)
+          )
+        ).then(results => {
+          const newCache: Record<string, UserProfile> = {}
+          results.forEach(res => {
+            if (res && res.profile) {
+              newCache[res.id] = res.profile
+            }
+          })
+          setUserCache(prev => ({ ...prev, ...newCache }))
+        })
+      }
+    } catch (error) {
+      setPartidos([])
+    }
+    setLoadingPartidos(false)
+  }
+
+  useEffect(() => {
+    if (wsRef.current) return;
+    const ws = new WebSocket("ws://localhost:8000/ws/partidos");
+    wsRef.current = ws;
+    ws.onmessage = (event) => {
+      console.log(event)
+      try {
+        const data = JSON.parse(event.data);
+        if (data.event === "new_player") {
+          fetchSlotsOnly();
+        }
+      } catch (e) {}
+    };
+    ws.onclose = () => { wsRef.current = null; };
+    return () => { ws.close(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    fetchPartidos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleOpenCreateForm = () => {
+    setCreateError(null)
+    setCreateSuccess(null)
+    setIsCreating(false)
+    setShowCreateForm(true)
+  }
+
+  const handleCloseCreateForm = () => {
+    setCreateError(null)
+    setCreateSuccess(null)
+    setShowCreateForm(false)
+    setIsCreating(false)
+  }
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -21,33 +229,207 @@ const Jugar = () => {
     }))
   }
 
-  const handleCreateMatch = (e: React.FormEvent) => {
+  const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Aquí iría la lógica para crear el partido
-    console.log("Crear partido:", { ...formData, maxPlayers: 4 })
-    // Resetear formulario y cerrar modal
-    setFormData({
-      location: "",
-      date: "",
-      time: "",
-      maxPlayers: 4,
-      description: "",
-    })
-    setShowCreateForm(false)
+    if (isCreating) return;
+    setIsCreating(true)
+    setCreateError(null)
+    setCreateSuccess(null)
+    try {
+      const body = {
+        localizacion: formData.localizacion,
+        fecha: formData.fecha,
+        hora: formData.hora,
+      }
+      const userId = userData?.id
+
+      const res = await fetch(
+        `http://localhost:8000/v1/partido/?user_id=${userId}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      )
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || "Error creando el partido")
+      }
+
+      await fetchPartidos();
+
+      setCreateSuccess("¡Partido creado correctamente!")
+      setFormData({
+        localizacion: "",
+        fecha: "",
+        hora: "",
+        maxPlayers: 4,
+      })
+      setSelectedClub(null)
+      setTimeout(() => {
+        handleCloseCreateForm()
+      }, 1200)
+    } catch (error: any) {
+      setCreateError(error.message || "Error inesperado")
+      setIsCreating(false)
+    }
   }
 
+  const handleJoin = async (partidoId: string, slot: string) => {
+    try {
+      const userId = userData?.id;
+      if (!userId) return alert("Debes iniciar sesión para unirte.");
+      const res = await fetch(`http://localhost:8000/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error("No se pudo unir al partido");
+      // No hace falta recargar aquí: el WebSocket lo hará
+    } catch (e) {
+      alert("Error al unirse al partido");
+    }
+  }
+
+  // NUEVO: función para salir de un partido en el slot correspondiente
+  const handleLeave = async (partidoId: string, slot: string) => {
+    try {
+      const userId = userData?.id;
+      if (!userId) return alert("Debes iniciar sesión para salir.");
+      const res = await fetch(`http://localhost:8000/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`, {
+        method: "POST"
+      });
+      if (!res.ok) throw new Error("No se pudo salir del partido");
+      // El WebSocket actualizará los slots
+    } catch (e) {
+      alert("Error al salir del partido");
+    }
+  }
+
+  // Botón de salir solo si el usuario es el dueño del slot
+  const LeaveButton = ({ partidoId, slot }: { partidoId: string, slot: string }) => (
+    <button
+      className="w-5 h-5 rounded-full border-2 border-red-500 flex items-center justify-center bg-white text-red-600 hover:bg-red-100 transition absolute -top-2 -right-2 z-10"
+      title="Salir del partido"
+      onClick={() => handleLeave(partidoId, slot)}
+      style={{ fontSize: 12, lineHeight: 1, padding: 0 }}
+    >
+      <X size={16} className="text-red-600" strokeWidth={3} />
+    </button>
+  );
+
+  // Render de un botón circular de jugador/unirse o perfil
+  const PlayerCircle = ({
+    userId,
+    partidoId,
+    slot
+  }: {
+    userId: string | null | undefined,
+    partidoId: string,
+    slot: string
+  }) => {
+    const isOwnSlot = userId && userData?.id && userId === userData.id;
+    const profile = userId ? userCache[userId] : undefined;
+
+    return (
+      <div className="relative flex items-center justify-center">
+        {isOwnSlot && <LeaveButton partidoId={partidoId} slot={slot} />}
+        {!userId ? (
+          <button
+            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center bg-transparent hover:bg-blue-50 transition"
+            title="Unirse"
+            onClick={() => handleJoin(partidoId, slot)}
+          >
+            <Plus size={28} className="text-blue-600" />
+          </button>
+        ) : (
+          <Link to={`/app/usuario/${userId}`}
+            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center overflow-hidden bg-white hover:shadow-lg transition"
+            title={profile?.name}
+            onClick={() => navigate(`/perfil/${userId}`)}
+            type="button"
+          >
+            {profile?.img_perfil ? (
+              <img
+                src={`data:image/jpeg;base64,${profile.img_perfil}`}
+                alt={profile.name || "Jugador"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="font-bold text-blue-700 text-lg">
+                {profile?.name?.[0]?.toUpperCase() || "?"}
+              </span>
+            )}
+          </Link>
+        )}
+      </div>
+    );
+  };
+
+  const PartidoCard = (partido: Partido) => {
+    return (
+      <div
+        key={partido._id}
+        className="bg-white rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-600 py-4 px-2"
+      >
+        <div className="flex flex-col justify-center items-center gap-5 w-20">
+          <PlayerCircle userId={partido.pareja1_jugador1 ?? null} partidoId={partido._id} slot="pareja1_jugador1" />
+          <PlayerCircle userId={partido.pareja1_jugador2 ?? null} partidoId={partido._id} slot="pareja1_jugador2" />
+        </div>
+        <div className="flex-1 flex flex-col justify-center items-center px-2 text-center">
+          <div className="flex items-center gap-2 text-blue-600 font-semibold text-lg mb-3 justify-center">
+            <MapPin size={18} />
+            {partido.localizacion}
+          </div>
+          <div className="flex justify-center items-center gap-4 text-gray-700 text-base mb-2">
+            <span className="flex items-center gap-1">
+              <Calendar size={16} /> {partido.fecha}
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock size={16} /> {partido.hora}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-gray-500 justify-center">
+            <span>Creado el {formatDateMadrid(partido.created_at)}</span>
+            <span>Actualizado el {formatDateMadrid(partido.updated_at)}</span>
+          </div>
+        </div>
+        <div className="flex flex-col justify-center items-center gap-5 w-20">
+          <PlayerCircle userId={partido.pareja2_jugador1 ?? null} partidoId={partido._id} slot="pareja2_jugador1" />
+          <PlayerCircle userId={partido.pareja2_jugador2 ?? null} partidoId={partido._id} slot="pareja2_jugador2" />
+        </div>
+      </div>
+    )
+  }
+
+  const SkeletonCard = () => (
+    <div className="bg-white rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-300 py-4 px-2 animate-pulse">
+      <div className="flex flex-col justify-center items-center gap-5 w-20">
+        <div className="w-12 h-12 rounded-full border-2 border-blue-200 bg-blue-100" />
+        <div className="w-12 h-12 rounded-full border-2 border-blue-100 bg-blue-50" />
+      </div>
+      <div className="flex-1 flex flex-col justify-center items-center px-2 text-center gap-2">
+        <div className="h-5 bg-gray-200 rounded w-1/3 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+        <div className="h-3 bg-gray-100 rounded w-2/6 mb-1" />
+        <div className="h-3 bg-gray-100 rounded w-2/6" />
+      </div>
+      <div className="flex flex-col justify-center items-center gap-5 w-20">
+        <div className="w-12 h-12 rounded-full border-2 border-blue-100 bg-blue-50" />
+        <div className="w-12 h-12 rounded-full border-2 border-blue-200 bg-blue-100" />
+      </div>
+    </div>
+  )
+
   return (
-    <div className="flex flex-col items-center justify-center gap-4 w-full">
-      {/* Sección superior - Crear partido */}
-      <div className="w-full mb-6">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+    <div className="flex flex-col items-center justify-start gap-4 min-h-screen w-full pb-10">
+      <div className="w-full mt-8 mb-4 px-2">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-2xl font-bold mb-2">¿Listo para jugar?</h1>
               <p className="text-blue-100">Crea un nuevo partido o únete a uno existente</p>
             </div>
             <button
-              onClick={() => setShowCreateForm(true)}
+              onClick={handleOpenCreateForm}
               className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-md"
             >
               <Plus size={20} />
@@ -57,45 +439,67 @@ const Jugar = () => {
         </div>
       </div>
 
-      {/* Modal para crear partido */}
+      <div className="w-full px-2">
+        <div className="w-full bg-[#fff6] rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold mb-4 text-center">Partidos Disponibles</h2>
+          {loadingPartidos ? (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          ) : partidos.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">No hay partidos disponibles por ahora.</div>
+          ) : (
+            partidos.map((partido) => PartidoCard(partido))
+          )}
+        </div>
+      </div>
+
       {showCreateForm && (
         <>
-          {/* Overlay */}
-          <div className="fixed inset-0 bg-[#ACD3FF] bg-opacity-50 z-40" onClick={() => setShowCreateForm(false)}></div>
-
-          {/* Modal */}
+          <div
+            className="fixed inset-0 bg-[#ACD3FF] bg-opacity-50 z-40"
+            onClick={handleCloseCreateForm}
+          ></div>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-gray-800">Crear Nuevo Partido</h2>
-                  <button
-                    onClick={() => setShowCreateForm(false)}
-                    className="text-gray-400 hover:text-gray-600 text-2xl"
-                  >
-                    ×
-                  </button>
                 </div>
 
+                {createError && (
+                  <div className="mb-2 text-red-600 font-medium">{createError}</div>
+                )}
+                {createSuccess && (
+                  <div className="mb-2 text-green-600 font-medium">{createSuccess}</div>
+                )}
+
                 <form onSubmit={handleCreateMatch} className="space-y-4">
-                  {/* Ubicación */}
-                  <div>
+                  <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <MapPin size={16} className="inline mr-1" />
                       Ubicación
                     </label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      placeholder="Ej: Padel Club Centro"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="localizacion"
+                        value={formData.localizacion}
+                        onChange={handleInputChange}
+                        placeholder="Ej: Madrid, Parque del Oeste..."
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                        disabled={!!selectedClub}
+                      />
+                    </div>
+                    {selectedClub && (
+                      <div className="mt-1 text-xs text-blue-700 flex items-center gap-1">
+                        <MapPin size={14} /> Club seleccionado: <span className="font-semibold">{selectedClub.name}</span>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Fecha */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <Calendar size={16} className="inline mr-1" />
@@ -103,16 +507,14 @@ const Jugar = () => {
                     </label>
                     <input
                       type="date"
-                      name="date"
-                      value={formData.date}
+                      name="fecha"
+                      value={formData.fecha}
                       onChange={handleInputChange}
-                      min={new Date().toISOString().split("T")[0]}
+                      min={new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
                   </div>
-
-                  {/* Hora */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       <Clock size={16} className="inline mr-1" />
@@ -120,41 +522,28 @@ const Jugar = () => {
                     </label>
                     <input
                       type="time"
-                      name="time"
-                      value={formData.time}
+                      name="hora"
+                      value={formData.hora}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
                   </div>
-
-                  {/* Descripción */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Descripción (opcional)</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      placeholder="Información adicional sobre el partido..."
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    />
-                  </div>
-
-                  {/* Botones */}
                   <div className="flex gap-3 pt-4">
                     <button
                       type="button"
-                      onClick={() => setShowCreateForm(false)}
+                      onClick={handleCloseCreateForm}
                       className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                      disabled={isCreating}
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      disabled={isCreating}
                     >
-                      Crear Partido
+                      {isCreating ? "Creando..." : "Crear Partido"}
                     </button>
                   </div>
                 </form>
@@ -163,177 +552,6 @@ const Jugar = () => {
           </div>
         </>
       )}
-
-      {/* Lista de partidos existentes */}
-      <div className="w-full max-h-[60vh] bg-[#fff6] rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-2 text-center">Partidos Disponibles</h2>
-
-        {/* Ejemplo de partidos con nuevo diseño */}
-        <div className="space-y-2">
-          {/* Partido 1 */}
-          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              {/* Botones izquierda */}
-              <div className="flex flex-col gap-2">
-                <button className="w-16 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition-colors">
-                  Unirse
-                </button>
-                <button className="w-16 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition-colors">
-                  Unirse
-                </button>
-              </div>
-
-              {/* Información del partido (centro) */}
-              <div className="flex-1 text-center px-8">
-                <div className="mb-3">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <MapPin size={18} className="text-gray-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Padel Club Centro</h3>
-                  </div>
-                  <div className="flex items-center justify-center gap-6 text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      <span className="font-medium">Viernes</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} />
-                      <span className="font-medium">18:00</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center gap-1 text-sm text-gray-500">
-                  <Users size={16} />
-                  <span>2/4 jugadores</span>
-                </div>
-              </div>
-
-              {/* Botones derecha */}
-              <div className="flex flex-col gap-2">
-                <button className="w-16 h-12 bg-gray-300 text-gray-500 rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Ocupado
-                </button>
-                <button className="w-16 h-12 bg-gray-300 text-gray-500 rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Ocupado
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Partido 2 */}
-          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              {/* Botones izquierda */}
-              <div className="flex flex-col gap-2">
-                <button className="w-16 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition-colors">
-                  Unirse
-                </button>
-                <button className="w-16 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition-colors">
-                  Unirse
-                </button>
-              </div>
-
-              {/* Información del partido (centro) */}
-              <div className="flex-1 text-center px-8">
-                <div className="mb-3">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <MapPin size={18} className="text-gray-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Polideportivo Norte</h3>
-                  </div>
-                  <div className="flex items-center justify-center gap-6 text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      <span className="font-medium">Sábado</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} />
-                      <span className="font-medium">11:00</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center gap-1 text-sm text-gray-500">
-                  <Users size={16} />
-                  <span>1/4 jugadores</span>
-                </div>
-              </div>
-
-              {/* Botones derecha */}
-              <div className="flex flex-col gap-2">
-                <button className="w-16 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-sm transition-colors">
-                  Unirse
-                </button>
-                <button className="w-16 h-12 bg-gray-300 text-gray-500 rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Ocupado
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Partido 3 - Completo */}
-          <div className="bg-white rounded-lg shadow-lg border border-green-200 p-6 hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              {/* Botones izquierda */}
-              <div className="flex flex-col gap-2">
-                <button className="w-16 h-12 bg-green-500 text-white rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Lleno
-                </button>
-                <button className="w-16 h-12 bg-green-500 text-white rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Lleno
-                </button>
-              </div>
-
-              {/* Información del partido (centro) */}
-              <div className="flex-1 text-center px-8">
-                <div className="mb-3">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <MapPin size={18} className="text-gray-600" />
-                    <h3 className="text-xl font-bold text-gray-800">Padel Arena Sur</h3>
-                  </div>
-                  <div className="flex items-center justify-center gap-6 text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Calendar size={16} />
-                      <span className="font-medium">Domingo</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} />
-                      <span className="font-medium">17:30</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center gap-1 text-sm text-green-600 font-semibold">
-                  <Users size={16} />
-                  <span>¡Partido Completo!</span>
-                </div>
-              </div>
-
-              {/* Botones derecha */}
-              <div className="flex flex-col gap-2">
-                <button className="w-16 h-12 bg-green-500 text-white rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Lleno
-                </button>
-                <button className="w-16 h-12 bg-green-500 text-white rounded-lg font-semibold text-sm cursor-not-allowed">
-                  Lleno
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Estado vacío */}
-        {/* Descomenta esto si no hay partidos disponibles
-        <div className="text-center py-8">
-          <div className="text-gray-400 mb-4">
-            <Users size={48} className="mx-auto" />
-          </div>
-          <p className="text-gray-500 mb-4">No hay partidos disponibles en este momento</p>
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded transition-colors"
-          >
-            Crear el primer partido
-          </button>
-        </div>
-        */}
-      </div>
     </div>
   )
 }

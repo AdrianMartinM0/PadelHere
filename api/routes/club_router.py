@@ -87,3 +87,11 @@ async def set_override_for_date_route(club_id: str, date: str, override: dict = 
 @club_router.delete("/{club_id}/overrides/{date}")
 async def delete_override_route(club_id: str, date: str):
     return await club_controller.delete_override_controller(club_id, date)
+
+@club_router.get("/all-clubs")
+async def get_all_clubs_route():
+    return await club_controller.get_all_clubs_controller()
+
+@club_router.get("/all-clubs/{club_id}")
+async def get_club_by_id_route(club_id: str):
+    return await club_controller.get_one_club_by_id_controller(club_id)

@@ -1,5 +1,5 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club, update_club_courts, get_overrides, set_override_for_date, delete_override
+from ..services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club, update_club_courts, get_overrides, set_override_for_date, delete_override, get_all_clubs, get_one_club_by_id
 from ..database.models.club import Club
 import re
 from pydantic import EmailStr
@@ -118,3 +118,15 @@ async def delete_override_controller(club_id: str, date: str):
     if not ok:
         raise HTTPException(404, "Club no encontrado")
     return {"message": f"Override para {date} eliminado correctamente."}
+
+async def get_all_clubs_controller():
+    clubs = await get_all_clubs()
+    if not clubs:
+        raise HTTPException(status_code=404, detail="No se encontraron clubes")
+    return clubs
+
+async def get_one_club_by_id_controller(club_id: str):
+    club = await get_one_club_by_id(club_id)
+    if not club:
+        raise HTTPException(status_code=404, detail="Club no encontrado")
+    return club

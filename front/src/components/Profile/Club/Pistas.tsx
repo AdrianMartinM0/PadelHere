@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CourtSelector from "./CourtSelector";
 import CourtPanel from "./CourtPanel";
 import ReserveModal from "./ReserveModal";
+import { AuthContext } from "../../../context/AuthContext";
+import { useReservasSocket } from "../../../hooks/useReservasSocket";
 
 const weekDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const defaultDayConfig = { open: "08:00", close: "23:00", closed: false, hasBreak: true, break: { from: "14:00", to: "16:00" } };
@@ -34,8 +36,18 @@ export default function Pistas({ clubId }: { clubId: string }) {
   // Estado para los overrides globales
   const [globalOverrides, setGlobalOverrides] = useState<{ [date: string]: any }>({});
 
-  // Cargar datos iniciales, incluyendo los overrides globales
-  useEffect(() => {
+  const { userData } = useContext(AuthContext)!;
+
+  useReservasSocket((data) => {
+    // Aquí llamas a tu función de recarga, ejemplo:
+    console.log(data)
+    if (data.club_id === clubId)
+      fetchAllCourtsAndConfigs();
+  });
+
+  // Función reutilizable para cargar datos de pistas + configs + overrides
+  function fetchAllCourtsAndConfigs() {
+    setLoading(true);
     Promise.all([
       fetch(`http://localhost:8000/v1/club/${clubId}/pistas`).then(res => res.json()),
       fetch(`http://localhost:8000/v1/club/${clubId}/config`).then(res => res.json()),
@@ -49,7 +61,12 @@ export default function Pistas({ clubId }: { clubId: string }) {
           configs[pista.id] = pista.config ?? makeDefaultCourtConfig();
         });
         setCourtConfigs(configs);
-        setSelectedCourt(pistasData?.courts?.[0]?.id ?? "");
+        // Mantener la pista seleccionada si existe, si no, seleccionar la primera
+        setSelectedCourt(prev =>
+          pistasData?.courts?.some((p: any) => p.id === prev)
+            ? prev
+            : pistasData?.courts?.[0]?.id ?? ""
+        );
         // Config global del club
         if (configData?.globalDays) {
           setGlobalDays({
@@ -70,6 +87,12 @@ export default function Pistas({ clubId }: { clubId: string }) {
         setGlobalOverrides({});
         setLoading(false);
       });
+  }
+
+  // Cargar datos iniciales, incluyendo los overrides globales
+  useEffect(() => {
+    fetchAllCourtsAndConfigs();
+    // eslint-disable-next-line
   }, [clubId]);
 
   // Funciones para gestionar overrides globales
@@ -190,18 +213,34 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   // Añadir reserva
-  function confirmReserve(name: string, phone: string) {
-    setCourtConfigs(prev => {
-      const prevCfg = prev[selectedCourt];
-      const nuevasReservas = [...(prevCfg?.reservas || []), { day: modal.day, from: modal.from, to: modal.to, name, phone }];
-      const nextConfig = { ...prevCfg, reservas: nuevasReservas };
-      saveCourtConfig(selectedCourt, nextConfig);
-
-      return {
-        ...prev,
-        [selectedCourt]: nextConfig
-      };
+  async function confirmReserve(name: string, phone: string) {
+    const res = await fetch(`http://localhost:8000/v1/pista/${selectedCourt}/reservas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        day: modal.day,
+        from: modal.from,
+        to: modal.to,
+        name,
+        phone,
+      }),
     });
+    if (!res.ok) {
+      alert("Error al crear la reserva");
+      return;
+    }
+    const reserva = await res.json();
+    fetch(`http://localhost:8000/v1/usuario/${userData?.id}/reservas/${reserva._id}`, {
+      method: "PUT"
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("No se pudo asociar la reserva al usuario");
+        console.log("Reserva asociada al usuario correctamente");
+      });
+
+    // Vuelve a pedir todas las pistas/configs/overrides tras reservar
+    fetchAllCourtsAndConfigs();
+
     setModal({ show: false, day: "", from: 0, to: 0 });
   }
 
@@ -216,7 +255,34 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   if (loading) {
-    return <div className="p-8 text-center">Cargando pistas...</div>;
+    return (
+      <div className="container mx-auto pr-6 animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 mt-6" />
+        <div className="flex gap-4 mb-8">
+          <div className="h-10 w-32 bg-gray-200 rounded" />
+          <div className="h-10 w-32 bg-gray-200 rounded" />
+          <div className="h-10 w-32 bg-gray-200 rounded" />
+        </div>
+        <div className="h-14 bg-gray-200 rounded w-48 mb-6 mt-6" />
+        <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 mt-6" />
+        <div className="flex items-center justify-between my-2 px-2" >
+        <div className="h-12 bg-gray-200 rounded w-36" />
+        <div className="h-6 bg-gray-200 rounded w-48" />
+        <div className="h-12 bg-gray-200 rounded w-36" />
+        
+        </div>
+        <div className="bg-white rounded-lg shadow border-blue-400 p-6">
+          {[...Array(7)].map((_, idx) => (
+            <div key={idx} className="flex items-center gap-2 mb-2 overflow-hidden">
+              <div className="w-24 h-5 bg-gray-200 rounded" />
+              {[...Array(7)].map((_, idy) => (
+                <div key={idy} className="min-w-30 h-8 bg-gray-200 rounded-md" />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   const selectedCourtObj = courts.find(c => c.id === selectedCourt);

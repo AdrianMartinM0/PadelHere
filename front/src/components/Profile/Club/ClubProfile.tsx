@@ -1,17 +1,23 @@
 import type React from "react"
 import { useContext, useRef, useState } from "react"
 import { AuthContext } from "../../../context/AuthContext"
-import { ExternalLink, MapPin, Phone } from "lucide-react"
+import { ExternalLink, MapPin, Phone, Settings } from "lucide-react"
 import DefaultAvatar from "../DefaultAvatar"
 import Pistas from "./Pistas"
 
 const ClubProfile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { email, clubData, refreshUserData } = useContext(AuthContext)!
+  const { email, clubData, refreshUserData, userData } = useContext(AuthContext)!
 
   const [imgPreview, setImgPreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
+
+  
+  // Botón de ajustes para mostrar/ocultar el bloque de eliminar cuenta
+  const [showDelete, setShowDelete] = useState(false);
+  // Estado para modal de confirmación
+  const [showModal, setShowModal] = useState(false);
 
   // Convierte el string base64 a un objeto URL para mostrar la imagen
   const getProfilePictureSrc = () => {
@@ -101,17 +107,74 @@ const ClubProfile = () => {
   // Loader si los datos no están aún cargados
   if (!clubData) {
     return (
-      <main className="h-[75vh] w-full flex justify-center items-center">
-        <div className="text-gray-400 animate-pulse">Cargando perfil del club...</div>
+      <main className="w-full">
+        <section className="p-6 pb-0 mb-8 flex flex-col animate-pulse">
+          {/* Avatar y datos del club */}
+          <div className="flex gap-12 items-center mb-4 w-1/2 mx-auto">
+            <div className="relative">
+              <div className="w-28 h-28 rounded-full bg-gray-200" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <div className="h-8 w-40 bg-gray-200 rounded mb-2" />
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-200 rounded-full" />
+                <div className="h-4 w-32 bg-gray-200 rounded" />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-200 rounded-full" />
+                <div className="h-4 w-24 bg-gray-200 rounded" />
+              </div>
+            </div>
+          </div>
+
+          {/* Iframe mapa skeleton */}
+          <div className="w-8/10 mx-auto mb-8 mt-2">
+            <div className="w-full h-48 rounded-lg shadow-lg overflow-hidden border border-blue-600 bg-gray-200" />
+            <div className="mt-2 flex items-center justify-between">
+              <div className="h-4 w-2/5 bg-gray-200 rounded" />
+              <div className="h-4 w-20 bg-gray-200 rounded" />
+            </div>
+          </div>
+
+          {/* Skeleton Pistas (imitando varios DayRow) */}
+          <div className="container mx-auto pr-6 animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 mt-6" />
+            <div className="flex gap-4 mb-8">
+              <div className="h-10 w-32 bg-gray-200 rounded" />
+              <div className="h-10 w-32 bg-gray-200 rounded" />
+              <div className="h-10 w-32 bg-gray-200 rounded" />
+            </div>
+            <div className="h-14 bg-gray-200 rounded w-48 mb-6 mt-6" />
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 mt-6" />
+            <div className="flex items-center justify-between my-2 px-2" >
+              <div className="h-12 bg-gray-200 rounded w-36" />
+              <div className="h-6 bg-gray-200 rounded w-48" />
+              <div className="h-12 bg-gray-200 rounded w-36" />
+
+            </div>
+            <div className="bg-white rounded-lg shadow border-blue-400 p-6">
+              {[...Array(7)].map((_, idx) => (
+                <div key={idx} className="flex items-center gap-2 mb-2 overflow-hidden">
+                  <div className="w-24 h-5 bg-gray-200 rounded" />
+                  {[...Array(7)].map((_, idy) => (
+                    <div key={idy} className="min-w-30 h-8 bg-gray-200 rounded-md" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
     )
   }
 
   return (
     <main className="w-full">
-      <section className="p-6 pb-0 mb-8 flex flex-col">
-        <div className="flex gap-12 items-center mb-4 w-1/2 mx-auto">
-          <div className="relative">
+      <section className="p-6 pb-0 mb-8 flex flex-col relative">
+        {/* ----- PERFIL: info usuario + botón settings a la derecha ----- */}
+        <div className="flex items-center mb-4 w-1/2 mx-auto justify-between">
+          <div className="flex items-center gap-12">
+            <div className="relative">
             {getProfilePictureSrc() === "" ? (
               <DefaultAvatar className="w-28 p-0 h-28 rounded-full" />
             ) :
@@ -165,35 +228,64 @@ const ClubProfile = () => {
             </div>
           </div>
         </div>
-
-        {/* Iframe mapa */}
-        <div className="w-8/10 mx-auto mb-8 mt-2">
-            <div className="w-full h-48 rounded-lg shadow-lg overflow-hidden border border-blue-600">
-              <iframe
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(clubData.direccion)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title={`Ubicación de ${clubData.name}`}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <p className="text-gray-600 text-sm">{clubData.direccion}</p>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clubData.direccion)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors flex items-center gap-1"
-              >
-                <span>Ver en Maps</span>
-                <ExternalLink size={14} />
-              </a>
-            </div>
+        {/* Botón ajustes a la derecha */}
+          <button
+            className="rounded-full px-2 py-2 bg-gray-600 text-white flex items-center"
+            onClick={() => setShowDelete(v => !v)}
+            title="Ajustes"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
+        {/* Bloque de eliminar cuenta, alineado completamente a la derecha fuera del w-1/2 */}
+        {showDelete && (
+          <div className="w-64 flex justify-end absolute right-0 top-[30px] z-20 pr-8">
+            <div className="flex flex-col p-4">
+              <button
+                className="bg-red-600 text-white px-6 py-2 rounded-lg shadow hover:bg-red-700 transition"
+                onClick={() => setShowModal(true)}
+              >
+                Eliminar perfil
+              </button>
+              <span className="mt-2 text-gray-500 self-center">Esta acción es irreversible.</span>
+            </div>
+          </div>
+        )}
 
+        {/* Modal de confirmación */}
+        {showModal && (
+          <div className="fixed z-50 inset-0 flex items-center justify-center bg-black/30">
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-xs flex flex-col items-center">
+              <h2 className="text-lg font-bold text-red-700 mb-4">¿Eliminar perfil?</h2>
+              <p className="mb-6 text-gray-700 text-center">Esta acción no se puede deshacer. ¿Seguro que quieres eliminar tu perfil?</p>
+              <div className="flex gap-4">
+                <button
+                  className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`http://localhost:8000/v1/usuario/${userData?.id}`, {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                      });
+                      if (!res.ok) throw new Error("No se pudo eliminar el perfil");
+                      window.location.href = "/logout";
+                    } catch {
+                      alert("Error al eliminar el perfil");
+                    }
+                  }}
+                >
+                  Eliminar definitivamente
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Descripcion  */}
         <div className="flex justify-center items-center gap-4 mb-8">
@@ -264,8 +356,36 @@ const ClubProfile = () => {
           )}
         </div>
 
+        {/* Iframe mapa */}
+        <div className="w-8/10 mx-auto mb-8 mt-2">
+          <div className="w-full h-48 rounded-lg shadow-lg overflow-hidden border border-blue-600">
+            <iframe
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(clubData.direccion)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title={`Ubicación de ${clubData.name}`}
+            />
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <p className="text-gray-600 text-sm">{clubData.direccion}</p>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clubData.direccion)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors flex items-center gap-1"
+            >
+              <span>Ver en Maps</span>
+              <ExternalLink size={14} />
+            </a>
+          </div>
+        </div>
+
         {/* Pistas */}
-          <Pistas clubId={clubData.id}/>
+        <Pistas clubId={clubData.id} />
 
       </section>
     </main>

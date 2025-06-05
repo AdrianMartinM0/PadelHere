@@ -1,5 +1,6 @@
 import { PencilLine, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 
 interface Court {
   id: string;
@@ -50,6 +51,7 @@ export default function CourtSelector({
       setEditCourtDesc("");
     }
   };
+  const { userType } = useContext(AuthContext)!;
 
   return (
     <div className="flex flex-col gap-2 mb-4">
@@ -57,44 +59,49 @@ export default function CourtSelector({
         {courts.map((c) => (
           <div key={c.id} className="flex items-center gap-1">
             <button
-              className={`px-4 py-2 rounded font-medium border ${
-                selectedCourt === c.id
-                  ? "bg-blue-100 border-blue-600"
-                  : "bg-white"
-              }`}
+              className={`px-4 py-2 rounded font-medium border ${selectedCourt === c.id
+                ? "bg-blue-100 border-blue-600"
+                : "bg-white"
+                }`}
               onClick={() => setSelectedCourt(c.id)}
               type="button"
               title={c.desc}
             >
               {c.name}
             </button>
-            <button
-              className="text-blue-600 px-2"
-              title="Editar"
-              onClick={() => openEditModal(c)}
-              type="button"
-            >
-              <PencilLine className="w-4"/>
-            </button>
-            <button
-              className="text-red-600 px-2"
-              title="Eliminar"
-              onClick={() => {
-                  deleteCourt(c.id);
-              }}
-              type="button"
-            >
-              <Trash2 className="w-4"/>
-            </button>
+            {userType === "club" && (
+              <div className="flex items-center gap-1">
+                <button
+                  className="text-blue-600 px-2"
+                  title="Editar"
+                  onClick={() => openEditModal(c)}
+                  type="button"
+                >
+                  <PencilLine className="w-4" />
+                </button>
+                <button
+                  className="text-red-600 px-2"
+                  title="Eliminar"
+                  onClick={() => {
+                    deleteCourt(c.id);
+                  }}
+                  type="button"
+                >
+                  <Trash2 className="w-4" />
+                </button>
+              </div>
+            )}
           </div>
         ))}
-        <button
-          type="button"
-          className="px-3 py-1 rounded border bg-green-100 border-green-400 font-bold text-green-700"
-          onClick={() => setShowAdd(true)}
-        >
-          + Añadir pista
-        </button>
+        {userType === "club" && (
+          <button
+            type="button"
+            className="px-3 py-1 rounded border bg-green-100 border-green-400 font-bold text-green-700"
+            onClick={() => setShowAdd(true)}
+          >
+            + Añadir pista
+          </button>
+        )}
       </div>
 
       {/* Modal Añadir */}

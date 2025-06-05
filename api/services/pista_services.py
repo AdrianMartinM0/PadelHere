@@ -1,6 +1,7 @@
-from ..database.db import pista_collection
+from ..database.db import pista_collection, reserva_collection
 from fastapi import HTTPException
 from bson import ObjectId
+from ..websockets.reservas_ws import notify_new_reserva
 
 # ----------- SERVICIOS PARA /pista/:pistaId -----------
 
@@ -67,20 +68,52 @@ async def get_reservas_by_pista(pista_id, filtro: dict = None):
             reserva['pista_id'] = str(reserva['pista_id'])
     return reservas
 
+
 async def create_reserva_for_pista(pista_id, reserva_data: dict):
-    """Crear una nueva reserva (o entrenamiento) para una pista."""
-    from ..database.db import reserva_collection
     reserva_data["pista_id"] = ObjectId(pista_id)
+    
+    day = reserva_data["day"]
+    from_min = reserva_data["from"]
+    to_min = reserva_data["to"]
+
+    # Comprueba si hay alguna reserva que se solape
+    ya_reservado = reserva_collection.find_one({
+        "pista_id": ObjectId(pista_id),
+        "day": day,
+        "$expr": {
+            "$and": [
+                { "$lt": ["$from", to_min] },  # Reserva existente empieza antes de que termine la nueva
+                { "$gt": ["$to", from_min] }   # Reserva existente termina después de que empiece la nueva
+            ]
+        }
+    })
+    if ya_reservado:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una reserva solapada para esa pista y horario"
+        )
     result = reserva_collection.insert_one(reserva_data)
+    reserva_id = str(result.inserted_id)
+
+    pista_collection.update_one(
+        {"_id": ObjectId(pista_id)},
+        {"$addToSet": {"config.reservas": reserva_id}}
+    )
+    
     created = reserva_collection.find_one({"_id": result.inserted_id})
-    # Convertir _id y pista_id a str
-    created['_id'] = str(created['_id'])
+    created['_id'] = reserva_id
     if 'pista_id' in created and isinstance(created['pista_id'], ObjectId):
         created['pista_id'] = str(created['pista_id'])
+        
+    pista = pista_collection.find_one({"_id": ObjectId(pista_id)})
+    club_id = None
+    if pista and "club_id" in pista:
+        club_id = str(pista["club_id"])
+    
+    await notify_new_reserva(club_id=club_id)
     return created
 
 async def get_reserva_detail(pista_id, reserva_id):
-    """Obtener el detalle de una reserva/entrenamiento concreto de una pista."""
     from ..database.db import reserva_collection
     reserva = reserva_collection.find_one({
         "_id": ObjectId(reserva_id),

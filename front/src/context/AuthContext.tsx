@@ -1,12 +1,14 @@
-import { createContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useEffect, useState, ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 
-// Interfaces para los diferentes tipos de usuarios
 interface UserData {
+  id: string
   name: string
   level: number
   desc: string
   img_perfil: string | null
+  tel?: number
+  reservas?: string[] // Array de IDs de reserva
 }
 
 interface ClubData {
@@ -19,34 +21,35 @@ interface ClubData {
 }
 
 interface AuthContextType {
-  // Estados principales
   isLoggedIn: boolean
   token: string | null
   email: string | null
   userType: string | null
   userData: UserData | null
   clubData: ClubData | null
-
-  // Funciones
+  reservaIds: string[]
+  setReservaIds: (ids: string[]) => void
   login: (token: string) => void
   logout: () => void
   refreshUserData: () => Promise<void>
   updateUserLevel: (newLevel: number) => void
   updateClubDesc: (desc: string) => Promise<boolean>
   updateClubInfo: (info: Partial<ClubData>) => Promise<boolean>
+  loading: boolean
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Estados básicos
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("jwtToken"))
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [email, setEmail] = useState<string | null>(null)
   const [userType, setUserType] = useState<string | null>(null)
   const [userData, setUserData] = useState<UserData | null>(null)
   const [clubData, setClubData] = useState<ClubData | null>(null)
+  const [reservaIds, setReservaIds] = useState<string[]>([])
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
 
   // Función para obtener datos del usuario o club
   const fetchUserData = async (userEmail: string): Promise<UserData | ClubData | null> => {
@@ -54,12 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const endpoint = userType === "club" ? "club/club" : "usuario/user"
       const response = await fetch(`http://localhost:8000/v1/${endpoint}?email=${userEmail}`)
 
-      if (!response.ok) {
-        throw new Error("Error al obtener datos del usuario")
-      }
+      if (!response.ok) throw new Error("Error al obtener datos del usuario")
 
       const data = await response.json()
-
       if (userType === "club") {
         return {
           id: data._id,
@@ -70,20 +70,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           direccion: data.direccion,
         }
       } else {
+        setReservaIds(data.reservas || [])
         return {
+          id: data._id,
           name: data.name,
           level: data.level,
           desc: data.desc || "",
           img_perfil: data.img_perfil,
+          tel: data.tel,
+          reservas: data.reservas || [], // Solo los IDs
         }
       }
     } catch (error) {
       console.error("Error fetching user data:", error)
+      setReservaIds([])
       return null
     }
   }
 
-  // Función para refrescar datos del usuario
+  // Refrescar datos del usuario
   const refreshUserData = async () => {
     if (!email || !userType) return
 
@@ -93,10 +98,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setClubData(data as ClubData)
     } else if (data) {
       setUserData(data as UserData)
+      setReservaIds((data as UserData).reservas || [])
     }
   }
 
-  // Función para actualizar solo el nivel (optimización)
+  // Actualizar nivel del usuario
   const updateUserLevel = (newLevel: number) => {
     if (userData) {
       setUserData({
@@ -106,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Función para actualizar la descripción del club
+  // Actualizar descripción del club
   const updateClubDesc = async (desc: string): Promise<boolean> => {
     if (!email || userType !== "club") return false
 
@@ -130,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Función para actualizar información del club
+  // Actualizar información del club
   const updateClubInfo = async (info: Partial<ClubData>): Promise<boolean> => {
     if (!email || userType !== "club") return false
 
@@ -138,7 +144,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const formData = new FormData()
       formData.append("email", email)
 
-      // Añadir solo los campos que se están actualizando
       Object.entries(info).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, value.toString())
@@ -160,13 +165,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Función de login
+  // Login
   const login = (newToken: string) => {
     setToken(newToken)
+    console.log(newToken)
     localStorage.setItem("jwtToken", newToken)
   }
 
-  // Función de logout
+  // Logout
   const logout = () => {
     setToken(null)
     setIsLoggedIn(false)
@@ -174,6 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUserType(null)
     setUserData(null)
     setClubData(null)
+    setReservaIds([])
     localStorage.removeItem("jwtToken")
   }
 
@@ -186,6 +193,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUserType(null)
         setUserData(null)
         setClubData(null)
+        setReservaIds([])
+        setLoading(false)
         return
       }
 
@@ -209,6 +218,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.error("Error verificando token:", error)
         logout()
       }
+      setLoading(false)
     }
 
     verifyToken()
@@ -228,14 +238,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userType === "club" && data) {
           setClubData(data as ClubData)
           setUserData(null)
+          setReservaIds([])
         } else if (data) {
           setUserData(data as UserData)
           setClubData(null)
+          setReservaIds((data as UserData).reservas || [])
         }
       }
     }
 
     loadUserData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, email, userType])
 
   const value: AuthContextType = {
@@ -245,13 +258,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     userType,
     userData,
     clubData,
+    reservaIds,
+    setReservaIds,
     login,
     logout,
     refreshUserData,
     updateUserLevel,
     updateClubDesc,
     updateClubInfo,
+    loading
   }
-
+  
+  if(!loading)
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

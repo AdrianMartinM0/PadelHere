@@ -1,4 +1,4 @@
-from ..database.db import user_collection
+from ..database.db import user_collection, club_collection
 from ..database.models.usuario import User
 from pydantic import BaseModel
 from fastapi import HTTPException
@@ -12,12 +12,40 @@ import jwt
 from api.config import SECRET_KEY, ALGORITHM
 from ..database.db import club_collection
 import base64
-# from google.oauth2 import id_token
-# from google.auth.transport import requests
+from bson import ObjectId
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from ..config import GOOGLE_CLIENT_ID
 
 
 class GoogleToken(BaseModel):
     token: str
+
+
+def clean_user_reservas(user):
+    """
+    Recibe un usuario con reservas pobladas (cada reserva tiene 'pista' y cada 'pista' tiene 'club'),
+    y devuelve una lista de reservas con solo los campos necesarios:
+    - De la reserva: day, from, to
+    - De la pista: name
+    - Del club: name, direccion, tel
+    """
+    cleaned_reservas = []
+    for reserva in user.get("reservas", []):
+        pista = reserva.get("pista", {})
+        club = pista.get("club", {})
+        cleaned_reservas.append({
+            "day": reserva.get("day"),
+            "from": reserva.get("from"),
+            "to": reserva.get("to"),
+            "pista": pista.get("name"),
+            "club": {
+                "name": club.get("name"),
+                "direccion": club.get("direccion"),
+                "tel": club.get("tel"),
+            }
+        })
+    return cleaned_reservas
 
 
 async def create_user(data):
@@ -37,11 +65,19 @@ async def create_user(data):
 
 
 async def get_one_user(email):
-    users_collection = user_collection
-    user = users_collection.find_one({"email": email})
-    if user and "_id" in user:
-        user.pop("_id")
-        user.pop("password")  # Eliminar la contraseña del resultado
+    user = user_collection.find_one({"email": email})
+    if not user:
+        return None
+
+    # Convert user ID to string
+    if "_id" in user:
+        user["_id"] = str(user["_id"])
+    # Remove password from result
+    user.pop("password", None)
+    # Devolver solo los IDs de las reservas (como strings)
+    reservas_ids = user.get("reservas", [])
+    user["reservas"] = [str(rid) for rid in reservas_ids]
+
     return user
 
 
@@ -279,6 +315,7 @@ async def update_profile_picture_service(email: str, profile_picture_blob: bytes
             status_code=500, detail="Error al actualizar la foto de perfil.")
     return {"message": "Foto de perfil actualizada correctamente.", "profile_picture": profile_picture_base64}
 
+
 async def update_level_service(email: str, level: int):
     user = await get_one_user(email)
     if not user:
@@ -293,34 +330,76 @@ async def update_level_service(email: str, level: int):
             status_code=500, detail="Error al actualizar el nivel.")
     return {"message": "Nivel actualizado correctamente."}
 
-# async def get_google_user(token: str):
-#     try:
-#         # Verificar el token de Google
-#         id_info = id_token.verify_oauth2_token(token, requests.Request(), audience=None)
 
-#         # Extraer información del usuario
-#         email = id_info.get("email")
-#         name = id_info.get("name")
-#         google_id = id_info.get("sub")
+async def add_reserva_id_to_user(user_id: str, reserva_id: str):
+    result = user_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$addToSet": {"reservas": str(reserva_id)}}
+    )
+    return result.modified_count == 1
 
-#         # Buscar el usuario en la base de datos
-#         users_collection = user_collection
-#         user_data = users_collection.find_one({"google_id": google_id})
 
-#         if not user_data:
-#             # Si el usuario no existe, crearlo
-#             new_user = User(name=name, email=email, google_id=google_id)
-#             users_collection.insert_one(new_user.model_dump())
-#             return {"name": name, "email": email, "google_id": google_id}
+async def get_user_by_id(user_id: str):
+    try:
+        user_oid = ObjectId(user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID de club no válido.")
+    
+    user = user_collection.find_one({"_id": user_oid})
+    if not user:
+        return None
 
-#         # Convertir el documento de MongoDB en un objeto User
-#         user = User(
-#             id=str(user_data["_id"]),
-#             name=user_data["name"],
-#             email=user_data["email"],
-#             google_id=user_data["google_id"],
-#             password=user_data.get("password", None),
-#         )
-#         return user
-#     except ValueError:
-#         return None
+    user["_id"] = str(user["_id"])
+    user.pop("password", None)
+    reservas_ids = user.get("reservas", [])
+    user["reservas"] = [str(rid) for rid in reservas_ids]
+
+    return user
+
+async def get_google_user(token: str):
+    try:
+        # Verificar el token de Google
+        id_info = id_token.verify_oauth2_token(token, requests.Request(), audience=GOOGLE_CLIENT_ID)
+
+        # Extraer información del usuario
+        email = id_info.get("email")
+        name = id_info.get("name")
+
+        # Buscar el usuario en la base de datos por email
+        users_collection = user_collection
+        user_data = users_collection.find_one({"email": email})
+
+        if not user_data:
+            # Si el usuario no existe, crearlo
+            new_user = User(name=name, email=email)
+            result = users_collection.insert_one(new_user.model_dump())
+            mongo_id = str(result.inserted_id)
+            access_token = create_access_token(email=email, user_type="user")
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "user": {"id": mongo_id, "name": name, "email": email}
+            }
+
+        # Usuario ya existe
+        user_id = str(user_data["_id"])
+        access_token = create_access_token(email=user_data["email"], user_type="user")
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user_id,  # <-- Aquí usas el id de MongoDB, no de Pydantic
+                "name": user_data["name"],
+                "email": user_data["email"],
+            }
+        }
+    except ValueError as e:
+        print(f"Error de validación de token de Google: {e}")
+        raise HTTPException(status_code=401, detail=f"Token inválido: {e}")
+    
+async def delete_user_service(user_id: str):
+    result = user_collection.delete_one({"_id": ObjectId(user_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+    
+    return {"message": "Usuario eliminado correctamente."}

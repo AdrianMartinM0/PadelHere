@@ -14,11 +14,14 @@ const Login = () => {
     const [isClub, setIsClub] = useState(false);
 
 
-    const { login, isLoggedIn } = useContext(AuthContext)!;
+    const { login, isLoggedIn, loading } = useContext(AuthContext)!;
 
     useEffect(() => {
         if (isLoggedIn) {
-            navigate('/app', { replace: true });
+            if(!loading)
+                navigate('/app', { replace: true });
+            // else
+
         }
     }, []);
 
@@ -60,8 +63,8 @@ const Login = () => {
             const data = await response.json();
             if (data.token) {
                 login(data.token);
-                // localStorage.setItem("jwtToken", data.token);
-                navigate("/app");
+                if (!loading && isLoggedIn) 
+                    navigate(isClub ? "/app/profile" : "/app");
             }
         } catch (error) {
             console.error("Error during login:", error);
@@ -164,12 +167,14 @@ const Login = () => {
                 </form>
 
                 {/* Otras opciones */}
-                <div className="mt-6 flex flex-col gap-4">
+                <div className="flex items-center mt-2">
+                    <hr className="my-2 w-full border-gray-300" />
+                    <p className="text-center w-full text-sm text-gray-600 mx-1">o continua con</p>
+                    <hr className="my-2 w-full border-gray-300" />
+                </div>
+                <p className="text-center w-full text-sm text-gray-600">no disponible para clubs</p>
+                <div className="mt-2 flex flex-col gap-4">
                     <GoogleAuth />
-                    <button className="flex items-center justify-center px-4 py-2 bg-gray-100 rounded-md shadow hover:bg-gray-200">
-                        <img src="/apple-icon.svg" alt="Apple" className="w-5 h-5 mr-2" />
-                        Continuar con AppleID
-                    </button>
                 </div>
 
                 {/* Links de ayuda */}

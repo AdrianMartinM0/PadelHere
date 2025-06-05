@@ -9,14 +9,14 @@ class PyObjectId(ObjectId):
     def __get_validators__(cls):
         yield cls.validate
 
+    # CORREGIDO: Acepta tres argumentos para compatibilidad con Pydantic v2
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v, info=None):
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
-        return ObjectId(v)
+        return ObjectId(str(v))
 
 class Club(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     name: str = Field(...)
     email: EmailStr = Field(...)
     password: str = Field(...)

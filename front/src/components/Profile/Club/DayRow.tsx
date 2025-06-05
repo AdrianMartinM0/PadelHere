@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getBlocks, Block, toTimeStr } from "./PistasUtils";
 import SlotBlock from "./SlotBlock";
 import { BadgeInfo } from "lucide-react";
+import { AuthContext } from "../../../context/AuthContext";
 
 function isPast(date: string) {
   const today = new Date();
@@ -28,6 +29,8 @@ export default function DayRow({
 
   const mergedCfg = { ...config, trainings, reservas };
   const blocks: Block[] = getBlocks(mergedCfg, date);
+    const { userType } = useContext(AuthContext)!;
+
 
   const past = isPast(date);
 
@@ -83,7 +86,7 @@ export default function DayRow({
                 onClick={reserva ? () => setReservaDetalle(reserva) : undefined}
               />
               {/* Puedes mostrar un pequeño icono si hay reserva */}
-              {reserva && (
+              {reserva && userType === "club" && (
                 <div
                   className="absolute top-1 right-1 bg-blue-200 rounded-full px-1 py-0.5 text-xs text-yellow-900 cursor-pointer"
                   onClick={() => setReservaDetalle(reserva)}

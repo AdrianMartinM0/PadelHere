@@ -6,11 +6,22 @@ import { Link } from "react-router-dom";
 const HeaderConLog = () => {
     const { logout } = useContext(AuthContext)!;
     const [isHovered, setIsHovered] = useState(false);
+    const { userType } = useContext(AuthContext)!;
 
     return (
         <div className="flex gap-4 items-center">
-            <Link to="/app/jugar"><button className="py-2 hover:text-blue-400 transition">Jugar</button></Link>
-            <Link to="/app/partidos"><button className="py-2 hover:text-blue-400 transition">Mis Partidos</button></Link>
+            {userType !== "club" && (
+                <div className="flex gap-4 items-center">
+                    <Link to="/app/jugar"><button className="py-2 hover:text-blue-400 transition">Jugar</button></Link>
+                    <Link to="/app/chats"><button className="py-2 hover:text-blue-400 transition">Chats</button></Link>
+                    <Link to="/app/clubs"><button className="py-2 hover:text-blue-400 transition">Clubes</button></Link>
+                    <Link to="/app/mis-partidos"><button className="py-2 hover:text-blue-400 transition">Mis Partidos</button></Link>
+                    <Link to="/app/reservas"><button className="py-2 hover:text-blue-400 transition">Mis Reservas</button></Link>
+                </div>
+            )}
+            {userType === "club" && (
+                <Link to="/app/club-reservas"><button className="py-2 hover:text-blue-400 transition">Reservas</button></Link>
+            )}
             <div className="flex justify-center items-center gap-4" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
 
                 <section className="flex justify-center items-center">
