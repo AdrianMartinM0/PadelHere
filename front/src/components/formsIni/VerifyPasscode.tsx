@@ -18,7 +18,7 @@ const VerifyPasscode = () => {
     const isClub = new URLSearchParams(location.search).get('club');
     const { isLoggedIn } = useContext(AuthContext)!;
 
-    
+
     useEffect(() => {
         if (isLoggedIn) {
             navigate('/app', { replace: true });
@@ -61,13 +61,13 @@ const VerifyPasscode = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
-            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-                <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
+        <div className="flex items-center justify-center min-w-full min-h-[calc(100vh-100px)] px-2 sm:px-0 transition-colors duration-300">
+            <div className="w-full max-w-md p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:rounded-2xl shadow-md transition-colors duration-300">
+                <h2 className="mb-6 text-2xl font-bold text-center text-gray-800 dark:text-blue-300">
                     Verificar Código
                 </h2>
                 {email && (
-                    <p className="mb-4 text-sm text-gray-600 text-center">
+                    <p className="mb-4 text-sm text-gray-600 dark:text-gray-400 text-center">
                         Verificando para: <strong>{email}</strong>
                     </p>
                 )}
@@ -75,7 +75,7 @@ const VerifyPasscode = () => {
                     <div className="mb-4">
                         <label
                             htmlFor="passcode"
-                            className="block mb-2 text-sm font-medium text-gray-700"
+                            className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
                             Código de Verificación
                         </label>
@@ -90,7 +90,7 @@ const VerifyPasscode = () => {
                                     passcodeField.onChange(val);
                                     setError('');
                                 }}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200"
                                 placeholder="Ingresa el código"
                                 maxLength={6}
                             />
@@ -116,7 +116,7 @@ const VerifyPasscode = () => {
                     )}
                     <button
                         type="submit"
-                        className="w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 text-white bg-blue-500 dark:bg-blue-700 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
                     >
                         Verificar Código
                     </button>

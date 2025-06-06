@@ -91,14 +91,14 @@ useEffect(() => {
     }, [success]);
 
 
-    return (
-        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
-            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-                <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
+   return (
+        <div className="flex items-center justify-center min-w-full min-h-[calc(100vh-100px)] px-2 sm:px-0 transition-colors duration-300">
+            <div className="w-full max-w-md p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:rounded-2xl shadow-md transition-colors duration-300">
+                <h2 className="mb-6 text-2xl font-bold text-center text-gray-800 dark:text-blue-300">
                     Crear Nueva Contraseña
                 </h2>
                 {email && (
-                    <p className="mb-4 text-sm text-gray-600 text-center">
+                    <p className="mb-4 text-sm text-gray-600 dark:text-gray-400 text-center">
                         Cambiando contraseña para: <strong>{email}</strong>
                     </p>
                 )}
@@ -106,7 +106,7 @@ useEffect(() => {
                     <div className="mb-4">
                         <label
                             htmlFor="newPassword"
-                            className="block mb-2 text-sm font-medium text-gray-700"
+                            className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
                             Nueva Contraseña
                         </label>
@@ -116,23 +116,21 @@ useEffect(() => {
                                 id="newPassword"
                                 value={newPasswordField.value}
                                 onChange={(e) => handleNewPasswordChange(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${newPasswordField.error ? "border-red-500" : "border-gray-300"
-                                    }`}
+                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${newPasswordField.error ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                                    } transition-colors duration-200`}
                                 placeholder="Ingresa la nueva contraseña"
                             />
                             <div className="mt-1 relative">
                                 <button
                                     type="button"
-                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
                                     onClick={toggleVisibilityP}
                                     aria-label="Toggle password visibility"
                                 >
                                     {isPasswordVisibleP ? (
-                                        // ...icono visible...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
+                                        <svg className="w-4 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" fill='currentColor' viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
                                     ) : (
-                                        // ...icono oculto...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
+                                        <svg className="w-4 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" fill='currentColor' viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
                                     )}
                                 </button>
                             </div>
@@ -159,7 +157,7 @@ useEffect(() => {
                     <div className="mb-4">
                         <label
                             htmlFor="confirmPassword"
-                            className="block mb-2 text-sm font-medium text-gray-700"
+                            className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
                             Confirmar Contraseña
                         </label>
@@ -169,23 +167,21 @@ useEffect(() => {
                                 id="confirmPassword"
                                 value={confirmPasswordField.value}
                                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${confirmPasswordField.error ? "border-red-500" : "border-gray-300"
-                                    }`}
+                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${confirmPasswordField.error ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                                    } transition-colors duration-200`}
                                 placeholder="Confirma la nueva contraseña"
                             />
                             <div className="mt-1 relative">
                                 <button
                                     type="button"
-                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
                                     onClick={toggleVisibilityC}
                                     aria-label="Toggle password visibility"
                                 >
                                     {isPasswordVisibleC ? (
-                                        // ...icono visible...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
+                                        <svg className="w-4 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" fill='currentColor' viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
                                     ) : (
-                                        // ...icono oculto...
-                                        <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
+                                        <svg className="w-4 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" fill='currentColor' viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
                                     )}
                                 </button>
                             </div>
@@ -213,7 +209,7 @@ useEffect(() => {
                     {success && <p className="mb-4 text-sm text-green-500">¡Contraseña actualizada con éxito!</p>}
                     <button
                         type="submit"
-                        className="w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 text-white bg-blue-500 dark:bg-blue-700 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
                     >
                         Guardar Contraseña
                     </button>
@@ -222,5 +218,6 @@ useEffect(() => {
         </div>
     );
 };
+
 
 export default SetNewPassword;

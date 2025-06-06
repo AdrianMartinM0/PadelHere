@@ -59,9 +59,10 @@ export default function CourtSelector({
         {courts.map((c) => (
           <div key={c.id} className="flex items-center gap-1">
             <button
-              className={`px-4 py-2 rounded font-medium border ${selectedCourt === c.id
-                ? "bg-blue-100 border-blue-600"
-                : "bg-white"
+              className={`px-4 py-2 rounded font-medium border transition-colors
+                ${selectedCourt === c.id
+                  ? "bg-blue-100 border-blue-600 text-blue-800 dark:bg-blue-950 dark:border-blue-400 dark:text-blue-200"
+                  : "bg-white border-gray-300 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100"
                 }`}
               onClick={() => setSelectedCourt(c.id)}
               type="button"
@@ -72,7 +73,7 @@ export default function CourtSelector({
             {userType === "club" && (
               <div className="flex items-center gap-1">
                 <button
-                  className="text-blue-600 px-2"
+                  className="text-blue-600 dark:text-blue-300 px-2"
                   title="Editar"
                   onClick={() => openEditModal(c)}
                   type="button"
@@ -80,7 +81,7 @@ export default function CourtSelector({
                   <PencilLine className="w-4" />
                 </button>
                 <button
-                  className="text-red-600 px-2"
+                  className="text-red-600 dark:text-red-400 px-2"
                   title="Eliminar"
                   onClick={() => {
                     deleteCourt(c.id);
@@ -96,7 +97,7 @@ export default function CourtSelector({
         {userType === "club" && (
           <button
             type="button"
-            className="px-3 py-1 rounded border bg-green-100 border-green-400 font-bold text-green-700"
+            className="px-3 py-1 rounded border bg-green-100 border-green-400 font-bold text-green-700 dark:bg-green-950 dark:border-green-700 dark:text-green-300 transition-colors"
             onClick={() => setShowAdd(true)}
           >
             + Añadir pista
@@ -106,31 +107,31 @@ export default function CourtSelector({
 
       {/* Modal Añadir */}
       {showAdd && (
-        <div className="fixed inset-0 flex items-center justify-center bg-[#0004] z-50">
-          <div className="bg-white rounded shadow-lg p-6 min-w-[300px]">
-            <h2 className="text-lg font-semibold mb-3">Nueva pista</h2>
+        <div className="fixed inset-0 flex items-center justify-center bg-[#0004] dark:bg-black/60 z-50">
+          <div className="bg-white dark:bg-gray-900 rounded shadow-lg p-6 min-w-[300px]">
+            <h2 className="text-lg font-semibold mb-3 dark:text-gray-100">Nueva pista</h2>
             <label className="block mb-2">
-              Nombre:
+              <span className="dark:text-gray-100">Nombre:</span>
               <input
                 type="text"
-                className="border rounded px-2 py-1 w-full mt-1"
+                className="border rounded px-2 py-1 w-full mt-1 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                 value={newCourtName}
                 onChange={e => setNewCourtName(e.target.value)}
                 autoFocus
               />
             </label>
             <label className="block mb-2">
-              Descripción:
+              <span className="dark:text-gray-100">Descripción:</span>
               <input
                 type="text"
-                className="border rounded px-2 py-1 w-full mt-1"
+                className="border rounded px-2 py-1 w-full mt-1 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                 value={newCourtDesc}
                 onChange={e => setNewCourtDesc(e.target.value)}
               />
             </label>
             <div className="flex justify-end gap-2 mt-4">
               <button
-                className="px-3 py-1 rounded border bg-gray-100 border-gray-300"
+                className="px-3 py-1 rounded border bg-gray-100 border-gray-300 text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-colors"
                 onClick={() => {
                   setShowAdd(false);
                   setNewCourtName("");
@@ -141,7 +142,7 @@ export default function CourtSelector({
                 Cancelar
               </button>
               <button
-                className="px-3 py-1 rounded border bg-green-600 border-green-700 text-white font-bold"
+                className="px-3 py-1 rounded border bg-green-600 border-green-700 text-white font-bold disabled:opacity-60 transition-colors"
                 onClick={() => {
                   const name = newCourtName.trim() || `Pista ${courts.length + 1}`;
                   const desc = newCourtDesc.trim();
@@ -162,31 +163,31 @@ export default function CourtSelector({
 
       {/* Modal Editar */}
       {showEdit && (
-        <div className="fixed inset-0 flex items-center justify-center bg-[#0004] z-50">
-          <div className="bg-white rounded shadow-lg p-6 min-w-[300px]">
-            <h2 className="text-lg font-semibold mb-3">Editar pista</h2>
+        <div className="fixed inset-0 flex items-center justify-center bg-[#0004] dark:bg-black/60 z-50">
+          <div className="bg-white dark:bg-gray-900 rounded shadow-lg p-6 min-w-[300px]">
+            <h2 className="text-lg font-semibold mb-3 dark:text-gray-100">Editar pista</h2>
             <label className="block mb-2">
-              Nombre:
+              <span className="dark:text-gray-100">Nombre:</span>
               <input
                 type="text"
-                className="border rounded px-2 py-1 w-full mt-1"
+                className="border rounded px-2 py-1 w-full mt-1 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                 value={editCourtName}
                 onChange={e => setEditCourtName(e.target.value)}
                 autoFocus
               />
             </label>
             <label className="block mb-2">
-              Descripción:
+              <span className="dark:text-gray-100">Descripción:</span>
               <input
                 type="text"
-                className="border rounded px-2 py-1 w-full mt-1"
+                className="border rounded px-2 py-1 w-full mt-1 text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                 value={editCourtDesc}
                 onChange={e => setEditCourtDesc(e.target.value)}
               />
             </label>
             <div className="flex justify-end gap-2 mt-4">
               <button
-                className="px-3 py-1 rounded border bg-gray-100 border-gray-300"
+                className="px-3 py-1 rounded border bg-gray-100 border-gray-300 text-gray-800 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-colors"
                 onClick={() => {
                   setShowEdit(false);
                   setEditCourtId(null);
@@ -198,7 +199,7 @@ export default function CourtSelector({
                 Cancelar
               </button>
               <button
-                className="px-3 py-1 rounded border bg-blue-600 border-blue-700 text-white font-bold"
+                className="px-3 py-1 rounded border bg-blue-600 border-blue-700 text-white font-bold disabled:opacity-60 transition-colors"
                 onClick={handleEditCourt}
                 type="button"
                 disabled={!editCourtName.trim()}

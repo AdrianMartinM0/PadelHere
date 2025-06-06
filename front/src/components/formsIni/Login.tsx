@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import GoogleAuth from "../GoogleAuth";
+import GoogleAuth from "../OAuth2/GoogleAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormField, validateEmail, validatePassword } from "../../hooks/useFormHooks";
 import { useContext } from "react";
@@ -13,15 +13,12 @@ const Login = () => {
     const navigate = useNavigate();
     const [isClub, setIsClub] = useState(false);
 
-
     const { login, isLoggedIn, loading } = useContext(AuthContext)!;
 
     useEffect(() => {
         if (isLoggedIn) {
-            if(!loading)
+            if (!loading)
                 navigate('/app', { replace: true });
-            // else
-
         }
     }, []);
 
@@ -63,7 +60,7 @@ const Login = () => {
             const data = await response.json();
             if (data.token) {
                 login(data.token);
-                if (!loading && isLoggedIn) 
+                if (!loading && isLoggedIn)
                     navigate(isClub ? "/app/profile" : "/app");
             }
         } catch (error) {
@@ -74,9 +71,9 @@ const Login = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-4">
-                <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+        <div className="flex items-center justify-center min-w-full px-2 sm:px-0 min-h-[calc(100vh-100px)] transition-colors duration-300">
+            <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg sm:rounded-2xl shadow-lg w-full max-w-md mx-2 sm:mx-4 transition-colors duration-300">
+                <h2 className="text-2xl font-bold mb-6 text-center text-blue-700 dark:text-blue-300">Iniciar Sesión</h2>
                 <p id="noLogin" ref={noLoginElement} className="text-center text-red-500 m-0 text-sm"></p>
                 <form noValidate
                     onSubmit={(e) => {
@@ -86,7 +83,7 @@ const Login = () => {
                 >
                     {/* EMAIL */}
                     <div className="mb-4 flex flex-col items-center">
-                        <label htmlFor="email" className="w-full block text-sm font-medium text-gray-700">
+                        <label htmlFor="email" className="w-full block text-sm font-medium text-gray-700 dark:text-gray-200">
                             Correo Electrónico
                         </label>
                         <div className="flex items-center w-full">
@@ -95,7 +92,7 @@ const Login = () => {
                                 id="email"
                                 value={emailField.value}
                                 onChange={(e) => emailField.onChange(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-900 dark:text-gray-100 sm:text-sm transition-colors duration-200"
                             />
                             <span className="p-2">
                                 {emailField.error ? (
@@ -110,7 +107,7 @@ const Login = () => {
 
                     {/* PASSWORD */}
                     <div className="mb-6 flex flex-col items-center">
-                        <label htmlFor="password" className="w-full block text-sm font-medium text-gray-700">
+                        <label htmlFor="password" className="w-full block text-sm font-medium text-gray-700 dark:text-gray-200">
                             Contraseña
                         </label>
                         <div className="flex items-center w-full">
@@ -119,12 +116,12 @@ const Login = () => {
                                 id="password"
                                 value={passwordField.value}
                                 onChange={(e) => passwordField.onChange(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-900 dark:text-gray-100 sm:text-sm transition-colors duration-200"
                             />
                             <div className="mt-1 relative">
                                 <button
                                     type="button"
-                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                    className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
                                     onClick={toggleVisibility}
                                     aria-label="Toggle password visibility"
                                 >
@@ -142,7 +139,7 @@ const Login = () => {
                         {passwordField.error && <p className="w-full text-red-500 text-sm mt-1">{passwordField.error}</p>}
                     </div>
                     <div className="mb-4 justify-center gap-2 flex items-center">
-                        <p>¿Eres un Club?</p>
+                        <p className="text-gray-800 dark:text-gray-200">¿Eres un Club?</p>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={isClub} onChange={handleToggle} className="sr-only peer" />
                             <div className={`ring-0 rounded-full outline-none duration-300 w-6 h-6 shadow-md flex items-center justify-center relative ${isClub ? 'bg-emerald-500' : 'bg-rose-400'}`}>
@@ -160,7 +157,7 @@ const Login = () => {
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="w-full bg-indigo-600 dark:bg-blue-700 text-white py-2 px-4 rounded-md hover:bg-indigo-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-blue-400 focus:ring-offset-2 transition-colors duration-200"
                     >
                         Iniciar Sesión
                     </button>
@@ -168,26 +165,26 @@ const Login = () => {
 
                 {/* Otras opciones */}
                 <div className="flex items-center mt-2">
-                    <hr className="my-2 w-full border-gray-300" />
-                    <p className="text-center w-full text-sm text-gray-600 mx-1">o continua con</p>
-                    <hr className="my-2 w-full border-gray-300" />
+                    <hr className="my-2 w-full border-gray-300 dark:border-gray-700" />
+                    <p className="text-center w-full text-sm text-gray-600 dark:text-gray-300 mx-1">o continua con</p>
+                    <hr className="my-2 w-full border-gray-300 dark:border-gray-700" />
                 </div>
-                <p className="text-center w-full text-sm text-gray-600">no disponible para clubs</p>
+                <p className="text-center w-full text-sm text-gray-600 dark:text-gray-400">no disponible para clubs</p>
                 <div className="mt-2 flex flex-col gap-4">
                     <GoogleAuth />
                 </div>
 
                 {/* Links de ayuda */}
                 <div className="mt-6 flex flex-col gap-4">
-                    <p className="text-center text-sm text-gray-600">
+                    <p className="text-center text-sm text-gray-600 dark:text-gray-300">
                         ¿No tienes una cuenta?{" "}
-                        <Link to={"/sesion/register"} className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                        <Link to={"/sesion/register"} className="text-indigo-600 dark:text-blue-400 hover:text-indigo-500 dark:hover:text-blue-200 font-semibold">
                             Regístrate
                         </Link>
                     </p>
-                    <p className="text-center text-sm text-gray-600">
+                    <p className="text-center text-sm text-gray-600 dark:text-gray-300">
                         ¿Olvidaste tu contraseña?{" "}
-                        <Link to={"/sesion/recover"} className="text-indigo-600 hover:text-indigo-500 font-semibold">
+                        <Link to={"/sesion/recover"} className="text-indigo-600 dark:text-blue-400 hover:text-indigo-500 dark:hover:text-blue-200 font-semibold">
                             Recuperar
                         </Link>
                     </p>
@@ -215,11 +212,11 @@ const SuccessIcon = () => (
 );
 
 const EyeIcon = () => (
-    <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
+    <svg className="w-4 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 448 512"><path d="M144 144c0-44.2 35.8-80 80-80c31.9 0 59.4 18.6 72.3 45.7c7.6 16 26.7 22.8 42.6 15.2s22.8-26.7 15.2-42.6C331 33.7 281.5 0 224 0C144.5 0 80 64.5 80 144l0 48-16 0c-35.3 0-64 28.7-64 64L0 448c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-192c0-35.3-28.7-64-64-64l-240 0 0-48z" /></svg>
 );
 
 const EyeOffIcon = () => (
-    <svg className="w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
+    <svg className="w-4 text-black dark:text-white" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 448 512"><path d="M144 144l0 48 160 0 0-48c0-44.2-35.8-80-80-80s-80 35.8-80 80zM80 192l0-48C80 64.5 144.5 0 224 0s144 64.5 144 144l0 48 16 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 256c0-35.3 28.7-64 64-64l16 0z" /></svg>
 );
 
 export default Login;

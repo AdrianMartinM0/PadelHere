@@ -23,25 +23,25 @@ type Reserva = {
 
 const PulseReservaCard = () => (
     <div
-        className="border border-blue-300 rounded-2xl px-9 py-8 mb-3 max-w-4xl min-w-[320px] w-[95vw] 
-      bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 shadow-xl mx-auto animate-pulse min-h-[150px] flex flex-col gap-4"
+        className="border border-blue-300 dark:border-blue-900 rounded-2xl px-9 py-8 mb-3 max-w-4xl min-w-[320px] w-[95vw] 
+      bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 dark:from-blue-900 dark:via-blue-950 dark:to-blue-900 shadow-xl mx-auto animate-pulse min-h-[150px] flex flex-col gap-4"
         aria-label="Cargando reserva"
     >
         <div className="flex flex-col items-center gap-3 mb-4">
             <div className="flex items-center gap-3">
-                <div className="rounded-full bg-blue-200 w-8 h-8" />
-                <div className="h-6 bg-blue-200 rounded w-40" />
+                <div className="rounded-full bg-blue-200 dark:bg-blue-800 w-8 h-8" />
+                <div className="h-6 bg-blue-200 dark:bg-blue-800 rounded w-40" />
             </div>
-            <div className="h-4 bg-blue-100 rounded w-32" />
+            <div className="h-4 bg-blue-100 dark:bg-blue-900 rounded w-32" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-x-10 gap-y-2 mt-2">
             <div className="flex flex-col space-y-4">
-                <div className="h-4 bg-blue-100 rounded w-32" />
-                <div className="h-4 bg-blue-200 rounded w-24" />
+                <div className="h-4 bg-blue-100 dark:bg-blue-900 rounded w-32" />
+                <div className="h-4 bg-blue-200 dark:bg-blue-800 rounded w-24" />
             </div>
             <div className="flex flex-col space-y-4">
-                <div className="h-4 bg-blue-100 rounded w-48" />
-                <div className="h-4 bg-blue-200 rounded w-36" />
+                <div className="h-4 bg-blue-100 dark:bg-blue-900 rounded w-48" />
+                <div className="h-4 bg-blue-200 dark:bg-blue-800 rounded w-36" />
             </div>
         </div>
     </div>
@@ -50,31 +50,31 @@ const PulseReservaCard = () => (
 // Card adaptada sin club/dirección
 const ReservaCard = ({ r }: { r: Reserva }) => (
     <div
-        className="border border-blue-600 bg-blue-50 rounded-2xl px-9 py-8 mb-3 max-w-4xl min-w-[320px] w-[95vw] shadow-xl mx-auto font-sans transition-shadow"
+        className="border border-blue-600 dark:border-blue-900 bg-blue-50 dark:bg-blue-950 rounded-2xl px-9 py-8 mb-3 max-w-4xl min-w-[320px] w-[95vw] shadow-xl mx-auto font-sans transition-shadow"
     >
         <div className="flex items-center justify-around">
-            <div className="flex items-center gap-2 text-2xl font-bold mb-1 text-blue-800">
-                <User2 className="w-7 h-7 text-blue-500" />
+            <div className="flex items-center gap-2 text-2xl font-bold mb-1 text-blue-800 dark:text-blue-100">
+                <User2 className="w-7 h-7 text-blue-500 dark:text-blue-300" />
                 <span>{r.name}</span>
             </div>
-            <div className="flex items-center gap-2 text-lg text-blue-600">
-                <FlagTriangleRight className="w-5 h-5 text-blue-400" />
+            <div className="flex items-center gap-2 text-lg text-blue-600 dark:text-blue-300">
+                <FlagTriangleRight className="w-5 h-5 text-blue-400 dark:text-blue-200" />
                 <span>
                     Pista <span className="font-semibold">{r.pista}</span>
                 </span>
             </div>
         </div>
-        <div className="flex justify-between mt-4">
-            <div className="flex items-center gap-2 text-[17px] text-blue-900">
-                <CalendarDays className="w-5 h-5 text-blue-400" />
+        <div className="flex justify-between mt-4 flex-wrap gap-y-2">
+            <div className="flex items-center gap-2 text-[17px] text-blue-900 dark:text-blue-200">
+                <CalendarDays className="w-5 h-5 text-blue-400 dark:text-blue-200" />
                 <span className="font-medium">Día:</span> {r.day}
             </div>
-            <div className="flex items-center gap-2 text-[17px] text-blue-900">
-                <Clock className="w-5 h-5 text-blue-400" />
+            <div className="flex items-center gap-2 text-[17px] text-blue-900 dark:text-blue-200">
+                <Clock className="w-5 h-5 text-blue-400 dark:text-blue-200" />
                 <span className="font-medium">Hora:</span> {toTimeStr(r.from)} - {toTimeStr(r.to)}
             </div>
-            <div className="flex items-center gap-2 text-[17px] text-blue-900">
-                <Phone className="w-5 h-5 text-blue-400" />
+            <div className="flex items-center gap-2 text-[17px] text-blue-900 dark:text-blue-200">
+                <Phone className="w-5 h-5 text-blue-400 dark:text-blue-200" />
                 <span className="font-medium">Teléfono:</span> {r.phone}
             </div>
         </div>
@@ -110,7 +110,7 @@ const ReservasClub = () => {
 
     if (!reservas || reservas.length === 0) {
         return (
-            <div className="text-center text-gray-500 mt-16 text-lg">
+            <div className="text-center text-gray-500 dark:text-gray-400 mt-16 text-lg">
                 No hay reservas próximas.
             </div>
         );
@@ -119,9 +119,9 @@ const ReservasClub = () => {
     return (
         <div className="flex flex-col items-center justify-start gap-4 min-h-screen w-full pb-10">
             <div className="w-full mt-8 mb-4 px-2">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white w-full">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow-lg p-6 text-white w-full">
                     <h1 className="text-2xl font-bold mb-2">Reservas</h1>
-                    <p className="text-blue-100">Aquí puedes ver las reservas pendientes que tiene tu club</p>
+                    <p className="text-blue-100 dark:text-blue-200">Aquí puedes ver las reservas pendientes que tiene tu club</p>
                 </div>
             </div>
 

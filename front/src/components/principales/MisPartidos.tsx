@@ -136,104 +136,104 @@ const ProponerResultadoModal = ({
 
   if (!show) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/70">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button
+        className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+        onClick={onClose}
+      >
+        <X size={24} />
+      </button>
+      <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Proponer resultado</h2>
+      <div className="mb-2 dark:text-gray-200">Introduce el resultado set a set:</div>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold dark:text-gray-100">Set 1:</span>
+          <input
+            type="number"
+            min={0}
+            max={7}
+            className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-center dark:bg-gray-800 dark:text-gray-100"
+            value={set1p1}
+            onChange={e => handleSet(1, 1, e.target.value)}
+            placeholder="P1"
+          />
+          <span className="dark:text-gray-200">-</span>
+          <input
+            type="number"
+            min={0}
+            max={7}
+            className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-center dark:bg-gray-800 dark:text-gray-100"
+            value={set1p2}
+            onChange={e => handleSet(1, 2, e.target.value)}
+            placeholder="P2"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="font-semibold dark:text-gray-100">Set 2:</span>
+          <input
+            type="number"
+            min={0}
+            max={7}
+            className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-center dark:bg-gray-800 dark:text-gray-100"
+            value={set2p1}
+            onChange={e => handleSet(2, 1, e.target.value)}
+            placeholder="P1"
+          />
+          <span className="dark:text-gray-200">-</span>
+          <input
+            type="number"
+            min={0}
+            max={7}
+            className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-center dark:bg-gray-800 dark:text-gray-100"
+            value={set2p2}
+            onChange={e => handleSet(2, 2, e.target.value)}
+            placeholder="P2"
+          />
+        </div>
+        {showSet3() && (
+          <div className="flex items-center gap-3">
+            <span className="font-semibold dark:text-gray-100">Set 3:</span>
+            <input
+              type="number"
+              min={0}
+              max={7}
+              className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-center dark:bg-gray-800 dark:text-gray-100"
+              value={set3p1}
+              onChange={e => handleSet(3, 1, e.target.value)}
+              placeholder="P1"
+            />
+            <span className="dark:text-gray-200">-</span>
+            <input
+              type="number"
+              min={0}
+              max={7}
+              className="w-14 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-center dark:bg-gray-800 dark:text-gray-100"
+              value={set3p2}
+              onChange={e => handleSet(3, 2, e.target.value)}
+              placeholder="P2"
+            />
+          </div>
+        )}
+      </div>
+      {error && <div className="text-red-500 dark:text-red-400 mt-2">{error}</div>}
+      <div className="flex justify-end gap-2 mt-6">
         <button
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-700"
+          className="px-4 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={onClose}
         >
-          <X size={24} />
+          Cancelar
         </button>
-        <h2 className="text-xl font-bold mb-4">Proponer resultado</h2>
-        <div className="mb-2">Introduce el resultado set a set:</div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <span className="font-semibold">Set 1:</span>
-            <input
-              type="number"
-              min={0}
-              max={7}
-              className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-              value={set1p1}
-              onChange={e => handleSet(1, 1, e.target.value)}
-              placeholder="P1"
-            />
-            <span>-</span>
-            <input
-              type="number"
-              min={0}
-              max={7}
-              className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-              value={set1p2}
-              onChange={e => handleSet(1, 2, e.target.value)}
-              placeholder="P2"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="font-semibold">Set 2:</span>
-            <input
-              type="number"
-              min={0}
-              max={7}
-              className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-              value={set2p1}
-              onChange={e => handleSet(2, 1, e.target.value)}
-              placeholder="P1"
-            />
-            <span>-</span>
-            <input
-              type="number"
-              min={0}
-              max={7}
-              className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-              value={set2p2}
-              onChange={e => handleSet(2, 2, e.target.value)}
-              placeholder="P2"
-            />
-          </div>
-          {showSet3() && (
-            <div className="flex items-center gap-3">
-              <span className="font-semibold">Set 3:</span>
-              <input
-                type="number"
-                min={0}
-                max={7}
-                className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-                value={set3p1}
-                onChange={e => handleSet(3, 1, e.target.value)}
-                placeholder="P1"
-              />
-              <span>-</span>
-              <input
-                type="number"
-                min={0}
-                max={7}
-                className="w-14 border border-gray-300 rounded px-2 py-1 text-center"
-                value={set3p2}
-                onChange={e => handleSet(3, 2, e.target.value)}
-                placeholder="P2"
-              />
-            </div>
-          )}
-        </div>
-        {error && <div className="text-red-500 mt-2">{error}</div>}
-        <div className="flex justify-end gap-2 mt-6">
-          <button
-            className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
-            onClick={onClose}
-          >
-            Cancelar
-          </button>
-          <button
-            className={`px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition`}
-            onClick={handleSubmit}
-          >
-            Proponer
-          </button>
-        </div>
+        <button
+          className={`px-4 py-2 rounded bg-blue-600 dark:bg-blue-800 text-white font-semibold hover:bg-blue-700 dark:hover:bg-blue-700 transition`}
+          onClick={handleSubmit}
+        >
+          Proponer
+        </button>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 const Modal = ({
@@ -255,37 +255,37 @@ const Modal = ({
 }) => {
   if (!show) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/70">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <button
+        className="absolute top-3 right-4 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+        onClick={onClose}
+      >
+        <X size={24} />
+      </button>
+      <h2 className="text-xl font-bold mb-4 dark:text-gray-100">{title}</h2>
+      <div className="dark:text-gray-200">{children}</div>
+      <div className="flex justify-end gap-2 mt-6">
         <button
-          className="absolute top-3 right-4 text-gray-400 hover:text-gray-700"
+          className="px-4 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={onClose}
         >
-          <X size={24} />
+          Cancelar
         </button>
-        <h2 className="text-xl font-bold mb-4">{title}</h2>
-        <div>{children}</div>
-        <div className="flex justify-end gap-2 mt-6">
+        {onSubmit && (
           <button
-            className="px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
-            onClick={onClose}
+            className={`px-4 py-2 rounded bg-blue-600 dark:bg-blue-800 text-white font-semibold hover:bg-blue-700 dark:hover:bg-blue-700 transition ${disableSubmit ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            onClick={onSubmit}
+            disabled={disableSubmit}
           >
-            Cancelar
+            {submitLabel}
           </button>
-          {onSubmit && (
-            <button
-              className={`px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition ${disableSubmit ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              onClick={onSubmit}
-              disabled={disableSubmit}
-            >
-              {submitLabel}
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 // ... tipos y helpers igual que antes
@@ -642,70 +642,70 @@ const MisPartidos = () => {
 
     if (isPast) {
       return (
-        <div className={`relative flex items-center justify-center ${highlightClass}`}>
-          {!userId ? (
-            <div className="w-12 h-12 rounded-full border-2 border-blue-200 flex items-center justify-center bg-gray-100 text-blue-400 font-bold text-lg">
-              <span>?</span>
-            </div>
-          ) : (
-            <Link
-              to={`/app/usuario/${userId}`}
-              className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center overflow-hidden bg-white hover:shadow-lg transition"
-              title={profile?.name}
-              onClick={() => navigate(`/perfil/${userId}`)}
-              type="button"
-            >
-              {profile?.img_perfil ? (
-                <img
-                  src={`data:image/jpeg;base64,${profile.img_perfil}`}
-                  alt={profile.name || "Jugador"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="font-bold text-blue-700 text-lg">
-                  {profile?.name?.[0]?.toUpperCase() || "?"}
-                </span>
-              )}
-            </Link>
-          )}
-        </div>
-      );
+  <div className={`relative flex items-center justify-center ${highlightClass}`}>
+    {!userId ? (
+      <div className="w-12 h-12 rounded-full border-2 border-blue-200 dark:border-blue-800 flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-blue-400 dark:text-blue-300 font-bold text-lg">
+        <span>?</span>
+      </div>
+    ) : (
+      <Link
+        to={`/app/usuario/${userId}`}
+        className="w-12 h-12 rounded-full border-2 border-blue-500 dark:border-blue-400 flex items-center justify-center overflow-hidden bg-white dark:bg-gray-900 hover:shadow-lg transition"
+        title={profile?.name}
+        onClick={() => navigate(`/perfil/${userId}`)}
+        type="button"
+      >
+        {profile?.img_perfil ? (
+          <img
+            src={`data:image/jpeg;base64,${profile.img_perfil}`}
+            alt={profile.name || "Jugador"}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="font-bold text-blue-700 dark:text-blue-200 text-lg">
+            {profile?.name?.[0]?.toUpperCase() || "?"}
+          </span>
+        )}
+      </Link>
+    )}
+  </div>
+);
     }
 
     return (
-      <div className="relative flex items-center justify-center">
-        {isOwnSlot && <LeaveButton partidoId={partidoId} slot={slot} />}
-        {!userId ? (
-          <button
-            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center bg-transparent hover:bg-blue-50 transition"
-            title="Unirse"
-            onClick={() => handleJoin(partidoId, slot)}
-          >
-            <Plus size={28} className="text-blue-600" />
-          </button>
+  <div className="relative flex items-center justify-center">
+    {isOwnSlot && <LeaveButton partidoId={partidoId} slot={slot} />}
+    {!userId ? (
+      <button
+        className="w-12 h-12 rounded-full border-2 border-blue-500 dark:border-blue-400 flex items-center justify-center bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900 transition"
+        title="Unirse"
+        onClick={() => handleJoin(partidoId, slot)}
+      >
+        <Plus size={28} className="text-blue-600 dark:text-blue-300" />
+      </button>
+    ) : (
+      <Link
+        to={`/app/usuario/${userId}`}
+        className="w-12 h-12 rounded-full border-2 border-blue-500 dark:border-blue-400 flex items-center justify-center overflow-hidden bg-white dark:bg-gray-900 hover:shadow-lg transition"
+        title={profile?.name}
+        onClick={() => navigate(`/perfil/${userId}`)}
+        type="button"
+      >
+        {profile?.img_perfil ? (
+          <img
+            src={`data:image/jpeg;base64,${profile.img_perfil}`}
+            alt={profile.name || "Jugador"}
+            className="w-full h-full object-cover"
+          />
         ) : (
-          <Link
-            to={`/app/usuario/${userId}`}
-            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center overflow-hidden bg-white hover:shadow-lg transition"
-            title={profile?.name}
-            onClick={() => navigate(`/perfil/${userId}`)}
-            type="button"
-          >
-            {profile?.img_perfil ? (
-              <img
-                src={`data:image/jpeg;base64,${profile.img_perfil}`}
-                alt={profile.name || "Jugador"}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="font-bold text-blue-700 text-lg">
-                {profile?.name?.[0]?.toUpperCase() || "?"}
-              </span>
-            )}
-          </Link>
+          <span className="font-bold text-blue-700 dark:text-blue-200 text-lg">
+            {profile?.name?.[0]?.toUpperCase() || "?"}
+          </span>
         )}
-      </div>
-    );
+      </Link>
+    )}
+  </div>
+);
   };
 
   const PartidoCard = (partido: Partido, isPast = false) => {
@@ -794,39 +794,63 @@ const MisPartidos = () => {
     }
 
     return (
-      <div
-        key={partido._id}
-        className="bg-white rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-600 py-4 px-2"
-      >
-        <div className="flex flex-col justify-center items-center gap-5 w-20">
-          <PlayerCircle userId={partido.pareja1_jugador1 ?? null} partidoId={partido._id} slot="pareja1_jugador1" isPast={isPast} highlight={isPast ? getHighlightFor(partido.pareja1_jugador1) : undefined} />
-          <PlayerCircle userId={partido.pareja1_jugador2 ?? null} partidoId={partido._id} slot="pareja1_jugador2" isPast={isPast} highlight={isPast ? getHighlightFor(partido.pareja1_jugador2) : undefined} />
-        </div>
-        <div className="flex-1 flex flex-col justify-center items-center px-2 text-center">
-          <div className="flex items-center gap-2 text-blue-600 font-semibold text-lg mb-3 justify-center">
-            <MapPin size={18} />
-            {partido.localizacion}
-          </div>
-          <div className="flex justify-center items-center gap-4 text-gray-700 text-base mb-2">
-            <span className="flex items-center gap-1">
-              <Calendar size={16} /> {partido.fecha}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock size={16} /> {partido.hora}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs text-gray-500 justify-center">
-            <span>Creado el {formatDateMadrid(partido.created_at)}</span>
-            <span>Actualizado el {formatDateMadrid(partido.updated_at)}</span>
-          </div>
-          {accionesResultado}
-        </div>
-        <div className="flex flex-col justify-center items-center gap-5 w-20">
-          <PlayerCircle userId={partido.pareja2_jugador1 ?? null} partidoId={partido._id} slot="pareja2_jugador1" isPast={isPast} highlight={isPast ? getHighlightFor(partido.pareja2_jugador1) : undefined} />
-          <PlayerCircle userId={partido.pareja2_jugador2 ?? null} partidoId={partido._id} slot="pareja2_jugador2" isPast={isPast} highlight={isPast ? getHighlightFor(partido.pareja2_jugador2) : undefined} />
-        </div>
+  <div
+    key={partido._id}
+    className="bg-white dark:bg-gray-900 rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-600 dark:border-blue-900 py-4 px-2"
+  >
+    <div className="flex flex-col justify-center items-center gap-5 w-20">
+      <PlayerCircle
+        userId={partido.pareja1_jugador1 ?? null}
+        partidoId={partido._id}
+        slot="pareja1_jugador1"
+        isPast={isPast}
+        highlight={isPast ? getHighlightFor(partido.pareja1_jugador1) : undefined}
+      />
+      <PlayerCircle
+        userId={partido.pareja1_jugador2 ?? null}
+        partidoId={partido._id}
+        slot="pareja1_jugador2"
+        isPast={isPast}
+        highlight={isPast ? getHighlightFor(partido.pareja1_jugador2) : undefined}
+      />
+    </div>
+    <div className="flex-1 flex flex-col justify-center items-center px-2 text-center">
+      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-300 font-semibold text-lg mb-3 justify-center">
+        <MapPin size={18} />
+        {partido.localizacion}
       </div>
-    );
+      <div className="flex justify-center items-center gap-4 text-gray-700 dark:text-gray-200 text-base mb-2">
+        <span className="flex items-center gap-1">
+          <Calendar size={16} /> {partido.fecha}
+        </span>
+        <span className="flex items-center gap-1">
+          <Clock size={16} /> {partido.hora}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 justify-center">
+        <span>Creado el {formatDateMadrid(partido.created_at)}</span>
+        <span>Actualizado el {formatDateMadrid(partido.updated_at)}</span>
+      </div>
+      {accionesResultado}
+    </div>
+    <div className="flex flex-col justify-center items-center gap-5 w-20">
+      <PlayerCircle
+        userId={partido.pareja2_jugador1 ?? null}
+        partidoId={partido._id}
+        slot="pareja2_jugador1"
+        isPast={isPast}
+        highlight={isPast ? getHighlightFor(partido.pareja2_jugador1) : undefined}
+      />
+      <PlayerCircle
+        userId={partido.pareja2_jugador2 ?? null}
+        partidoId={partido._id}
+        slot="pareja2_jugador2"
+        isPast={isPast}
+        highlight={isPast ? getHighlightFor(partido.pareja2_jugador2) : undefined}
+      />
+    </div>
+  </div>
+);
   };
 
   const SkeletonCard = () => (
@@ -854,111 +878,127 @@ const MisPartidos = () => {
     .sort((a, b) => getPartidoDate(b).getTime() - getPartidoDate(a).getTime());
 
   return (
-    <div className="flex flex-col items-center justify-start gap-4 min-h-screen w-full pb-10">
-      <div className="w-full mt-8 px-2">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white w-full">
-          <h1 className="text-2xl font-bold mb-2">Mis Partidos</h1>
-          <p className="text-blue-100">Aquí puedes ver los partidos a los que te has unido o que has creado</p>
-        </div>
+  <div className="flex flex-col items-center justify-start gap-4 min-h-screen w-full pb-10">
+    <div className="w-full mt-8 px-2">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow-lg p-6 text-white w-full">
+        <h1 className="text-2xl font-bold mb-2">Mis Partidos</h1>
+        <p className="text-blue-100 dark:text-blue-200">
+          Aquí puedes ver los partidos a los que te has unido o que has creado
+        </p>
       </div>
-      <div className="w-full px-2 flex flex-col gap-10">
-        <div className="flex justify-center gap-5">
-          <button
-            className={`px-4 py-2 rounded-lg font-semibold shadow ${view === "pendientes"
-              ? "bg-blue-600 text-white"
-              : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-              } transition-colors`}
-            onClick={() => setView("pendientes")}
-          >
-            Partidos Pendientes
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-semibold shadow ${view === "pasados"
-              ? "bg-blue-600 text-white"
-              : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-              } transition-colors`}
-            onClick={() => setView("pasados")}
-          >
-            Partidos Pasados
-          </button>
-        </div>
-
-        <div className="w-full bg-[#fff6] rounded-lg shadow-md p-6">
-          {view === "pendientes" ? (
-            <>
-              <h2 className="text-2xl font-bold mb-4 text-center">Partidos Pendientes</h2>
-              {loading ? (
-                <>
-                  <SkeletonCard />
-                  <SkeletonCard />
-                  <SkeletonCard />
-                </>
-              ) : partidosPendientes.length === 0 ? (
-                <div className="text-center text-gray-500 py-8">No tienes partidos pendientes.</div>
-              ) : (
-                partidosPendientes.map((partido) => PartidoCard(partido, false))
-              )}
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold mb-4 text-center">Partidos Pasados</h2>
-              {loading ? (
-                <>
-                  <SkeletonCard />
-                  <SkeletonCard />
-                </>
-              ) : partidosPasados.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">No tienes partidos pasados completos.</div>
-              ) : (
-                partidosPasados.map((partido) => PartidoCard(partido, true))
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      <ProponerResultadoModal
-        show={modal.show && modal.type === "proponer"}
-        onClose={() => setModal({ show: false })}
-        onSubmit={handleProponerResultadoSubmit}
-      />
-
-      <Modal
-        show={modal.show && modal.type === "confirmar"}
-        title="Confirmar resultado"
-        onClose={() => setModal({ show: false })}
-        onSubmit={submitConfirmarResultado}
-        submitLabel="Confirmar"
-      >
-        <div className="mb-2">
-          ¿Quieres confirmar el siguiente resultado?<br />
-          <span className="font-bold text-blue-600">{modal.resultadoActual}</span>
-        </div>
-      </Modal>
-      <Modal
-        show={modal.show && modal.type === "rechazar"}
-        title="Rechazar resultado"
-        onClose={() => setModal({ show: false })}
-        onSubmit={submitRechazarResultado}
-        submitLabel="Rechazar"
-      >
-        <div className="mb-2">
-          ¿Seguro que quieres rechazar el siguiente resultado?<br />
-          <span className="font-bold text-red-600">{modal.resultadoActual}</span>
-        </div>
-      </Modal>
-      <Modal
-        show={modal.show && !modal.type}
-        title="Aviso"
-        onClose={() => setModal({ show: false })}
-        onSubmit={undefined}
-      >
-        <div className="mb-2">
-          Ha ocurrido un error o no tienes sesión iniciada.
-        </div>
-      </Modal>
     </div>
-  );
+    <div className="w-full px-2 flex flex-col gap-10">
+      <div className="flex justify-center gap-5">
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold shadow ${
+            view === "pendientes"
+              ? "bg-blue-600 text-white"
+              : "bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-300 border border-blue-600 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-gray-800"
+          } transition-colors`}
+          onClick={() => setView("pendientes")}
+        >
+          Partidos Pendientes
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold shadow ${
+            view === "pasados"
+              ? "bg-blue-600 text-white"
+              : "bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-300 border border-blue-600 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-gray-800"
+          } transition-colors`}
+          onClick={() => setView("pasados")}
+        >
+          Partidos Pasados
+        </button>
+      </div>
+
+      <div className="w-full bg-[#fff6] dark:bg-[#111a] rounded-lg shadow-md p-6">
+        {view === "pendientes" ? (
+          <>
+            <h2 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">
+              Partidos Pendientes
+            </h2>
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : partidosPendientes.length === 0 ? (
+              <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                No tienes partidos pendientes.
+              </div>
+            ) : (
+              partidosPendientes.map((partido) => PartidoCard(partido, false))
+            )}
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">
+              Partidos Pasados
+            </h2>
+            {loading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : partidosPasados.length === 0 ? (
+              <div className="text-center text-gray-400 dark:text-gray-500 py-8">
+                No tienes partidos pasados completos.
+              </div>
+            ) : (
+              partidosPasados.map((partido) => PartidoCard(partido, true))
+            )}
+          </>
+        )}
+      </div>
+    </div>
+
+    <ProponerResultadoModal
+      show={modal.show && modal.type === "proponer"}
+      onClose={() => setModal({ show: false })}
+      onSubmit={handleProponerResultadoSubmit}
+    />
+
+    <Modal
+      show={modal.show && modal.type === "confirmar"}
+      title="Confirmar resultado"
+      onClose={() => setModal({ show: false })}
+      onSubmit={submitConfirmarResultado}
+      submitLabel="Confirmar"
+    >
+      <div className="mb-2">
+        ¿Quieres confirmar el siguiente resultado?<br />
+        <span className="font-bold text-blue-600 dark:text-blue-300">
+          {modal.resultadoActual}
+        </span>
+      </div>
+    </Modal>
+    <Modal
+      show={modal.show && modal.type === "rechazar"}
+      title="Rechazar resultado"
+      onClose={() => setModal({ show: false })}
+      onSubmit={submitRechazarResultado}
+      submitLabel="Rechazar"
+    >
+      <div className="mb-2">
+        ¿Seguro que quieres rechazar el siguiente resultado?<br />
+        <span className="font-bold text-red-600 dark:text-red-400">
+          {modal.resultadoActual}
+        </span>
+      </div>
+    </Modal>
+    <Modal
+      show={modal.show && !modal.type}
+      title="Aviso"
+      onClose={() => setModal({ show: false })}
+      onSubmit={undefined}
+    >
+      <div className="mb-2">
+        Ha ocurrido un error o no tienes sesión iniciada.
+      </div>
+    </Modal>
+  </div>
+);
 };
 
 export default MisPartidos;

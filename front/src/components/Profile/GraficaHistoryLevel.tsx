@@ -69,7 +69,7 @@ const CustomTooltip = (props: any) => {
     const firstValid = payload.find((p: any) => typeof p.value === "number" && !isNaN(p.value) && !(p.payload && p.payload.isIntersection));
     if (!firstValid) return null;
     return (
-        <div style={{ background: "#fff", color: "#000", padding: 8, borderRadius: 6, border: "1px solid #ddd" }}>
+        <div style={{ background: "#fff", color: "#000", padding: 8, borderRadius: 6 }}>
             <div><b>Partido:</b> {label}</div>
             <div><b>Nivel:</b> {firstValid.value.toLocaleString()}</div>
         </div>
@@ -109,12 +109,14 @@ const GraficaHistoryLevel = ({ level, id }: GraficaHistoryLevelProps) => {
 
     return (
         <div style={{ width: "100%", height: 470 }}>
-            <div style={{ color: "#000", fontWeight: 700, fontSize: 15, padding: "0 0 8px 4px" }}>
+            <div
+                className="text-black pt-2 font-bold text-[15px] px-1 pb-2 pt-0 bg-white/50 rounded-tl-lg rounded-tr-lg rounded-bl-none rounded-br-none"
+            >
                 Línea horizontal = Nivel actual del jugador
             </div>
             <ResponsiveContainer>
-                <AreaChart className="p-1 pb- rounded-lg" data={chartData} style={{ background: "#0002" }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255)" />
+                <AreaChart className="p-1  rounded-tl-none rounded-tr-none rounded-bl-lg rounded-br-lg bg-white/50" data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#000" />
                     <XAxis
                         dataKey="match"
                         type="number"

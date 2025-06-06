@@ -2,28 +2,66 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 
-// Añade la prop showLogout
+const navUser = [
+    { to: "/app/jugar", label: "Jugar" },
+    { to: "/app/chats", label: "Chats" },
+    { to: "/app/clubs", label: "Clubes" },
+    { to: "/app/mis-partidos", label: "Mis Partidos" },
+    { to: "/app/reservas", label: "Mis Reservas" },
+];
+
 const HeaderConLog = () => {
-    const { logout } = useContext(AuthContext)!;
+    const { logout, userType } = useContext(AuthContext)!;
     const [isHovered, setIsHovered] = useState(false);
-    const { userType } = useContext(AuthContext)!;
 
     return (
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-1 items-center">
+            {/* Navegación usuario */}
             {userType !== "club" && (
-                <div className="flex gap-4 items-center">
-                    <Link to="/app/jugar"><button className="py-2 hover:text-blue-400 transition">Jugar</button></Link>
-                    <Link to="/app/chats"><button className="py-2 hover:text-blue-400 transition">Chats</button></Link>
-                    <Link to="/app/clubs"><button className="py-2 hover:text-blue-400 transition">Clubes</button></Link>
-                    <Link to="/app/mis-partidos"><button className="py-2 hover:text-blue-400 transition">Mis Partidos</button></Link>
-                    <Link to="/app/reservas"><button className="py-2 hover:text-blue-400 transition">Mis Reservas</button></Link>
-                </div>
+                <nav className="flex gap-0 sm:gap-2 md:gap-4 items-center">
+                    {navUser.map((item) => (
+                        <Link key={item.to} to={item.to}>
+                            <button
+                                className="
+                  px-2 sm:px-3 py-2 rounded-md
+                  text-blue-700 dark:text-blue-200
+                  hover:bg-blue-100 dark:hover:bg-blue-800
+                  hover:text-blue-900 dark:hover:text-blue-400
+                  transition-all duration-200 font-medium
+                  text-sm sm:text-base
+                "
+                            >
+                                {item.label}
+                            </button>
+                        </Link>
+                    ))}
+                </nav>
             )}
-            {userType === "club" && (
-                <Link to="/app/club-reservas"><button className="py-2 hover:text-blue-400 transition">Reservas</button></Link>
-            )}
-            <div className="flex justify-center items-center gap-4" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
 
+            {/* Navegación club */}
+            {userType === "club" && (
+                <Link to="/app/club-reservas">
+                    <button
+                        className="
+              px-3 py-2 rounded-md
+              text-blue-700 dark:text-blue-200
+              hover:bg-blue-100 dark:hover:bg-blue-800
+              hover:text-blue-900 dark:hover:text-blue-400
+              transition-all duration-200 font-medium
+              text-sm sm:text-base
+            "
+                    >
+                        Reservas
+                    </button>
+                </Link>
+            )}
+
+            {/* Perfil y Logout */}
+            <div
+                className="flex items-center gap-2 relative"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
                 <section className="flex justify-center items-center">
                     <Link to="/app/profile" className="group flex justify-center p-2 rounded-md drop-shadow-xl bg-blue-500 hover:bg-white hover:border-blue-500 border border-2 from-gray-800 to-black text-white font-semibold hover:rounded-[50%] transition-all duration-500 hover:from-[#331029] hover:to-[#310413]">
                         <svg className="w-4 group-hover:text-blue-500 transition-colors" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z" /></svg>
@@ -40,10 +78,9 @@ const HeaderConLog = () => {
                         </span>
                     </Link>
                 </section>
-
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default HeaderConLog
+export default HeaderConLog;

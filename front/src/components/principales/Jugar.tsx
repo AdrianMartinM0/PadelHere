@@ -87,60 +87,7 @@ const Jugar = () => {
   const navigate = useNavigate()
   const wsRef = useRef<WebSocket | null>(null);
 
-  // --- fetchSlotsOnly: solo refresca los slots (botones) de todos los partidos ---
-  const fetchSlotsOnly = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/v1/partido/")
-      if (!res.ok) throw new Error("No se pudieron cargar los partidos")
-      let data = await res.json()
-      data = data
-        .filter((p: Partido) => isPartidoFuturo(p) && isPartidoConHuecos(p))
-        .sort((a: Partido, b: Partido) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
-      setPartidos(prevPartidos =>
-        prevPartidos.map(partidoPrev => {
-          const partidoNuevo = data.find((p: Partido) => p._id === partidoPrev._id)
-          if (!partidoNuevo) return partidoPrev
-          return {
-            ...partidoPrev,
-            pareja1_jugador1: partidoNuevo.pareja1_jugador1,
-            pareja1_jugador2: partidoNuevo.pareja1_jugador2,
-            pareja2_jugador1: partidoNuevo.pareja2_jugador1,
-            pareja2_jugador2: partidoNuevo.pareja2_jugador2,
-            updated_at: partidoNuevo.updated_at
-          }
-        }).filter(p => isPartidoFuturo(p) && isPartidoConHuecos(p))
-        .sort((a, b) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
-      )
-      const allIds = new Set<string>()
-      data.forEach((p: Partido) => {
-        [p.pareja1_jugador1, p.pareja1_jugador2, p.pareja2_jugador1, p.pareja2_jugador2]
-          .forEach((slot) => {
-            if (slot && typeof slot === "string") allIds.add(slot)
-          })
-      })
-      const idsToFetch = Array.from(allIds).filter(id => !(id in userCache))
-      if (idsToFetch.length > 0) {
-        Promise.all(
-          idsToFetch.map(id =>
-            fetch(`http://localhost:8000/v1/usuario/${id}`)
-              .then(res => res.ok ? res.json() : null)
-              .then(profile => profile ? { id, profile } : null)
-          )
-        ).then(results => {
-          const newCache: Record<string, UserProfile> = {}
-          results.forEach(res => {
-            if (res && res.profile) {
-              newCache[res.id] = res.profile
-            }
-          })
-          setUserCache(prev => ({ ...prev, ...newCache }))
-        })
-      }
-    } catch (error) {
-      // Si falla, no cambia nada
-    }
-  }
-
+  // --- fetchPartidos: ahora el filtro muestra partidos llenos solo si juega el usuario actual ---
   const fetchPartidos = async () => {
     setLoadingPartidos(true)
     try {
@@ -148,9 +95,15 @@ const Jugar = () => {
       if (!res.ok) throw new Error("No se pudieron cargar los partidos")
       let data = await res.json()
       data = data
-        .filter((p: Partido) => isPartidoFuturo(p) && isPartidoConHuecos(p))
+        .filter((p: Partido) => {
+          const hayHuecos = isPartidoConHuecos(p);
+          // Mostrar partido aunque esté lleno si el usuario actual está en algún slot
+          const yoEstoy = [p.pareja1_jugador1, p.pareja1_jugador2, p.pareja2_jugador1, p.pareja2_jugador2].includes(userData?.id);
+          return isPartidoFuturo(p) && (hayHuecos || yoEstoy);
+        })
         .sort((a: Partido, b: Partido) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
       setPartidos(data)
+      // Refresca usuarios de todos los slots de la lista visible
       const allIds = new Set<string>()
       data.forEach((p: Partido) => {
         [p.pareja1_jugador1, p.pareja1_jugador2, p.pareja2_jugador1, p.pareja2_jugador2]
@@ -187,11 +140,10 @@ const Jugar = () => {
     const ws = new WebSocket("ws://localhost:8000/ws/partidos");
     wsRef.current = ws;
     ws.onmessage = (event) => {
-      console.log(event)
       try {
         const data = JSON.parse(event.data);
         if (data.event === "new_player") {
-          fetchSlotsOnly();
+          fetchPartidos();
         }
       } catch (e) {}
     };
@@ -316,7 +268,6 @@ const Jugar = () => {
     </button>
   );
 
-  // Render de un botón circular de jugador/unirse o perfil
   const PlayerCircle = ({
     userId,
     partidoId,
@@ -334,15 +285,16 @@ const Jugar = () => {
         {isOwnSlot && <LeaveButton partidoId={partidoId} slot={slot} />}
         {!userId ? (
           <button
-            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center bg-transparent hover:bg-blue-50 transition"
+            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900 transition"
             title="Unirse"
             onClick={() => handleJoin(partidoId, slot)}
           >
-            <Plus size={28} className="text-blue-600" />
+            <Plus size={28} className="text-blue-600 dark:text-blue-300" />
           </button>
         ) : (
-          <Link to={`/app/usuario/${userId}`}
-            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center overflow-hidden bg-white hover:shadow-lg transition"
+          <Link
+            to={`/app/usuario/${userId}`}
+            className="w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center overflow-hidden bg-white dark:bg-gray-800 hover:shadow-lg transition"
             title={profile?.name}
             onClick={() => navigate(`/perfil/${userId}`)}
             type="button"
@@ -354,7 +306,7 @@ const Jugar = () => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="font-bold text-blue-700 text-lg">
+              <span className="font-bold text-blue-700 dark:text-blue-200 text-lg">
                 {profile?.name?.[0]?.toUpperCase() || "?"}
               </span>
             )}
@@ -368,18 +320,18 @@ const Jugar = () => {
     return (
       <div
         key={partido._id}
-        className="bg-white rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-600 py-4 px-2"
+        className="bg-white dark:bg-gray-900 rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-600 dark:border-blue-900 py-4 px-2"
       >
         <div className="flex flex-col justify-center items-center gap-5 w-20">
           <PlayerCircle userId={partido.pareja1_jugador1 ?? null} partidoId={partido._id} slot="pareja1_jugador1" />
           <PlayerCircle userId={partido.pareja1_jugador2 ?? null} partidoId={partido._id} slot="pareja1_jugador2" />
         </div>
         <div className="flex-1 flex flex-col justify-center items-center px-2 text-center">
-          <div className="flex items-center gap-2 text-blue-600 font-semibold text-lg mb-3 justify-center">
+          <div className="flex items-center gap-2 text-blue-600 dark:text-blue-300 font-semibold text-lg mb-3 justify-center">
             <MapPin size={18} />
             {partido.localizacion}
           </div>
-          <div className="flex justify-center items-center gap-4 text-gray-700 text-base mb-2">
+          <div className="flex flex-wrap justify-center items-center gap-4 text-gray-700 dark:text-gray-200 text-base mb-2">
             <span className="flex items-center gap-1">
               <Calendar size={16} /> {partido.fecha}
             </span>
@@ -387,7 +339,7 @@ const Jugar = () => {
               <Clock size={16} /> {partido.hora}
             </span>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs text-gray-500 justify-center">
+          <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 justify-center">
             <span>Creado el {formatDateMadrid(partido.created_at)}</span>
             <span>Actualizado el {formatDateMadrid(partido.updated_at)}</span>
           </div>
@@ -397,40 +349,40 @@ const Jugar = () => {
           <PlayerCircle userId={partido.pareja2_jugador2 ?? null} partidoId={partido._id} slot="pareja2_jugador2" />
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const SkeletonCard = () => (
-    <div className="bg-white rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-300 py-4 px-2 animate-pulse">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md mb-6 flex flex-row items-center w-full min-h-[164px] border border-blue-300 dark:border-blue-900 py-4 px-2 animate-pulse">
       <div className="flex flex-col justify-center items-center gap-5 w-20">
-        <div className="w-12 h-12 rounded-full border-2 border-blue-200 bg-blue-100" />
-        <div className="w-12 h-12 rounded-full border-2 border-blue-100 bg-blue-50" />
+        <div className="w-12 h-12 rounded-full border-2 border-blue-200 dark:border-blue-800 bg-blue-100 dark:bg-blue-900" />
+        <div className="w-12 h-12 rounded-full border-2 border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-gray-800" />
       </div>
       <div className="flex-1 flex flex-col justify-center items-center px-2 text-center gap-2">
-        <div className="h-5 bg-gray-200 rounded w-1/3 mb-2" />
-        <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
-        <div className="h-3 bg-gray-100 rounded w-2/6 mb-1" />
-        <div className="h-3 bg-gray-100 rounded w-2/6" />
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2" />
+        <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-2/6 mb-1" />
+        <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-2/6" />
       </div>
       <div className="flex flex-col justify-center items-center gap-5 w-20">
-        <div className="w-12 h-12 rounded-full border-2 border-blue-100 bg-blue-50" />
-        <div className="w-12 h-12 rounded-full border-2 border-blue-200 bg-blue-100" />
+        <div className="w-12 h-12 rounded-full border-2 border-blue-100 dark:border-blue-900 bg-blue-50 dark:bg-gray-800" />
+        <div className="w-12 h-12 rounded-full border-2 border-blue-200 dark:border-blue-800 bg-blue-100 dark:bg-blue-900" />
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="flex flex-col items-center justify-start gap-4 min-h-screen w-full pb-10">
       <div className="w-full mt-8 mb-4 px-2">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white w-full">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-900 dark:to-blue-800 rounded-lg shadow-lg p-6 text-white w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="mb-4 sm:mb-0">
               <h1 className="text-2xl font-bold mb-2">¿Listo para jugar?</h1>
-              <p className="text-blue-100">Crea un nuevo partido o únete a uno existente</p>
+              <p className="text-blue-100 dark:text-blue-200">Crea un nuevo partido o únete a uno existente</p>
             </div>
             <button
               onClick={handleOpenCreateForm}
-              className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-md"
+              className="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-200 hover:bg-blue-50 dark:hover:bg-gray-900 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-md"
             >
               <Plus size={20} />
               Crear Partido
@@ -440,8 +392,8 @@ const Jugar = () => {
       </div>
 
       <div className="w-full px-2">
-        <div className="w-full bg-[#fff6] rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-4 text-center">Partidos Disponibles</h2>
+        <div className="w-full bg-[#fff6] dark:bg-[#111a] rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-gray-100">Partidos Disponibles</h2>
           {loadingPartidos ? (
             <>
               <SkeletonCard />
@@ -449,7 +401,7 @@ const Jugar = () => {
               <SkeletonCard />
             </>
           ) : partidos.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">No hay partidos disponibles por ahora.</div>
+            <div className="text-center text-gray-500 dark:text-gray-400 py-8">No hay partidos disponibles por ahora.</div>
           ) : (
             partidos.map((partido) => PartidoCard(partido))
           )}
@@ -459,26 +411,26 @@ const Jugar = () => {
       {showCreateForm && (
         <>
           <div
-            className="fixed inset-0 bg-[#ACD3FF] bg-opacity-50 z-40"
+            className="fixed inset-0 bg-[#ACD3FF] bg-opacity-50 dark:bg-[#1a273a]/60 z-40"
             onClick={handleCloseCreateForm}
           ></div>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">Crear Nuevo Partido</h2>
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Crear Nuevo Partido</h2>
                 </div>
 
                 {createError && (
-                  <div className="mb-2 text-red-600 font-medium">{createError}</div>
+                  <div className="mb-2 text-red-600 dark:text-red-400 font-medium">{createError}</div>
                 )}
                 {createSuccess && (
-                  <div className="mb-2 text-green-600 font-medium">{createSuccess}</div>
+                  <div className="mb-2 text-green-600 dark:text-green-400 font-medium">{createSuccess}</div>
                 )}
 
                 <form onSubmit={handleCreateMatch} className="space-y-4">
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       <MapPin size={16} className="inline mr-1" />
                       Ubicación
                     </label>
@@ -489,19 +441,19 @@ const Jugar = () => {
                         value={formData.localizacion}
                         onChange={handleInputChange}
                         placeholder="Ej: Madrid, Parque del Oeste..."
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
                         required
                         disabled={!!selectedClub}
                       />
                     </div>
                     {selectedClub && (
-                      <div className="mt-1 text-xs text-blue-700 flex items-center gap-1">
+                      <div className="mt-1 text-xs text-blue-700 dark:text-blue-300 flex items-center gap-1">
                         <MapPin size={14} /> Club seleccionado: <span className="font-semibold">{selectedClub.name}</span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       <Calendar size={16} className="inline mr-1" />
                       Fecha
                     </label>
@@ -511,12 +463,12 @@ const Jugar = () => {
                       value={formData.fecha}
                       onChange={handleInputChange}
                       min={new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                       <Clock size={16} className="inline mr-1" />
                       Hora
                     </label>
@@ -525,22 +477,22 @@ const Jugar = () => {
                       name="hora"
                       value={formData.hora}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-100"
                       required
                     />
                   </div>
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <button
                       type="button"
                       onClick={handleCloseCreateForm}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                       disabled={isCreating}
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      className="flex-1 px-4 py-2 bg-blue-600 dark:bg-blue-800 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-900 transition-colors"
                       disabled={isCreating}
                     >
                       {isCreating ? "Creando..." : "Crear Partido"}
@@ -553,7 +505,6 @@ const Jugar = () => {
         </>
       )}
     </div>
-  )
+  );
 }
-
 export default Jugar

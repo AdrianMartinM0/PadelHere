@@ -282,221 +282,223 @@ function PadelLevelQuiz() {
   const progress = ((currentQuestion + 1) / questions.length) * 100
 
   if (showResult) {
-    return (
-      <>
-        {/* Overlay transparente que bloquea la interacción */}
-        <div className="fixed inset-0 bg-[#ACD3FF] bg-opacity-50 z-40"></div>
-
-        {/* Modal de resultados en pantalla completa */}
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl border w-full max-w-4xl max-h-[95vh] overflow-y-auto">
-            <div className="p-6 text-center border-b">
-              <h2 className="text-3xl font-bold">¡Evaluación Completada!</h2>
-
-              {/* Estado de guardado */}
-              {isSaving && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-blue-700 font-medium">Guardando resultados y actualizando perfil...</p>
-                </div>
-              )}
-
-              {saveSuccess && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-700 font-medium">✅ Nivel actualizado correctamente</p>
-                  <p className="text-sm text-green-600 mt-1">Tu perfil se ha actualizado a {totalScore} puntos</p>
-                </div>
-              )}
-
-              {saveError && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 font-medium">❌ Error al guardar: {saveError}</p>
-                  <button
-                    onClick={() => saveResultsToDatabase(totalScore, levelInfo, answers)}
-                    className="mt-2 text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                    disabled={isSaving}
-                  >
-                    Reintentar
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="text-center space-y-4">
-                <div className="space-y-3">
-                  <span
-                    className={`inline-block ${levelInfo.color} text-white text-2xl px-6 py-3 rounded-full font-bold`}
-                  >
-                    {levelInfo.level}
-                  </span>
-                  <p className="text-2xl font-bold">Categoría {levelInfo.category}</p>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-5xl font-bold text-blue-600">{totalScore} / 10000 puntos</p>
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div
-                      className="bg-blue-600 h-4 rounded-full transition-all duration-500"
-                      style={{ width: `${(totalScore / 9800) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">{levelInfo.description}</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-base">
-                <div className="space-y-3">
-                  <h4 className="text-xl font-bold">Desglose por categorías:</h4>
-                  <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
-                    <p className="flex justify-between">
-                      <span>Experiencia:</span>
-                      <span className="font-semibold">
-                        {(answers.experience || 0) + (answers.frequency || 0) + (answers.competition || 0)} pts
-                      </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Técnica:</span>
-                      <span className="font-semibold">
-                        {(answers.forehand || 0) +
-                          (answers.backhand || 0) +
-                          (answers.volley || 0) +
-                          (answers.serve || 0) +
-                          (answers.smash || 0)}{" "}
-                        pts
-                      </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Táctica:</span>
-                      <span className="font-semibold">{answers.tactics || 0} pts</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Físico:</span>
-                      <span className="font-semibold">{answers.fitness || 0} pts</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="text-xl font-bold">Niveles de referencia:</h4>
-                  <div className="space-y-2 bg-gray-50 p-4 rounded-lg text-sm">
-                    <p className="flex justify-between">
-                      <span>🔴 Avanzado (Cat. 1):</span>
-                      <span className="font-semibold">8340-10000 pts</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>🟠 Intermedio Alto (Cat. 2):</span>
-                      <span className="font-semibold">6860-8339 pts</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>🟡 Intermedio Bajo (Cat. 3):</span>
-                      <span className="font-semibold">4900-6859 pts</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>🟢 Principiante (Cat. 4):</span>
-                      <span className="font-semibold">2450-4899 pts</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>⚪ Iniciación (Cat. 5):</span>
-                      <span className="font-semibold">0-2449 pts</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-4 justify-center pt-4">
-                <button
-                  onClick={() => navigate("/app/jugar", { replace: true })}
-                  className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-gray-700 transition-colors font-semibold text-lg"
-                  disabled={isSaving}
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    )
-  }
-
   return (
     <>
-      {/* Overlay transparente durante el cuestionario */}
-      <div className="fixed inset-0 bg-[#ACD3FF] bg-opacity-30 z-40"></div>
+      {/* Overlay transparente que bloquea la interacción */}
+      <div className="fixed inset-0 bg-[#ACD3FF] bg-opacity-50 z-40 dark:bg-gray-900 dark:bg-opacity-60"></div>
 
-      {/* Cuestionario en pantalla completa */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-2xl border w-full max-w-3xl h-[90vh] flex flex-col">
-          <div className="p-6 border-b flex-shrink-0">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Evaluación de Nivel de Pádel</h2>
-                <span className="text-lg text-gray-500 font-semibold">
-                  {currentQuestion + 1} / {questions.length}
-                </span>
+      {/* Modal de resultados en pantalla completa */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-4xl max-h-[95vh] overflow-y-auto transition-colors duration-300">
+          <div className="p-4 sm:p-6 text-center border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-3xl font-bold text-blue-700 dark:text-blue-300">¡Evaluación Completada!</h2>
+
+            {/* Estado de guardado */}
+            {isSaving && (
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <p className="text-blue-700 dark:text-blue-200 font-medium">Guardando resultados y actualizando perfil...</p>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                  className="bg-blue-600 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                ></div>
+            )}
+
+            {saveSuccess && (
+              <div className="mt-4 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+                <p className="text-green-700 dark:text-green-200 font-medium">✅ Nivel actualizado correctamente</p>
+                <p className="text-sm text-green-600 dark:text-green-300 mt-1">Tu perfil se ha actualizado a {totalScore} puntos</p>
               </div>
-            </div>
+            )}
+
+            {saveError && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-700 rounded-lg">
+                <p className="text-red-700 dark:text-red-200 font-medium">❌ Error al guardar: {saveError}</p>
+                <button
+                  onClick={() => saveResultsToDatabase(totalScore, levelInfo, answers)}
+                  className="mt-2 text-sm bg-red-600 hover:bg-red-700 dark:bg-red-800 dark:hover:bg-red-900 text-white px-3 py-1 rounded"
+                  disabled={isSaving}
+                >
+                  Reintentar
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="flex-1 p-6 overflow-y-auto">
-            <div className="space-y-6 h-full flex flex-col">
-              <div className="flex-1 space-y-6">
-                <h3 className="text-2xl font-bold text-center">{questions[currentQuestion].question}</h3>
+          <div className="p-4 sm:p-6 space-y-6">
+            <div className="text-center space-y-4">
+              <div className="space-y-3">
+                <span
+                  className={`inline-block ${levelInfo.color} text-white text-2xl px-6 py-3 rounded-full font-bold`}
+                >
+                  {levelInfo.level}
+                </span>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">Categoría {levelInfo.category}</p>
+              </div>
 
-                <div className="space-y-4">
-                  {questions[currentQuestion].options.map((option, index) => (
-                    <label
-                      key={index}
-                      className={`flex items-center space-x-4 p-4 rounded-lg border cursor-pointer transition-all hover:bg-gray-50 ${
-                        selectedOption === option.points
-                          ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`question-${currentQuestion}`}
-                        value={option.points}
-                        checked={selectedOption === option.points}
-                        onChange={() => handleAnswer(option.points)}
-                        className="w-5 h-5 text-blue-600"
-                      />
-                      <span className="flex-1 text-lg">{option.text}</span>
-                    </label>
-                  ))}
+              <div className="space-y-3">
+                <p className="text-5xl font-bold text-blue-600 dark:text-blue-400">{totalScore} / 10000 puntos</p>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                  <div
+                    className="bg-blue-600 dark:bg-blue-400 h-4 rounded-full transition-all duration-500"
+                    style={{ width: `${(totalScore / 9800) * 100}%` }}
+                  ></div>
                 </div>
               </div>
 
-              <div className="flex justify-between pt-4 border-t">
-                <button
-                  onClick={() => setCurrentQuestion((prev) => Math.max(0, prev - 1))}
-                  disabled={currentQuestion === 0}
-                  className="px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
-                >
-                  Anterior
-                </button>
+              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">{levelInfo.description}</p>
+            </div>
 
-                <button
-                  onClick={nextQuestion}
-                  disabled={selectedOption === null}
-                  className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
-                >
-                  {currentQuestion === questions.length - 1 ? "Finalizar" : "Siguiente"}
-                </button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-base">
+              <div className="space-y-3">
+                <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">Desglose por categorías:</h4>
+                <div className="space-y-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                  <p className="flex justify-between">
+                    <span>Experiencia:</span>
+                    <span className="font-semibold">
+                      {(answers.experience || 0) + (answers.frequency || 0) + (answers.competition || 0)} pts
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>Técnica:</span>
+                    <span className="font-semibold">
+                      {(answers.forehand || 0) +
+                        (answers.backhand || 0) +
+                        (answers.volley || 0) +
+                        (answers.serve || 0) +
+                        (answers.smash || 0)}{" "}
+                      pts
+                    </span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>Táctica:</span>
+                    <span className="font-semibold">{answers.tactics || 0} pts</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>Físico:</span>
+                    <span className="font-semibold">{answers.fitness || 0} pts</span>
+                  </p>
+                </div>
               </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">Niveles de referencia:</h4>
+                <div className="space-y-2 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg text-sm">
+                  <p className="flex justify-between">
+                    <span>🔴 Avanzado (Cat. 1):</span>
+                    <span className="font-semibold">8340-10000 pts</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>🟠 Intermedio Alto (Cat. 2):</span>
+                    <span className="font-semibold">6860-8339 pts</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>🟡 Intermedio Bajo (Cat. 3):</span>
+                    <span className="font-semibold">4900-6859 pts</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>🟢 Principiante (Cat. 4):</span>
+                    <span className="font-semibold">2450-4899 pts</span>
+                  </p>
+                  <p className="flex justify-between">
+                    <span>⚪ Iniciación (Cat. 5):</span>
+                    <span className="font-semibold">0-2449 pts</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 justify-center pt-4">
+              <button
+                onClick={() => navigate("/app/jugar", { replace: true })}
+                className="bg-blue-600 dark:bg-blue-700 text-white py-3 px-8 rounded-lg hover:bg-gray-700 dark:hover:bg-gray-900 transition-colors font-semibold text-lg"
+                disabled={isSaving}
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>
       </div>
     </>
   )
+}
+
+return (
+  <>
+    {/* Overlay transparente durante el cuestionario */}
+    <div className="fixed inset-0 bg-[#ACD3FF] bg-opacity-30 z-40 dark:bg-gray-900 dark:bg-opacity-40"></div>
+
+    {/* Cuestionario en pantalla completa */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-3xl h-[90vh] flex flex-col transition-colors duration-300">
+        <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300">Evaluación de Nivel de Pádel</h2>
+              <span className="text-lg text-gray-500 dark:text-gray-300 font-semibold">
+                {currentQuestion + 1} / {questions.length}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+              <div
+                className="bg-blue-600 dark:bg-blue-400 h-3 rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+          <div className="space-y-6 h-full flex flex-col">
+            <div className="flex-1 space-y-6">
+              <h3 className="text-2xl font-bold text-center text-gray-900 dark:text-gray-100">
+                {questions[currentQuestion].question}
+              </h3>
+
+              <div className="space-y-4">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <label
+                    key={index}
+                    className={`flex items-center space-x-4 p-4 rounded-lg border cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-900 ${
+                      selectedOption === option.points
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-950 ring-2 ring-blue-200 dark:ring-blue-900"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${currentQuestion}`}
+                      value={option.points}
+                      checked={selectedOption === option.points}
+                      onChange={() => handleAnswer(option.points)}
+                      className="w-5 h-5 text-blue-600 dark:text-blue-400"
+                    />
+                    <span className="flex-1 text-lg text-gray-900 dark:text-gray-100">{option.text}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setCurrentQuestion((prev) => Math.max(0, prev - 1))}
+                disabled={currentQuestion === 0}
+                className="px-8 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-lg bg-white dark:bg-gray-800"
+              >
+                Anterior
+              </button>
+
+              <button
+                onClick={nextQuestion}
+                disabled={selectedOption === null}
+                className="px-8 py-3 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold text-lg"
+              >
+                {currentQuestion === questions.length - 1 ? "Finalizar" : "Siguiente"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
+)
 }
 
 export default PadelLevelQuiz

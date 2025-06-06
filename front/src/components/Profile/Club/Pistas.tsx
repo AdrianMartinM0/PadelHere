@@ -36,11 +36,10 @@ export default function Pistas({ clubId }: { clubId: string }) {
   // Estado para los overrides globales
   const [globalOverrides, setGlobalOverrides] = useState<{ [date: string]: any }>({});
 
-  const { userData } = useContext(AuthContext)!;
+  // 🚩 IMPORTANTE: ahora obtenemos setReservaIds del contexto
+  const { userData, setReservaIds } = useContext(AuthContext)!;
 
   useReservasSocket((data) => {
-    // Aquí llamas a tu función de recarga, ejemplo:
-    console.log(data)
     if (data.club_id === clubId)
       fetchAllCourtsAndConfigs();
   });
@@ -89,13 +88,12 @@ export default function Pistas({ clubId }: { clubId: string }) {
       });
   }
 
-  // Cargar datos iniciales, incluyendo los overrides globales
   useEffect(() => {
     fetchAllCourtsAndConfigs();
     // eslint-disable-next-line
   }, [clubId]);
 
-  // Funciones para gestionar overrides globales
+  // Funciones para gestionar overrides globales...
   function fetchGlobalOverrides() {
     fetch(`http://localhost:8000/v1/club/${clubId}/overrides`)
       .then(res => res.json())
@@ -117,7 +115,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
     }).then(() => fetchGlobalOverrides());
   }
 
-  // Guardar cambios en la configuración global del club
   function saveGlobalConfig(nextGlobalDays: any) {
     fetch(`http://localhost:8000/v1/club/${clubId}/config`, {
       method: "PUT",
@@ -128,7 +125,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
     }).then(res => console.log("Config global guardada:", res.status));
   }
 
-  // Guardar cambios en la configuración de una pista específica
   function saveCourtConfig(courtId: string, courtConfig: any) {
     fetch(`http://localhost:8000/v1/pista/${courtId}/config`, {
       method: "PUT",
@@ -139,7 +135,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
     }).then(res => console.log(`Config de pista ${courtId} guardada:`, res.status));
   }
 
-  // Añadir pista
   function addCourt(name: string, desc?: string) {
     fetch(`http://localhost:8000/v1/club/${clubId}/pistas`, {
       method: "POST",
@@ -168,7 +163,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
       });
   }
 
-  // Editar pista (nombre/desc)
   function editCourt(courtId: string, name: string, desc?: string) {
     fetch(`http://localhost:8000/v1/pista/${courtId}`, {
       method: "PUT",
@@ -182,7 +176,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
     });
   }
 
-  // Eliminar pista con modal en vez de confirm
   function deleteCourt(courtId: string) {
     const court = courts.find(c => c.id === courtId);
     setDeleteModal({ show: true, courtId, courtName: court?.name });
@@ -212,7 +205,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
     setDeleteModal({ show: false });
   }
 
-  // Añadir reserva
+  // Añadir reserva y actualizar ids en AuthContext
   async function confirmReserve(name: string, phone: string) {
     const res = await fetch(`http://localhost:8000/v1/pista/${selectedCourt}/reservas`, {
       method: "POST",
@@ -235,7 +228,8 @@ export default function Pistas({ clubId }: { clubId: string }) {
     })
       .then(res => {
         if (!res.ok) throw new Error("No se pudo asociar la reserva al usuario");
-        console.log("Reserva asociada al usuario correctamente");
+        // 🚩 Cambia aquí: solo usa prev, no userData?.reservas, para evitar problemas de estado stale
+        setReservaIds?.((prev: string[]) => Array.from(new Set([...(prev || []), reserva._id])));
       });
 
     // Vuelve a pedir todas las pistas/configs/overrides tras reservar
@@ -248,7 +242,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
     setModal({ show: true, day, from, to });
   }
 
-  // Guardar cambios en la config global desde ConfigPanel
   function handleSetGlobalDays(days: { [day: string]: any }) {
     setGlobalDays(days);
     saveGlobalConfig(days);
@@ -257,26 +250,25 @@ export default function Pistas({ clubId }: { clubId: string }) {
   if (loading) {
     return (
       <div className="container mx-auto pr-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 mt-6" />
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6 mt-6" />
         <div className="flex gap-4 mb-8">
-          <div className="h-10 w-32 bg-gray-200 rounded" />
-          <div className="h-10 w-32 bg-gray-200 rounded" />
-          <div className="h-10 w-32 bg-gray-200 rounded" />
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
-        <div className="h-14 bg-gray-200 rounded w-48 mb-6 mt-6" />
-        <div className="h-8 bg-gray-200 rounded w-1/3 mb-6 mt-6" />
+        <div className="h-14 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-6 mt-6" />
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6 mt-6" />
         <div className="flex items-center justify-between my-2 px-2" >
-        <div className="h-12 bg-gray-200 rounded w-36" />
-        <div className="h-6 bg-gray-200 rounded w-48" />
-        <div className="h-12 bg-gray-200 rounded w-36" />
-        
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-36" />
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48" />
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded w-36" />
         </div>
-        <div className="bg-white rounded-lg shadow border-blue-400 p-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow border-blue-400 p-6">
           {[...Array(7)].map((_, idx) => (
             <div key={idx} className="flex items-center gap-2 mb-2 overflow-hidden">
-              <div className="w-24 h-5 bg-gray-200 rounded" />
+              <div className="w-24 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
               {[...Array(7)].map((_, idy) => (
-                <div key={idy} className="min-w-30 h-8 bg-gray-200 rounded-md" />
+                <div key={idy} className="min-w-30 h-8 bg-gray-200 dark:bg-gray-700 rounded-md" />
               ))}
             </div>
           ))}
@@ -289,7 +281,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
 
   return (
     <div className="container mx-auto pr-6">
-      <h1 className="text-2xl font-bold mb-2">Gestión de Pistas</h1>
+      <h1 className="text-2xl dark:text-white font-bold mb-2">Gestión de Pistas</h1>
       <CourtSelector
         courts={courts}
         selectedCourt={selectedCourt}
@@ -350,14 +342,14 @@ function DeleteCourtModal({
   if (!show) return null;
   return (
     <div className="fixed inset-0 flex justify-center items-center bg-[#0007] z-50">
-      <div className="bg-white rounded p-6 shadow-lg min-w-[320px]">
-        <h2 className="text-lg font-semibold mb-4">Eliminar pista</h2>
-        <p className="mb-4">
+      <div className="bg-white dark:bg-gray-900 rounded p-6 shadow-lg min-w-[320px]">
+        <h2 className="text-lg font-semibold mb-4 dark:text-gray-100">Eliminar pista</h2>
+        <p className="mb-4 dark:text-gray-200">
           ¿Seguro que quieres eliminar la pista <strong>{courtName ?? "seleccionada"}</strong>?
         </p>
         <div className="flex justify-end gap-2">
           <button
-            className="px-4 py-2 rounded border bg-gray-100 border-gray-300"
+            className="px-4 py-2 rounded border bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 dark:text-gray-100"
             onClick={onCancel}
             type="button"
           >

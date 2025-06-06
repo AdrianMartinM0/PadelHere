@@ -1,65 +1,65 @@
-import { createContext, useEffect, useState, ReactNode } from "react"
-import { useNavigate } from "react-router-dom"
+import { createContext, useEffect, useState, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface UserData {
-  id: string
-  name: string
-  level: number
-  desc: string
-  img_perfil: string | null
-  tel?: number
-  reservas?: string[] // Array de IDs de reserva
+  id: string;
+  name: string;
+  level: number;
+  desc: string;
+  img_perfil: string | null;
+  tel?: number;
+  reservas?: string[]; // Array de IDs de reserva
 }
 
 interface ClubData {
-  id: string
-  name: string
-  tel: number
-  desc: string | null
-  img_perfil: string | null
-  direccion: string
+  id: string;
+  name: string;
+  tel: number;
+  desc: string | null;
+  img_perfil: string | null;
+  direccion: string;
 }
 
 interface AuthContextType {
-  isLoggedIn: boolean
-  token: string | null
-  email: string | null
-  userType: string | null
-  userData: UserData | null
-  clubData: ClubData | null
-  reservaIds: string[]
-  setReservaIds: (ids: string[]) => void
-  login: (token: string) => void
-  logout: () => void
-  refreshUserData: () => Promise<void>
-  updateUserLevel: (newLevel: number) => void
-  updateClubDesc: (desc: string) => Promise<boolean>
-  updateClubInfo: (info: Partial<ClubData>) => Promise<boolean>
-  loading: boolean
+  isLoggedIn: boolean;
+  token: string | null;
+  email: string | null;
+  userType: string | null;
+  userData: UserData | null;
+  clubData: ClubData | null;
+  reservaIds: string[];
+  setReservaIds: React.Dispatch<React.SetStateAction<string[]>>; // <--- TIPADO CORRECTO
+  login: (token: string) => void;
+  logout: () => void;
+  refreshUserData: () => Promise<void>;
+  updateUserLevel: (newLevel: number) => void;
+  updateClubDesc: (desc: string) => Promise<boolean>;
+  updateClubInfo: (info: Partial<ClubData>) => Promise<boolean>;
+  loading: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("jwtToken"))
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [email, setEmail] = useState<string | null>(null)
-  const [userType, setUserType] = useState<string | null>(null)
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [clubData, setClubData] = useState<ClubData | null>(null)
-  const [reservaIds, setReservaIds] = useState<string[]>([])
-  const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("jwtToken"));
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [clubData, setClubData] = useState<ClubData | null>(null);
+  const [reservaIds, setReservaIds] = useState<string[]>([]);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   // Función para obtener datos del usuario o club
   const fetchUserData = async (userEmail: string): Promise<UserData | ClubData | null> => {
     try {
-      const endpoint = userType === "club" ? "club/club" : "usuario/user"
-      const response = await fetch(`http://localhost:8000/v1/${endpoint}?email=${userEmail}`)
+      const endpoint = userType === "club" ? "club/club" : "usuario/user";
+      const response = await fetch(`http://localhost:8000/v1/${endpoint}?email=${userEmail}`);
 
-      if (!response.ok) throw new Error("Error al obtener datos del usuario")
+      if (!response.ok) throw new Error("Error al obtener datos del usuario");
 
-      const data = await response.json()
+      const data = await response.json();
       if (userType === "club") {
         return {
           id: data._id,
@@ -68,9 +68,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           desc: data.desc || null,
           img_perfil: data.img_perfil,
           direccion: data.direccion,
-        }
+        };
       } else {
-        setReservaIds(data.reservas || [])
+        setReservaIds(data.reservas || []);
         return {
           id: data._id,
           name: data.name,
@@ -79,28 +79,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           img_perfil: data.img_perfil,
           tel: data.tel,
           reservas: data.reservas || [], // Solo los IDs
-        }
+        };
       }
     } catch (error) {
-      console.error("Error fetching user data:", error)
-      setReservaIds([])
-      return null
+      console.error("Error fetching user data:", error);
+      setReservaIds([]);
+      return null;
     }
-  }
+  };
 
   // Refrescar datos del usuario
   const refreshUserData = async () => {
-    if (!email || !userType) return
+    if (!email || !userType) return;
 
-    const data = await fetchUserData(email)
+    const data = await fetchUserData(email);
 
     if (userType === "club" && data) {
-      setClubData(data as ClubData)
+      setClubData(data as ClubData);
     } else if (data) {
-      setUserData(data as UserData)
-      setReservaIds((data as UserData).reservas || [])
+      setUserData(data as UserData);
+      setReservaIds((data as UserData).reservas || []);
     }
-  }
+  };
 
   // Actualizar nivel del usuario
   const updateUserLevel = (newLevel: number) => {
@@ -108,148 +108,148 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserData({
         ...userData,
         level: newLevel,
-      })
+      });
     }
-  }
+  };
 
   // Actualizar descripción del club
   const updateClubDesc = async (desc: string): Promise<boolean> => {
-    if (!email || userType !== "club") return false
+    if (!email || userType !== "club") return false;
 
     try {
-      const formData = new FormData()
-      formData.append("email", email)
-      formData.append("desc", desc)
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("desc", desc);
 
       const response = await fetch("http://localhost:8000/v1/club/update-desc", {
         method: "POST",
         body: formData,
-      })
+      });
 
-      if (!response.ok) throw new Error("No se pudo actualizar la descripción")
+      if (!response.ok) throw new Error("No se pudo actualizar la descripción");
 
-      await refreshUserData()
-      return true
+      await refreshUserData();
+      return true;
     } catch (error) {
-      console.error("Error updating club description:", error)
-      return false
+      console.error("Error updating club description:", error);
+      return false;
     }
-  }
+  };
 
   // Actualizar información del club
   const updateClubInfo = async (info: Partial<ClubData>): Promise<boolean> => {
-    if (!email || userType !== "club") return false
+    if (!email || userType !== "club") return false;
 
     try {
-      const formData = new FormData()
-      formData.append("email", email)
+      const formData = new FormData();
+      formData.append("email", email);
 
       Object.entries(info).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-          formData.append(key, value.toString())
+          formData.append(key, value.toString());
         }
-      })
+      });
 
       const response = await fetch("http://localhost:8000/v1/club/update-info", {
         method: "POST",
         body: formData,
-      })
+      });
 
-      if (!response.ok) throw new Error("No se pudo actualizar la información")
+      if (!response.ok) throw new Error("No se pudo actualizar la información");
 
-      await refreshUserData()
-      return true
+      await refreshUserData();
+      return true;
     } catch (error) {
-      console.error("Error updating club info:", error)
-      return false
+      console.error("Error updating club info:", error);
+      return false;
     }
-  }
+  };
 
   // Login
   const login = (newToken: string) => {
-    setToken(newToken)
-    console.log(newToken)
-    localStorage.setItem("jwtToken", newToken)
-  }
+    setToken(newToken);
+    console.log(newToken);
+    localStorage.setItem("jwtToken", newToken);
+  };
 
   // Logout
   const logout = () => {
-    setToken(null)
-    setIsLoggedIn(false)
-    setEmail(null)
-    setUserType(null)
-    setUserData(null)
-    setClubData(null)
-    setReservaIds([])
-    localStorage.removeItem("jwtToken")
-  }
+    setToken(null);
+    setIsLoggedIn(false);
+    setEmail(null);
+    setUserType(null);
+    setUserData(null);
+    setClubData(null);
+    setReservaIds([]);
+    localStorage.removeItem("jwtToken");
+  };
 
   // Verificar token cuando cambia
   useEffect(() => {
     const verifyToken = async () => {
       if (!token) {
-        setIsLoggedIn(false)
-        setEmail(null)
-        setUserType(null)
-        setUserData(null)
-        setClubData(null)
-        setReservaIds([])
-        setLoading(false)
-        return
+        setIsLoggedIn(false);
+        setEmail(null);
+        setUserType(null);
+        setUserData(null);
+        setClubData(null);
+        setReservaIds([]);
+        setLoading(false);
+        return;
       }
 
       try {
-        const response = await fetch(`http://localhost:8000/v1/usuario/verify-jwt?token=${token}`)
+        const response = await fetch(`http://localhost:8000/v1/usuario/verify-jwt?token=${token}`);
 
         if (!response.ok) {
-          throw new Error("Token inválido")
+          throw new Error("Token inválido");
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
         if (data.email && data.user_type) {
-          setIsLoggedIn(true)
-          setEmail(data.email)
-          setUserType(data.user_type)
+          setIsLoggedIn(true);
+          setEmail(data.email);
+          setUserType(data.user_type);
         } else {
-          logout()
+          logout();
         }
       } catch (error) {
-        console.error("Error verificando token:", error)
-        logout()
+        console.error("Error verificando token:", error);
+        logout();
       }
-      setLoading(false)
-    }
+      setLoading(false);
+    };
 
-    verifyToken()
-  }, [token])
+    verifyToken();
+  }, [token]);
 
   // Redirigir al quiz si el nivel es 0
   useEffect(() => {
-    if (userData?.level === 0) navigate("/app/quiz")
-  }, [userData, navigate])
+    if (userData?.level === 0) navigate("/app/quiz");
+  }, [userData, navigate]);
 
   // Cargar datos del usuario cuando se obtiene el email
   useEffect(() => {
     const loadUserData = async () => {
       if (isLoggedIn && email && userType) {
-        const data = await fetchUserData(email)
+        const data = await fetchUserData(email);
 
         if (userType === "club" && data) {
-          setClubData(data as ClubData)
-          setUserData(null)
-          setReservaIds([])
+          setClubData(data as ClubData);
+          setUserData(null);
+          setReservaIds([]);
         } else if (data) {
-          setUserData(data as UserData)
-          setClubData(null)
-          setReservaIds((data as UserData).reservas || [])
+          setUserData(data as UserData);
+          setClubData(null);
+          setReservaIds((data as UserData).reservas || []);
         }
       }
-    }
+    };
 
-    loadUserData()
+    loadUserData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn, email, userType])
+  }, [isLoggedIn, email, userType]);
 
   const value: AuthContextType = {
     isLoggedIn,
@@ -266,9 +266,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     updateUserLevel,
     updateClubDesc,
     updateClubInfo,
-    loading
-  }
-  
-  if(!loading)
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
+    loading,
+  };
+
+  if (!loading)
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

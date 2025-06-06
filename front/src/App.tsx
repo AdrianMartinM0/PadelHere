@@ -6,9 +6,6 @@ import Login from "./components/formsIni/Login"
 import Register from "./components/formsIni/Register"
 import Recover from "./components/formsIni/Recover"
 import Porfile from "./components/Profile/Porfile"
-import Partidos from "./components/Profile/Partidos"
-import Logros from "./components/Profile/Logros"
-import Nivel from "./components/Profile/Nivel"
 import VerifyPasscode from "./components/formsIni/VerifyPasscode"
 import SetNewPassword from "./components/formsIni/SetNewPassword"
 import Jugar from "./components/principales/Jugar"
@@ -25,61 +22,66 @@ import ReservasClub from "./components/principales/ReservasClub"
 import { ChatPanel } from "./components/principales/ChatPanel"
 
 function App() {
-
   const { isLoggedIn, userType } = useContext(AuthContext)!;
 
-
   return (
-    <div className="bg-[#ACD3FF] min-h-screen flex flex-col gap-8 justify-between">
+    <div className="
+      min-h-screen flex flex-col
+      bg-gradient-to-br from-blue-100 via-[#ACD3FF] to-white
+      dark:from-gray-900 dark:via-blue-950 dark:to-gray-900
+      transition-colors duration-300
+    ">
       <Header />
-      <div className="container h-full max-w-[1200px] flex items-center justify-center mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
-        <Routes>
-          <Route path="/" element={<Outlet />} >
-            <Route index element={!isLoggedIn? <Inicio /> : <Navigate to="app/"/>} />
-            {!isLoggedIn ?
-              <Route path="sesion/" element={<Outlet />}>
-                <Route element={<Outlet />}>
-                  <Route index element={<Navigate to="login" />} />
-                  <Route path="login" element={<Login />} />
-                  <Route path="register" element={<Register />} />
-                  <Route path="recover" element={<Recover />} />
-                  <Route path="verify-passcode" element={<VerifyPasscode />} />
-                  <Route path="set-new-password" element={<SetNewPassword />} />
+      <main className="
+        flex-grow flex items-center justify-center
+        w-full
+        px-2 sm:px-4 md:px-8
+        py-4
+        transition-all duration-300
+      ">
+        <div className="w-full max-w-6xl mx-auto">
+          <Routes>
+            <Route path="/" element={<Outlet />} >
+              <Route index element={!isLoggedIn ? <Inicio /> : <Navigate to="app/" />} />
+              {!isLoggedIn ?
+                <Route path="sesion/" element={<Outlet />}>
+                  <Route element={<Outlet />}>
+                    <Route index element={<Navigate to="login" />} />
+                    <Route path="login" element={<Login />} />
+                    <Route path="register" element={<Register />} />
+                    <Route path="recover" element={<Recover />} />
+                    <Route path="verify-passcode" element={<VerifyPasscode />} />
+                    <Route path="set-new-password" element={<SetNewPassword />} />
+                  </Route>
                 </Route>
-              </Route>
-              :
-              <Route path="app/" element={<Outlet />}>
-                <Route path="quiz/" element={<QuizLevel />} />
-                <Route element={<Outlet />}>
-                  <Route index element={userType === 'club' ? <Navigate to="profile" /> : <Navigate to="jugar" />} />
-                  <Route path="clubs/" element={<Clubs />} />
-                  <Route path="club/:club_id" element={<ClubView />} />
-                  <Route path="usuario/:usu_id" element={<UsuView />} />
-                  <Route path="chats/:chat_id?" element={<ChatPanel />} />
-                  {userType !== 'club' ?
-                    <Route path="jugar/" element={<Jugar />} /> : null
-                  }
-                  {userType !== 'club' ?
-                    <Route path="reservas/" element={<Reservas />} /> : null
-                  }
-                  {userType !== 'club' ?
-                    <Route path="mis-partidos/" element={<MisPartidos />} /> : null
-                  }
-                  {userType === "club" ?
-                    <>
-                      <Route path="profile/" element={<ClubProfile />} />
-                      <Route path="club-reservas/" element={<ReservasClub />} />
-                    </>
-                    :
-                    <Route path="profile/" element={<Porfile />} />
-                  }
+                :
+                <Route path="app/" element={<Outlet />}>
+                  <Route path="quiz/" element={<QuizLevel />} />
+                  <Route element={<Outlet />}>
+                    <Route index element={userType === 'club' ? <Navigate to="profile" /> : <Navigate to="jugar" />} />
+                    <Route path="clubs/" element={<Clubs />} />
+                    <Route path="club/:club_id" element={<ClubView />} />
+                    <Route path="usuario/:usu_id" element={<UsuView />} />
+                    <Route path="chats/:chat_id?" element={<ChatPanel />} />
+                    {userType !== 'club' && <Route path="jugar/" element={<Jugar />} />}
+                    {userType !== 'club' && <Route path="reservas/" element={<Reservas />} />}
+                    {userType !== 'club' && <Route path="mis-partidos/" element={<MisPartidos />} />}
+                    {userType === "club" ?
+                      <>
+                        <Route path="profile/" element={<ClubProfile />} />
+                        <Route path="club-reservas/" element={<ReservasClub />} />
+                      </>
+                      :
+                      <Route path="profile/" element={<Porfile />} />
+                    }
+                  </Route>
                 </Route>
-              </Route>
-            }
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+              }
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </main>
       <Footer />
     </div>
   )

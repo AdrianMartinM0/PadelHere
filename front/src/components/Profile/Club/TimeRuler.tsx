@@ -15,7 +15,7 @@ function TimeRuler({from,to}:{from:string,to:string}) {
     );
   }
   return (
-    <div className="flex w-full mb-4 ml-30">
+    <div className="flex w-full dark:text-gray-200 mb-4 ml-30">
       {marks}
     </div>
   );

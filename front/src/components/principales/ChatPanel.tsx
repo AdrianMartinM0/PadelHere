@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Chats } from "./Chats";
 import { ChatView } from "./ChatView";
 import { AuthContext } from "../../context/AuthContext";
+import { ArrowLeft } from "lucide-react"; // Usa cualquier icono de flecha que tengas o quieras
 
-// Define el tipo Chat (ajusta según tu backend)
 type Chat = {
   _id: string;
   partido_id: string;
@@ -19,6 +19,14 @@ export const ChatPanel = () => {
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 700);
+
+  // Responsive: Detecta si es móvil
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 700);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // Cargar los chats del usuario al montar
   useEffect(() => {
@@ -37,7 +45,6 @@ export const ChatPanel = () => {
           initialUnread[chat._id] = unread;
         });
         setUnreadMap(initialUnread);
-        console.log("UnreadMap inicial:", initialUnread);
       } catch (e) {
         setChats([]);
       }
@@ -71,48 +78,87 @@ export const ChatPanel = () => {
   const incrementUnread = (chatId: string) => {
     setUnreadMap((prev) => {
       if (selectedChat === chatId) {
-        console.log("No incremento porque el chat está abierto:", chatId);
+        // No incremento si el chat está abierto
         return prev;
       }
       const updated = { ...prev, [chatId]: (prev[chatId] || 0) + 1 };
-      console.log("incrementUnread:", updated);
       localStorage.setItem(`chat_${chatId}_unread`, String(updated[chatId]));
       return updated;
     });
   };
 
-  useEffect(() => {
-    console.log("UnreadMap actualizado:", unreadMap)
-  }, [unreadMap]);
-
-  // WebSocket subscription: solo depende de userData?.id y chats para asegurar coincidencia correcta de chatId
+  // WebSocket subscription
   useEffect(() => {
     if (!userData?.id) return;
     const ws = new WebSocket(`ws://localhost:8000/ws/chat`);
-    ws.onopen = () => console.log("WebSocket abierto");
-    ws.onclose = () => console.log("WebSocket cerrado");
+    ws.onopen = () => {};
+    ws.onclose = () => {};
     ws.onerror = (err) => console.error("WS error", err);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         const { chat_id } = data;
-        // Asegura que el chatId existe en los chats actuales
         const chatExists = chats.some(chat => chat._id === String(chat_id));
-        console.log("chatId recibido:", chat_id, "¿Existe en chats?", chatExists);
         if (chatExists && chat_id !== selectedChat) {
           incrementUnread(String(chat_id));
         }
-      } catch (e) {
-        console.error("Error parseando mensaje WS", e);
-      }
+      } catch (e) {}
     };
     return () => ws.close();
   }, [userData?.id, chats, selectedChat]);
 
+  // --- MOBILE RENDER LOGIC ---
+  // Si es móvil y NO hay chat seleccionado: solo lista de chats
+  if (isMobile && !selectedChat) {
+    return (
+      <div className="flex flex-col h-[100dvh] w-full bg-gray-100 dark:bg-gray-900">
+        <div className="w-full h-full">
+          <Chats
+            chats={chats}
+            loading={loading}
+            selectedChat={selectedChat}
+            unreadMap={unreadMap}
+            onSelectChat={(id: string) => {
+              setSelectedChat(id);
+              navigate(`/app/chats/${id}`);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Si es móvil y SÍ hay chat seleccionado: solo chat y botón volver
+  if (isMobile && selectedChat) {
+    return (
+      <div className="flex flex-col h-[100dvh] w-full bg-gray-100 dark:bg-gray-900">
+        {/* Cabecera con botón volver */}
+        <div className="flex items-center p-3 bg-gradient-to-r from-blue-700 to-blue-500 dark:from-blue-900 dark:to-blue-600 text-white shadow">
+          <button
+            className="rounded-full bg-blue-500 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-800 p-2 mr-2 transition"
+            onClick={() => {
+              setSelectedChat(null);
+              navigate("/app/chats");
+            }}
+            aria-label="Volver a la lista de chats"
+            type="button"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <span className="font-bold text-lg">Chat del Partido</span>
+        </div>
+        <div className="flex-1 flex flex-col h-0">
+          <ChatView chatId={selectedChat} />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop: ambos paneles
   return (
-    <div className="flex h-[700px] w-full bg-gray-100">
+    <div className="flex h-[700px] w-full bg-gray-100 dark:bg-gray-900">
       {/* Lista de chats a la izquierda */}
-      <div className="w-full max-w-xs border-r bg-white h-full">
+      <div className="w-full max-w-xs border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 h-full">
         <Chats
           chats={chats}
           loading={loading}
@@ -127,11 +173,9 @@ export const ChatPanel = () => {
       {/* Vista del chat a la derecha */}
       <div className="flex-1 flex flex-col h-full">
         {selectedChat ? (
-          <ChatView
-            chatId={selectedChat}
-          />
+          <ChatView chatId={selectedChat} />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500">
             <span className="text-2xl">Selecciona un chat</span>
           </div>
         )}

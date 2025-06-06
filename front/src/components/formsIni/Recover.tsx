@@ -94,16 +94,16 @@ const Recover = () => {
     }
 
     return (
-        <div className="flex items-center justify-center min-w-full px-4 sm:px-0">
-            <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-                <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
+        <div className="flex items-center justify-center min-w-full min-h-[calc(100vh-100px)] px-2 sm:px-0 transition-colors duration-300">
+            <div className="w-full max-w-md p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-lg sm:rounded-2xl shadow-md transition-colors duration-300">
+                <h2 className="mb-6 text-2xl font-bold text-center text-gray-800 dark:text-blue-300">
                     Recuperar Contraseña
                 </h2>
                 <form noValidate onSubmit={handleSubmit} >
                     <div className="mb-4">
                         <label
                             htmlFor="email"
-                            className="block mb-2 text-sm font-medium text-gray-700"
+                            className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-200"
                         >
                             Correo Electrónico
                         </label>
@@ -116,7 +116,7 @@ const Recover = () => {
                                     emailField.onChange(e.target.value);
                                     if (noRecoverElement.current) noRecoverElement.current.textContent = "";
                                 }}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 dark:focus:ring-blue-400 focus:border-indigo-500 dark:focus:border-blue-400 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 sm:text-sm transition-colors duration-200"
                                 placeholder="Ingresa tu correo"
                             />
                             <span className="p-2">
@@ -138,7 +138,7 @@ const Recover = () => {
                         <p ref={noRecoverElement} id="noRecover" className=" text-red-500 m-0 text-sm"></p>
                     </div>
                     <div className="mb-4 justify-center gap-2 flex items-center">
-                        <p>¿Eres un Club?</p>
+                        <p className="text-gray-800 dark:text-gray-200">¿Eres un Club?</p>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={isClub} onChange={handleToggle} className="sr-only peer" />
                             <div className={`ring-0 rounded-full outline-none duration-300 w-6 h-6 shadow-md flex items-center justify-center relative ${isClub ? 'bg-emerald-500' : 'bg-rose-400'}`}>
@@ -156,7 +156,7 @@ const Recover = () => {
                     </div>
                     <button
                         type="submit"
-                        className="w-full px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 text-white bg-blue-500 dark:bg-blue-700 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-200"
                     >
                         Enviar
                     </button>
