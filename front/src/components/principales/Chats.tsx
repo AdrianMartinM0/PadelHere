@@ -46,19 +46,13 @@ export const Chats = ({
   const navigate = useNavigate();
   const context = useContext(AuthContext!);
   const userData = context?.userData;
-  
-  useEffect(() => {
+
+ useEffect(() => {
   setUnreadMap(prev => {
-    // Solo actualiza los ids cuyo valor en unreadMapProp sea distinto de 0 y distinto al valor previo
     const updated = { ...prev };
     for (const id in unreadMapProp) {
-      if (
-        unreadMapProp[id] !== 0 && // Solo si el nuevo valor es distinto de 0
-        unreadMapProp[id] !== prev[id] && // Y es distinto al valor actual
-        prev.hasOwnProperty(id) // Y existe en el estado local
-      ) {
-        updated[id] = unreadMapProp[id];
-      }
+      // Suma el valor recibido al anterior, o pon el recibido si no había nada antes
+      updated[id] = (prev[id] || 0) + 1;
     }
     return updated;
   });

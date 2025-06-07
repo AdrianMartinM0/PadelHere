@@ -47,10 +47,6 @@ export const ChatPanel = () => {
 
         // Inicializa SIEMPRE todas las claves
         const initialUnread: Record<string, number> = {};
-        data.forEach((chat: Chat) => {
-          const unread = parseInt(localStorage.getItem(`chat_${chat._id}_unread`) || "0", 10);
-          initialUnread[chat._id] = unread;
-        });
         setUnreadMap(initialUnread);
       } catch (e) {
         setChats([]);
@@ -74,8 +70,6 @@ export const ChatPanel = () => {
     if (selectedChat) {
       setUnreadMap((prev) => {
         const updated = { ...prev, [selectedChat]: 0 };
-        localStorage.setItem(`chat_${selectedChat}_unread`, "0");
-        localStorage.setItem(`chat_${selectedChat}_lastSeen`, String(Date.now()));
         return updated;
       });
     }
@@ -85,7 +79,7 @@ export const ChatPanel = () => {
   const incrementUnread = (chatId: string) => {
     setUnreadMap((prev) => {
       const updated = { ...prev, [chatId]: (prev[chatId] || 0) + 1 };
-      localStorage.setItem(`chat_${chatId}_unread`, String(updated[chatId]));
+      console.log(updated)
       return updated;
     });
   };
