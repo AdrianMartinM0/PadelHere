@@ -18,7 +18,7 @@ Este proyecto utiliza un entorno virtual (virtualenv) para gestionar las depende
 3. Ejecuta el siguiente comando para crear un entorno virtual:
     #### **Linux / macOS**
     ```bash
-        python3 -m venv venv
+        python3 -m venv .venv
     ```
     #### **Windows (cmd)**
     ```bash
