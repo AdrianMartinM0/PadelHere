@@ -35,33 +35,30 @@ const formatDateMadrid = (dateString: string) => {
   return new Date(dateString).toLocaleString("es-ES", { timeZone: "Europe/Madrid" });
 };
 
-// --- CAMBIO CLAVE: El filtro ahora usa hora de España automáticamente ---
 const getNowInMadrid = () => {
-  // Devuelve un objeto Date en la zona horaria de Madrid (Europe/Madrid)
   const madridStr = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).replace(" ", "T");
   return new Date(madridStr);
 };
 
 const isPartidoFuturo = (partido: Partido) => {
   if (!partido.fecha || !partido.hora) return false
-  // El partido guardado debe estar en hora de España (Europe/Madrid)
   const partidoDate = new Date(`${partido.fecha}T${partido.hora}:00`);
   const nowMadrid = getNowInMadrid();
   return partidoDate.getTime() > nowMadrid.getTime();
 }
 
-const isPartidoConHuecos = (partido: Partido) => {
+const isPartidoIncompleto = (partido: Partido) => {
+  // Devuelve true si algún slot está vacío (no hay 4 jugadores)
   return !(
     partido.pareja1_jugador1 &&
     partido.pareja1_jugador2 &&
     partido.pareja2_jugador1 &&
     partido.pareja2_jugador2
-  )
-}
+  );
+};
 
 const getPartidoDate = (partido: Partido) => {
   if (!partido.fecha || !partido.hora) return new Date(0)
-  // Siempre en hora de España (Europe/Madrid)
   return new Date(`${partido.fecha}T${partido.hora}:00`)
 }
 
@@ -87,7 +84,7 @@ const Jugar = () => {
   const navigate = useNavigate()
   const wsRef = useRef<WebSocket | null>(null);
 
-  // --- fetchPartidos: ahora el filtro muestra partidos llenos solo si juega el usuario actual ---
+  // --- fetchPartidos: muestra todos los partidos incompletos y no pasados ---
   const fetchPartidos = async () => {
     setLoadingPartidos(true)
     try {
@@ -96,10 +93,8 @@ const Jugar = () => {
       let data = await res.json()
       data = data
         .filter((p: Partido) => {
-          const hayHuecos = isPartidoConHuecos(p);
-          // Mostrar partido aunque esté lleno si el usuario actual está en algún slot
-          const yoEstoy = [p.pareja1_jugador1, p.pareja1_jugador2, p.pareja2_jugador1, p.pareja2_jugador2].includes(userData?.id);
-          return isPartidoFuturo(p) && (hayHuecos || yoEstoy);
+          // Mostrar todos los partidos que no estén completos y no estén pasados
+          return isPartidoFuturo(p) && isPartidoIncompleto(p);
         })
         .sort((a: Partido, b: Partido) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime())
       setPartidos(data)
@@ -149,13 +144,17 @@ const Jugar = () => {
     };
     ws.onclose = () => { wsRef.current = null; };
     return () => { ws.close(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    fetchPartidos()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    fetchPartidos();
+  }, []);
+
+  useEffect(() => {
+    if (userData !== undefined) {
+      fetchPartidos();
+    }
+  }, [userData]);
 
   const handleOpenCreateForm = () => {
     setCreateError(null)
@@ -230,14 +229,14 @@ const Jugar = () => {
   const handleJoin = async (partidoId: string, slot: string) => {
     try {
       const userId = userData?.id;
-      if (!userId) return alert("Debes iniciar sesión para unirte.");
+      if (!userId) return console.error("Debes iniciar sesión para unirte.");
       const res = await fetch(`http://localhost:8000/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("No se pudo unir al partido");
       // No hace falta recargar aquí: el WebSocket lo hará
     } catch (e) {
-      alert("Error al unirse al partido");
+      console.error("Error al unirse al partido");
     }
   }
 
@@ -245,18 +244,17 @@ const Jugar = () => {
   const handleLeave = async (partidoId: string, slot: string) => {
     try {
       const userId = userData?.id;
-      if (!userId) return alert("Debes iniciar sesión para salir.");
+      if (!userId) return console.error("Debes iniciar sesión para salir.");
       const res = await fetch(`http://localhost:8000/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("No se pudo salir del partido");
       // El WebSocket actualizará los slots
     } catch (e) {
-      alert("Error al salir del partido");
+      console.error("Error al salir del partido");
     }
   }
 
-  // Botón de salir solo si el usuario es el dueño del slot
   const LeaveButton = ({ partidoId, slot }: { partidoId: string, slot: string }) => (
     <button
       className="w-5 h-5 rounded-full border-2 border-red-500 flex items-center justify-center bg-white text-red-600 hover:bg-red-100 transition absolute -top-2 -right-2 z-10"

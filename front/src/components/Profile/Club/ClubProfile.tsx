@@ -66,7 +66,7 @@ const ClubProfile = () => {
       await refreshUserData()
       setIsEditingDesc(false)
     } catch (err) {
-      alert("Error al actualizar la descripción")
+      console.error("Error al actualizar la descripción")
     }
   }
 
@@ -96,7 +96,7 @@ const ClubProfile = () => {
       setImgPreview(null)
     } catch (err) {
       console.error(err)
-      alert("Error al actualizar la foto de perfil")
+      console.error("Error al actualizar la foto de perfil")
     } finally {
       setIsUploading(false)
     }
@@ -305,7 +305,7 @@ const ClubProfile = () => {
                       if (!res.ok) throw new Error("No se pudo eliminar el perfil");
                       window.location.href = "/logout";
                     } catch {
-                      alert("Error al eliminar el perfil");
+                      console.error("Error al eliminar el perfil");
                     }
                   }}
                 >

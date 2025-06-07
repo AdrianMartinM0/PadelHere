@@ -22,6 +22,36 @@ function makeDefaultCourtConfig() {
   };
 }
 
+// Modal para mostrar errores de reserva
+function ErrorModal({
+  show,
+  message,
+  onClose,
+}: {
+  show: boolean;
+  message: string;
+  onClose: () => void;
+}) {
+  if (!show) return null;
+  return (
+    <div className="fixed inset-0 flex justify-center items-center bg-[#0007] z-50">
+      <div className="bg-white dark:bg-gray-900 rounded p-6 shadow-lg min-w-[320px]">
+        <h2 className="text-lg font-semibold mb-4 dark:text-gray-100">Error</h2>
+        <p className="mb-4 dark:text-gray-200">{message}</p>
+        <div className="flex justify-end gap-2">
+          <button
+            className="px-4 py-2 rounded border bg-blue-600 border-blue-700 text-white font-bold"
+            onClick={onClose}
+            type="button"
+          >
+            Aceptar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Pistas({ clubId }: { clubId: string }) {
   const [courts, setCourts] = useState<any[]>([]);
   const [selectedCourt, setSelectedCourt] = useState<string>("");
@@ -36,13 +66,21 @@ export default function Pistas({ clubId }: { clubId: string }) {
   // Estado para los overrides globales
   const [globalOverrides, setGlobalOverrides] = useState<{ [date: string]: any }>({});
 
+  // Estado para modal de error de reserva
+  const [errorModal, setErrorModal] = useState<{ show: boolean; message: string }>({
+    show: false,
+    message: "",
+  });
+
   // 🚩 IMPORTANTE: ahora obtenemos setReservaIds del contexto
   const { userData, setReservaIds } = useContext(AuthContext)!;
 
   useReservasSocket((data) => {
-    if (data.club_id === clubId)
-      fetchAllCourtsAndConfigs();
-  });
+  if (data.club_id === clubId) {
+    fetchAllCourtsAndConfigs();
+    setModal({ show: false, day: "", from: 0, to: 0 });
+  }
+});
 
   // Función reutilizable para cargar datos de pistas + configs + overrides
   function fetchAllCourtsAndConfigs() {
@@ -90,7 +128,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
 
   useEffect(() => {
     fetchAllCourtsAndConfigs();
-    // eslint-disable-next-line
   }, [clubId]);
 
   // Funciones para gestionar overrides globales...
@@ -145,7 +182,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
       .then(newCourt => {
         const newId = newCourt.id || newCourt._id || newCourt.pista_id;
         if (!newId) {
-          alert("Error: El backend no devolvió el id de la pista.");
+          console.error("Error: El backend no devolvió el id de la pista.");
           return;
         }
         const courtObj = {
@@ -219,7 +256,12 @@ export default function Pistas({ clubId }: { clubId: string }) {
       }),
     });
     if (!res.ok) {
-      alert("Error al crear la reserva");
+      let message = "Error al reservar";
+      try {
+        const json = await res.json();
+        message = json.detail || message;
+      } catch {}
+      setErrorModal({ show: true, message });
       return;
     }
     const reserva = await res.json();
@@ -228,7 +270,6 @@ export default function Pistas({ clubId }: { clubId: string }) {
     })
       .then(res => {
         if (!res.ok) throw new Error("No se pudo asociar la reserva al usuario");
-        // 🚩 Cambia aquí: solo usa prev, no userData?.reservas, para evitar problemas de estado stale
         setReservaIds?.((prev: string[]) => Array.from(new Set([...(prev || []), reserva._id])));
       });
 
@@ -323,6 +364,14 @@ export default function Pistas({ clubId }: { clubId: string }) {
           onConfirm={confirmDeleteCourt}
         />
       )}
+      <ErrorModal
+        show={errorModal.show}
+        message={errorModal.message}
+        onClose={() => {
+          setErrorModal({ show: false, message: "" });
+          setModal({ show: false, day: "", from: 0, to: 0 }); // Cierra el modal de reserva al aceptar error
+        }}
+      />
     </div>
   );
 }

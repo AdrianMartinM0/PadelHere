@@ -462,13 +462,11 @@ const MisPartidos = () => {
     return () => {
       ws.close();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!userData?.id) return;
     fetchPartidosUsuario();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.id]);
 
   const handleJoin = async (partidoId: string, slot: string) => {

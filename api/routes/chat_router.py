@@ -27,3 +27,13 @@ async def remove_user_from_chat(partido_id: str, user_id: str):
 @chat_router.delete("/partido/{partido_id}")
 async def delete_chat_for_partido(partido_id: str):
     return await chat_controller.delete_chat_for_partido_controller(partido_id)
+
+# Setear el último mensaje leído
+@chat_router.post("/{chat_id}/last-read")
+async def set_last_read_message(chat_id: str, user_id: str, last_message_id: str):
+    return await chat_controller.set_last_read_message_controller(chat_id, user_id, last_message_id)
+
+# Obtener cantidad de mensajes sin leer (si partido no es antiguo)
+@chat_router.get("/{chat_id}/unread-count/{user_id}")
+async def get_unread_count_if_partido_not_past(chat_id: str, user_id: str):
+    return await chat_controller.get_unread_count_if_partido_not_past_controller(chat_id, user_id)

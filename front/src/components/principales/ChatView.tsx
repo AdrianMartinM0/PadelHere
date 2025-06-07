@@ -67,7 +67,6 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
       setHasLoaded(true); // <- Marcar como mensajes ya cargados
     };
     if (chatId) fetchMessages();
-    // eslint-disable-next-line
   }, [chatId]);
 
   // --- WebSocket: recibir mensajes en tiempo real ---
@@ -99,8 +98,9 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
       }
     };
     return () => ws.current?.close();
+    // Eliminamos userMap de las dependencias para evitar reconexiones innecesarias
     // eslint-disable-next-line
-  }, [chatId, userMap]);
+  }, [chatId]);
 
   // --- Obtener info de usuario (nombre y foto) ---
   const fetchUserInfos = async (ids: string[]) => {
@@ -139,6 +139,18 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
     }
     prevMensajesLength.current = mensajes.length;
   }, [mensajes, hasLoaded]);
+
+  // --- Setear último mensaje leído al cargar o actualizar mensajes ---
+  useEffect(() => {
+    if (!chatId || !userData?.id || mensajes.length === 0) return;
+    const lastMessageId = mensajes[mensajes.length - 1]?._id;
+    if (!lastMessageId) return; // <-- Evita enviar 'undefined'
+    // Llama al endpoint para setear el último mensaje leído (no esperes la respuesta)
+    fetch(
+      `http://localhost:8000/v1/chat/${chatId}/last-read?user_id=${userData.id}&last_message_id=${lastMessageId}`,
+      { method: "POST" }
+    );
+  }, [chatId, userData?.id, mensajes]);
 
   // --- Enviar mensaje ---
   const sendMessage = async (e: React.FormEvent) => {

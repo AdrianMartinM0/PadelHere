@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-// import { AuthContext } from "../../context/AuthContext";
+import { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 type Chat = {
   _id: string;
@@ -21,11 +21,10 @@ interface ChatsProps {
   onSelectChat?: (id: string) => void;
   selectedChat?: string | null;
   unreadMap?: Record<string, number>;
+  ws?: WebSocket;
 }
 
-// --- Devuelve true si el partido es HOY o en el futuro ---
 function isPartidoHoyOFuturo(fecha: string): boolean {
-  // fecha en formato YYYY-MM-DD
   if (!fecha) return false;
   const [year, month, day] = fecha.split("-").map(Number);
   const hoy = new Date();
@@ -39,16 +38,44 @@ export const Chats = ({
   loading,
   onSelectChat,
   selectedChat,
-  unreadMap = {},
+  unreadMap: unreadMapProp = {}
 }: ChatsProps) => {
-  // const { userData } = useContext(AuthContext)!;
   const [partidos, setPartidos] = useState<Record<string, Partido>>({});
+  const [filterReady, setFilterReady] = useState(false);
+  const [unreadMap, setUnreadMap] = useState<Record<string, number>>(unreadMapProp);
   const navigate = useNavigate();
+  const context = useContext(AuthContext!);
+  const userData = context?.userData;
+  
+  useEffect(() => {
+  setUnreadMap(prev => {
+    // Solo actualiza los ids cuyo valor en unreadMapProp sea distinto de 0 y distinto al valor previo
+    const updated = { ...prev };
+    for (const id in unreadMapProp) {
+      if (
+        unreadMapProp[id] !== 0 && // Solo si el nuevo valor es distinto de 0
+        unreadMapProp[id] !== prev[id] && // Y es distinto al valor actual
+        prev.hasOwnProperty(id) // Y existe en el estado local
+      ) {
+        updated[id] = unreadMapProp[id];
+      }
+    }
+    return updated;
+  });
+}, [unreadMapProp]);
+  useEffect(() => {
+    console.log(unreadMap)
+  }, [unreadMap]);
+
+  // Referencias para estados usados en los listeners
+  const selectedChatRef = useRef(selectedChat);
+  useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
+  useEffect(() => { unreadMapRef.current = unreadMap; }, [unreadMap]);
+  const unreadMapRef = useRef(unreadMap);
 
   // Cargar datos de partidos SOLO si cambia la lista de chats
   useEffect(() => {
     const fetchPartidos = async () => {
-      // Sacar todos los partido_id únicos no cargados
       const partidosFaltan = chats
         .map((chat: Chat) => chat.partido_id)
         .filter((id, idx, arr) => arr.indexOf(id) === idx && !(id in partidos));
@@ -72,18 +99,64 @@ export const Chats = ({
         );
         setPartidos((prev) => ({ ...prev, ...nuevas }));
       }
+      setFilterReady(true);
     };
     if (chats.length > 0) {
+      setFilterReady(false);
       fetchPartidos();
+    } else {
+      setFilterReady(true);
     }
-    // eslint-disable-next-line
   }, [chats]);
 
-  // Filtrar los chats según la lógica pedida:
+  // Fetch unread counts para cada chat activo
+  useEffect(() => {
+    if (!userData) return;
+    const fetchUnreads = async () => {
+      const map: Record<string, number> = {};
+      await Promise.all(
+        chats.map(async (chat) => {
+          const partido = partidos[chat.partido_id];
+          if (!partido || !isPartidoHoyOFuturo(partido.fecha)) return;
+          try {
+            const resp = await fetch(
+              `http://localhost:8000/v1/chat/${chat._id}/unread-count/${userData.id}`
+            );
+            if (resp.ok) {
+              const json = await resp.json();
+              map[chat._id] = json.unread_count ?? 0;
+            }
+          } catch {
+            map[chat._id] = 0;
+          }
+        })
+      );
+      setUnreadMap(map);
+    };
+    fetchUnreads();
+  }, [chats, partidos, userData]);
+
+  
+
+  // Cuando el usuario entra a un chat, marca como leído
+  const handleSelectChat = async (chatId: string) => {
+    onSelectChat?.(chatId);
+    navigate(`/app/chats/${chatId}`);
+    if (userData && userData.id) {
+      try {
+        await fetch(
+          `http://localhost:8000/v1/chat/${chatId}/mark-read/${userData.id}`,
+          { method: "PATCH" }
+        );
+      } catch {}
+      setUnreadMap((prev) => ({ ...prev, [chatId]: 0 }));
+    }
+  };
+
   // Solo mostrar los chats de partidos cuya fecha es HOY o en el futuro
   const filteredChats = chats.filter((chat) => {
     const partido = partidos[chat.partido_id];
-    if (!partido) return true; // Mientras aún no lo hemos cargado, mostrar
+    if (!partido) return false;
     return isPartidoHoyOFuturo(partido.fecha);
   });
 
@@ -102,7 +175,7 @@ export const Chats = ({
           <h2 className="text-xl font-bold mb-4 text-center text-blue-700 dark:text-blue-300">
             Tus Chats
           </h2>
-          {loading ? (
+          {loading || !filterReady ? (
             <div className="text-center text-gray-500 dark:text-gray-400 py-8">
               Cargando chats...
             </div>
@@ -123,10 +196,7 @@ export const Chats = ({
                         ? "bg-blue-100 dark:bg-blue-950 ring-2 ring-blue-500 dark:ring-blue-900 rounded-md"
                         : ""
                     }`}
-                    onClick={() => {
-                      onSelectChat?.(chat._id);
-                      navigate(`/app/chats/${chat._id}`);
-                    }}
+                    onClick={() => handleSelectChat(chat._id)}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between hover:bg-blue-50 dark:hover:bg-blue-900 rounded-lg p-2">
                       <div className="flex flex-col gap-1">

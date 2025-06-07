@@ -248,7 +248,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     loadUserData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn, email, userType]);
 
   const value: AuthContextType = {

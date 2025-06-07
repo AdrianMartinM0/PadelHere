@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Chats } from "./Chats";
 import { ChatView } from "./ChatView";
@@ -20,6 +20,13 @@ export const ChatPanel = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 700);
+
+  // Refs para acceder al valor actualizado en los callbacks
+  const selectedChatRef = useRef(selectedChat);
+  const chatsRef = useRef(chats);
+
+  useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
+  useEffect(() => { chatsRef.current = chats; }, [chats]);
 
   // Responsive: Detecta si es móvil
   useEffect(() => {
@@ -77,10 +84,6 @@ export const ChatPanel = () => {
   // Función para incrementar mensajes sin leer en un chat (útil para WebSocket)
   const incrementUnread = (chatId: string) => {
     setUnreadMap((prev) => {
-      if (selectedChat === chatId) {
-        // No incremento si el chat está abierto
-        return prev;
-      }
       const updated = { ...prev, [chatId]: (prev[chatId] || 0) + 1 };
       localStorage.setItem(`chat_${chatId}_unread`, String(updated[chatId]));
       return updated;
@@ -98,14 +101,16 @@ export const ChatPanel = () => {
       try {
         const data = JSON.parse(event.data);
         const { chat_id } = data;
-        const chatExists = chats.some(chat => chat._id === String(chat_id));
-        if (chatExists && chat_id !== selectedChat) {
+        // Usar los valores actuales de chats y selectedChat
+        const chatExists = chatsRef.current.some(chat => chat._id === String(chat_id));
+        if (chatExists && chat_id !== selectedChatRef.current) {
           incrementUnread(String(chat_id));
         }
       } catch (e) {}
     };
     return () => ws.close();
-  }, [userData?.id, chats, selectedChat]);
+    // Solo depende de userData?.id para evitar recrear el WS innecesariamente
+  }, [userData?.id]);
 
   // --- MOBILE RENDER LOGIC ---
   // Si es móvil y NO hay chat seleccionado: solo lista de chats

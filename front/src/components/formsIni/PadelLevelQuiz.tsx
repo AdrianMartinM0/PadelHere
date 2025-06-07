@@ -187,7 +187,7 @@ function PadelLevelQuiz() {
     }))
   }
 
-  const saveResultsToDatabase = async (totalScore: number, levelInfo: any, answers: Record<string, number>) => {
+  const saveResultsToDatabase = async (totalScore: number) => {
     setIsSaving(true)
     setSaveError(null)
 
@@ -202,7 +202,7 @@ function PadelLevelQuiz() {
       // Crear FormData con email del contexto y totalScore como level
       const formData = new FormData()
       formData.append("email", email)
-      formData.append("level", totalScore.toString()) // Enviar totalScore (0-950) como level
+      formData.append("level", totalScore.toString())
 
       const response = await fetch("http://localhost:8000/v1/usuario/update-level", {
         method: "POST",
@@ -231,28 +231,7 @@ function PadelLevelQuiz() {
 
       setSaveSuccess(true)
 
-      // Guardar resultados completos en localStorage para referencia
-      const quizResult = {
-        totalScore,
-        level: levelInfo.level,
-        category: levelInfo.category,
-        percentage: (totalScore / 950) * 100,
-        answers,
-        breakdown: {
-          experience: (answers.experience || 0) + (answers.frequency || 0) + (answers.competition || 0),
-          technique:
-            (answers.forehand || 0) +
-            (answers.backhand || 0) +
-            (answers.volley || 0) +
-            (answers.serve || 0) +
-            (answers.smash || 0),
-          tactics: answers.tactics || 0,
-          fitness: answers.fitness || 0,
-        },
-        completedAt: new Date().toISOString(),
-        userEmail: email,
-      }
-      localStorage.setItem("lastQuizResult", JSON.stringify(quizResult))
+
     } catch (error) {
       console.error("Error saving quiz result:", error)
       setSaveError(error instanceof Error ? error.message : "Error desconocido al guardar")
@@ -270,10 +249,9 @@ function PadelLevelQuiz() {
 
       // Calcular resultados y guardar en la base de datos
       const totalScore = Object.values(answers).reduce((sum, score) => sum + score, 0)
-      const levelInfo = getLevelInfo(totalScore)
 
       // Guardar en la base de datos
-      await saveResultsToDatabase(totalScore, levelInfo, answers)
+      await saveResultsToDatabase(totalScore)
     }
   }
 
@@ -311,7 +289,7 @@ function PadelLevelQuiz() {
               <div className="mt-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-700 rounded-lg">
                 <p className="text-red-700 dark:text-red-200 font-medium">❌ Error al guardar: {saveError}</p>
                 <button
-                  onClick={() => saveResultsToDatabase(totalScore, levelInfo, answers)}
+                  onClick={() => saveResultsToDatabase(totalScore)}
                   className="mt-2 text-sm bg-red-600 hover:bg-red-700 dark:bg-red-800 dark:hover:bg-red-900 text-white px-3 py-1 rounded"
                   disabled={isSaving}
                 >
