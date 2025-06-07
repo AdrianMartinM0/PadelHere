@@ -280,9 +280,10 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
         <input
           className="flex-1 border border-blue-200 dark:border-blue-700 rounded-full px-4 py-2 mr-2 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-700 bg-blue-50 dark:bg-gray-800 text-gray-700 dark:text-gray-100 transition"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => setInput(e.target.value.slice(0, 150))}
           placeholder="Escribe un mensaje..."
           autoComplete="off"
+          maxLength={150}
         />
         <button
           type="submit"
