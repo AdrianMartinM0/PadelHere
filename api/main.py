@@ -1,6 +1,6 @@
 # from typing import Union
 from fastapi import FastAPI, APIRouter
-from api.routes import api_router
+from routes import api_router
 from fastapi.middleware.cors import CORSMiddleware
 from api.websockets import reservas_ws, partido_ws, chat_ws
 
