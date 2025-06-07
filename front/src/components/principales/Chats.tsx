@@ -47,15 +47,8 @@ export const Chats = ({
   const context = useContext(AuthContext!);
   const userData = context?.userData;
 
- useEffect(() => {
-  setUnreadMap(prev => {
-    const updated = { ...prev };
-    for (const id in unreadMapProp) {
-      // Suma el valor recibido al anterior, o pon el recibido si no había nada antes
-      updated[id] = (prev[id] || 0) + 1;
-    }
-    return updated;
-  });
+useEffect(() => {
+  setUnreadMap(unreadMapProp); // Esto es suficiente y correcto
 }, [unreadMapProp]);
   useEffect(() => {
     console.log(unreadMap)

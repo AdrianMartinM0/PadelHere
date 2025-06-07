@@ -1,9 +1,9 @@
-import { useEffect, useState, useContext, useRef } from "react";
+import { useEffect, useState, useContext, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Chats } from "./Chats";
 import { ChatView } from "./ChatView";
 import { AuthContext } from "../../context/AuthContext";
-import { ArrowLeft } from "lucide-react"; // Usa cualquier icono de flecha que tengas o quieras
+import { ArrowLeft } from "lucide-react";
 
 type Chat = {
   _id: string;
@@ -35,6 +35,29 @@ export const ChatPanel = () => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Función para obtener los contadores de mensajes no leídos
+  const fetchUnreadCounts = useCallback(async (chatList: Chat[], userId: string) => {
+    const map: Record<string, number> = {};
+    await Promise.all(
+      chatList.map(async (chat) => {
+        try {
+          const resp = await fetch(
+            `http://localhost:8000/v1/chat/${chat._id}/unread-count/${userId}`
+          );
+          if (resp.ok) {
+            const json = await resp.json();
+            map[chat._id] = json.unread_count ?? 0;
+          } else {
+            map[chat._id] = 0;
+          }
+        } catch {
+          map[chat._id] = 0;
+        }
+      })
+    );
+    setUnreadMap(map);
+  }, []);
+
   // Cargar los chats del usuario al montar
   useEffect(() => {
     const fetchChats = async () => {
@@ -45,17 +68,19 @@ export const ChatPanel = () => {
         const data = await res.json();
         setChats(data);
 
-        // Inicializa SIEMPRE todas las claves
-        const initialUnread: Record<string, number> = {};
-        setUnreadMap(initialUnread);
+        if (userData?.id) {
+          fetchUnreadCounts(data, userData.id);
+        }
       } catch (e) {
         setChats([]);
+        setUnreadMap({});
       }
       setLoading(false);
     };
     if (userData?.id) {
       fetchChats();
     }
+    // eslint-disable-next-line
   }, [userData]);
 
   // Sincroniza selectedChat cuando cambia la URL (chat_id param)
@@ -65,49 +90,54 @@ export const ChatPanel = () => {
     }
   }, [chat_id, selectedChat]);
 
-  // Marcar como leído el chat seleccionado
+  // Marcar como leído el chat seleccionado (y refetch del contador tras pequeño delay)
   useEffect(() => {
-    if (selectedChat) {
-      setUnreadMap((prev) => {
-        const updated = { ...prev, [selectedChat]: 0 };
-        return updated;
-      });
+    if (selectedChat && userData?.id) {
+      const markReadAndRefetch = async () => {
+        try {
+          await fetch(
+            `http://localhost:8000/v1/chat/${selectedChat}/mark-read/${userData.id}`,
+            { method: "PATCH" }
+          );
+        } catch {}
+        setUnreadMap((prev) => ({ ...prev, [selectedChat]: 0 }));
+        setTimeout(() => {
+          fetchUnreadCounts(chatsRef.current, userData.id);
+        }, 300);
+      };
+      markReadAndRefetch();
     }
-  }, [selectedChat]);
+    // eslint-disable-next-line
+  }, [selectedChat, userData]);
 
-  // Función para incrementar mensajes sin leer en un chat (útil para WebSocket)
-  const incrementUnread = (chatId: string) => {
+  // Función para incrementar mensajes sin leer en un chat (solo WebSocket)
+  const incrementUnread = useCallback((chatId: string) => {
     setUnreadMap((prev) => {
-      const updated = { ...prev, [chatId]: (prev[chatId] || 0) + 1 };
-      console.log(updated)
-      return updated;
+      // Solo incrementa si no es el chat abierto
+      if (selectedChatRef.current === chatId) return prev;
+      return { ...prev, [chatId]: (prev[chatId] || 0) + 1 };
     });
-  };
+  }, []);
 
-  // WebSocket subscription
+  // WebSocket subscription: incrementa el contador SOLO del chat recibido
   useEffect(() => {
     if (!userData?.id) return;
     const ws = new WebSocket(`ws://localhost:8000/ws/chat`);
-    ws.onopen = () => {};
-    ws.onclose = () => {};
-    ws.onerror = (err) => console.error("WS error", err);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         const { chat_id } = data;
-        // Usar los valores actuales de chats y selectedChat
         const chatExists = chatsRef.current.some(chat => chat._id === String(chat_id));
-        if (chatExists && chat_id !== selectedChatRef.current) {
+        if (chatExists) {
           incrementUnread(String(chat_id));
         }
       } catch (e) {}
     };
     return () => ws.close();
-    // Solo depende de userData?.id para evitar recrear el WS innecesariamente
-  }, [userData?.id]);
+    // eslint-disable-next-line
+  }, [userData?.id, incrementUnread]);
 
   // --- MOBILE RENDER LOGIC ---
-  // Si es móvil y NO hay chat seleccionado: solo lista de chats
   if (isMobile && !selectedChat) {
     return (
       <div className="flex flex-col h-[100dvh] w-full bg-gray-100 dark:bg-gray-900">
@@ -127,7 +157,6 @@ export const ChatPanel = () => {
     );
   }
 
-  // Si es móvil y SÍ hay chat seleccionado: solo chat y botón volver
   if (isMobile && selectedChat) {
     return (
       <div className="flex flex-col h-[100dvh] w-full bg-gray-100 dark:bg-gray-900">
