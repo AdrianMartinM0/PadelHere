@@ -1,12 +1,9 @@
-from fastapi import HTTPException, Request, APIRouter, status
-from ..services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel, update_profile_picture_service, update_desc_service, update_level_service, add_reserva_id_to_user, get_user_by_id, get_google_user, delete_user_service
-from ..database.models.usuario import User
-import re
+from fastapi import HTTPException, status
+from api.services.usuario_service import create_user, get_one_user, login_user_service, recover_pass_service, get_passcode_recover, change_password_service, verify_jwt_service, get_one_user_by_tel, update_profile_picture_service, update_desc_service, update_level_service, add_reserva_id_to_user, get_user_by_id, get_google_user, delete_user_service
+from api.database.models.usuario import User
 from pydantic import EmailStr
-from fastapi import Depends
-from jwt import PyJWTError
 import jwt
-from ..utils.token_utils import SECRET_KEY, ALGORITHM
+from api.utils.token_utils import SECRET_KEY, ALGORITHM
 
 
 async def create_user_controller(usuario: User):

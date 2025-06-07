@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, Body
-from ..controllers import mensaje_controller
+from api.controllers import mensaje_controller
 
 mensaje_router = APIRouter()
 

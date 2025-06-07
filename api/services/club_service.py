@@ -1,13 +1,13 @@
-from ..database.db import club_collection, pista_collection, reserva_collection
-from ..database.models.club import Club
+from api.database.db import club_collection, pista_collection, reserva_collection
+from api.database.models.club import Club
 from fastapi import HTTPException
 from datetime import timedelta
-from ..utils.token_utils import create_access_token
+from api.utils.token_utils import create_access_token
 import random
 from datetime import datetime
 import base64
 from bson import ObjectId
-from ..websockets.reservas_ws import notify_new_reserva
+from api.websockets.reservas_ws import notify_new_reserva
 
 
 async def create_club(data):

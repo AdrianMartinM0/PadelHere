@@ -1,8 +1,8 @@
-from ..database.db import mensaje_collection, user_collection
+from api.database.db import mensaje_collection, user_collection
 from bson import ObjectId
 from fastapi import HTTPException
 from datetime import datetime
-from ..websockets.chat_ws import notify_new_msg
+from api.websockets.chat_ws import notify_new_msg
 
 # ----------- SERVICIO: Enviar mensaje a un chat -----------
 async def enviar_mensaje(chat_id: str, autor_id: str, texto: str):

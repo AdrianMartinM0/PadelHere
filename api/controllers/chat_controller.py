@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from ..services.chat_service import  list_chats_for_user, create_chat_for_partido, add_user_to_chat, remove_user_from_chat, delete_chat_for_partido, set_last_read_message, get_unread_count_if_partido_not_past
+from api.services.chat_service import  list_chats_for_user, create_chat_for_partido, add_user_to_chat, remove_user_from_chat, delete_chat_for_partido, set_last_read_message, get_unread_count_if_partido_not_past
 
 # ----------- Controller: Listar chats de un usuario -----------
 async def list_chats_for_user_controller(user_id: str):

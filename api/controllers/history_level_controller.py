@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from bson import ObjectId
-from ..services.history_level_service import get_level_history, get_last_level
+from api.services.history_level_service import get_level_history, get_last_level
 
 # ----------- Controller: Obtener historial de niveles de un usuario -----------
 async def get_level_history_controller(user_id: str):

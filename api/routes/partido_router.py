@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, Body, Request, HTTPException
-from ..controllers import partido_controller
+from api.controllers import partido_controller
 
 partido_router = APIRouter()
 

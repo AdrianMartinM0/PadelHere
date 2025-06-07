@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from ..services.pista_services import get_pista_by_id, update_pista_by_id, delete_pista_by_id, get_pista_config_by_id, update_pista_config_by_id, get_reservas_by_pista, create_reserva_for_pista, get_reserva_detail, update_reserva_by_id, delete_reserva_by_id, get_pista_disponibilidad
+from api.services.pista_services import get_pista_by_id, update_pista_by_id, delete_pista_by_id, get_pista_config_by_id, update_pista_config_by_id, get_reservas_by_pista, create_reserva_for_pista, get_reserva_detail, update_reserva_by_id, delete_reserva_by_id, get_pista_disponibilidad
 from bson import ObjectId
 
 async def get_pista_controller(pista_id: str):

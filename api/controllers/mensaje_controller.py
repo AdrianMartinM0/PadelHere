@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from ..services.mensaje_service import  enviar_mensaje, listar_mensajes, eliminar_mensaje, editar_mensaje
+from api.services.mensaje_service import  enviar_mensaje, listar_mensajes, eliminar_mensaje, editar_mensaje
 
 
 # ----------- Controller: Enviar mensaje -----------
