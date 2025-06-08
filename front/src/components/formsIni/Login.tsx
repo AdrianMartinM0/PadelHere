@@ -170,7 +170,7 @@ const Login = () => {
                     <hr className="my-2 w-full border-gray-300 dark:border-gray-700" />
                 </div>
                 <p className="text-center w-full text-sm text-gray-600 dark:text-gray-400">no disponible para clubs</p>
-                <div className="mt-2 flex flex-col gap-4">
+                <div className="mt-2 flex w-full">
                     <GoogleAuth />
                 </div>
 
