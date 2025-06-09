@@ -1,11 +1,11 @@
-# from typing import Union
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request, Response
 from routes import api_router
 from fastapi.middleware.cors import CORSMiddleware
 from websockets import reservas_ws, partido_ws, chat_ws
 
 app = FastAPI()
 
+# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -13,11 +13,24 @@ app.add_middleware(
         "http://localhost:3000",  # React dev server
         "https://padelhere.es",
         "https://www.padelhere.es",
-    ],  # Permitir cualquier origen
-    allow_credentials=True,  # Permitir el envío de cookies o credenciales
-    allow_methods=["*"],  # Permitir cualquier método HTTP (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Permitir cualquier encabezado
+    ],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Especificar métodos explícitamente
+    allow_headers=["*"],
 )
+
+# Handler para peticiones OPTIONS (preflight)
+@app.options("/{full_path:path}")
+async def options_handler(request: Request, full_path: str):
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "http://localhost:5173",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
 
 router = APIRouter()
 
