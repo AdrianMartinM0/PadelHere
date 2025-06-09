@@ -38,6 +38,7 @@ const GoogleAuth = () => {
   return (
     <GoogleOAuthProvider clientId="104807231315-t3u5d5uvinf5m97lh840gh4jish41s62.apps.googleusercontent.com">
         <GoogleLogin
+        className="w-full"
         onSuccess={handleSuccess}
         onError={handleError}
         theme={window.matchMedia('(prefers-color-scheme: dark)').matches ? "filled_black" : "outline"}
