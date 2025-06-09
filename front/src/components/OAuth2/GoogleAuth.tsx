@@ -9,7 +9,7 @@ const GoogleAuth = () => {
     const token = response.credential;
 
     try {
-      const res = await fetch('http://localhost:8000/v1/usuario/auth/google', {
+      const res = await fetch('https://padelhere-production.up.railway.app/v1/usuario/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

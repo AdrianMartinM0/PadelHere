@@ -22,7 +22,7 @@ const ClubView = () => {
 
   useEffect(() => {
     if (!club_id) return
-    fetch(`http://localhost:8000/v1/club/all-clubs/${club_id}`)
+    fetch(`https://padelhere-production.up.railway.app/v1/club/all-clubs/${club_id}`)
       .then(res => {
         if (!res.ok) throw new Error("No se pudo cargar el club")
         return res.json()

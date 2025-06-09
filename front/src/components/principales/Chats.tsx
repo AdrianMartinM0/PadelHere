@@ -71,7 +71,7 @@ useEffect(() => {
         await Promise.all(
           partidosFaltan.map(async (partidoId: string) => {
             const resp = await fetch(
-              `http://localhost:8000/v1/partido/${partidoId}`
+              `https://padelhere-production.up.railway.app/v1/partido/${partidoId}`
             );
             if (resp.ok) {
               const partido = await resp.json();
@@ -107,7 +107,7 @@ useEffect(() => {
           if (!partido || !isPartidoHoyOFuturo(partido.fecha)) return;
           try {
             const resp = await fetch(
-              `http://localhost:8000/v1/chat/${chat._id}/unread-count/${userData.id}`
+              `https://padelhere-production.up.railway.app/v1/chat/${chat._id}/unread-count/${userData.id}`
             );
             if (resp.ok) {
               const json = await resp.json();
@@ -132,7 +132,7 @@ useEffect(() => {
     if (userData && userData.id) {
       try {
         await fetch(
-          `http://localhost:8000/v1/chat/${chatId}/mark-read/${userData.id}`,
+          `https://padelhere-production.up.railway.app/v1/chat/${chatId}/mark-read/${userData.id}`,
           { method: "PATCH" }
         );
       } catch {}

@@ -28,7 +28,7 @@ const VerifyPasscode = () => {
             return;
         }
         if (email) {
-            fetch(`http://localhost:8000/v1/${isClub == 'true' ? "club" : "usuario"}/passcode?email=${email}`)
+            fetch(`https://padelhere-production.up.railway.app/v1/${isClub == 'true' ? "club" : "usuario"}/passcode?email=${email}`)
                 .then((response) => {
                     if (!response.ok) {
                         throw new Error('Error al obtener el código de verificación');

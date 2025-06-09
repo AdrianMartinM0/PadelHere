@@ -20,7 +20,7 @@ type UserInfo = {
 
 type UserMap = Record<string, UserInfo>;
 
-const WS_URL = "ws://localhost:8000/ws/chat";
+const WS_URL = "ws://padelhere-production.up.railway.app/ws/chat";
 
 // Convierte base64 a ObjectURL
 const base64ToObjectURL = (base64: string): string => {
@@ -54,7 +54,7 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/v1/mensaje/chat/${chatId}/mensajes`);
+      const res = await fetch(`https://padelhere-production.up.railway.app/v1/mensaje/chat/${chatId}/mensajes`);
       if (res.ok) {
         const data = await res.json();
         setMensajes(data);
@@ -108,7 +108,7 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
     if (idsToFetch.length === 0) return;
     const results = await Promise.all(
       idsToFetch.map(async (id) => {
-        const res = await fetch(`http://localhost:8000/v1/usuario/${id}`);
+        const res = await fetch(`https://padelhere-production.up.railway.app/v1/usuario/${id}`);
         if (res.ok) {
           const data = await res.json();
           return { id, nombre: data.name, img_perfil: data.img_perfil };
@@ -147,7 +147,7 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
     if (!lastMessageId) return; // <-- Evita enviar 'undefined'
     // Llama al endpoint para setear el último mensaje leído (no esperes la respuesta)
     fetch(
-      `http://localhost:8000/v1/chat/${chatId}/last-read?user_id=${userData.id}&last_message_id=${lastMessageId}`,
+      `https://padelhere-production.up.railway.app/v1/chat/${chatId}/last-read?user_id=${userData.id}&last_message_id=${lastMessageId}`,
       { method: "POST" }
     );
   }, [chatId, userData?.id, mensajes]);
@@ -156,7 +156,7 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    await fetch(`http://localhost:8000/v1/mensaje/chat/${chatId}/mensaje`, {
+    await fetch(`https://padelhere-production.up.railway.app/v1/mensaje/chat/${chatId}/mensaje`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ autor_id: userData?.id, texto: input }),

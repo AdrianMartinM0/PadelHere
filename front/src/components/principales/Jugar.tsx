@@ -88,7 +88,7 @@ const Jugar = () => {
   const fetchPartidos = async () => {
     setLoadingPartidos(true)
     try {
-      const res = await fetch("http://localhost:8000/v1/partido/")
+      const res = await fetch("https://padelhere-production.up.railway.app/v1/partido/")
       if (!res.ok) throw new Error("No se pudieron cargar los partidos")
       let data = await res.json()
       data = data
@@ -110,7 +110,7 @@ const Jugar = () => {
       if (idsToFetch.length > 0) {
         Promise.all(
           idsToFetch.map(id =>
-            fetch(`http://localhost:8000/v1/usuario/${id}`)
+            fetch(`https://padelhere-production.up.railway.app/v1/usuario/${id}`)
               .then(res => res.ok ? res.json() : null)
               .then(profile => profile ? { id, profile } : null)
           )
@@ -132,7 +132,7 @@ const Jugar = () => {
 
   useEffect(() => {
     if (wsRef.current) return;
-    const ws = new WebSocket("ws://localhost:8000/ws/partidos");
+    const ws = new WebSocket("ws://padelhere-production.up.railway.app/ws/partidos");
     wsRef.current = ws;
     ws.onmessage = (event) => {
       try {
@@ -195,7 +195,7 @@ const Jugar = () => {
       const userId = userData?.id
 
       const res = await fetch(
-        `http://localhost:8000/v1/partido/?user_id=${userId}`,
+        `https://padelhere-production.up.railway.app/v1/partido/?user_id=${userId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -230,7 +230,7 @@ const Jugar = () => {
     try {
       const userId = userData?.id;
       if (!userId) return console.error("Debes iniciar sesión para unirte.");
-      const res = await fetch(`http://localhost:8000/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
+      const res = await fetch(`https://padelhere-production.up.railway.app/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("No se pudo unir al partido");
@@ -245,7 +245,7 @@ const Jugar = () => {
     try {
       const userId = userData?.id;
       if (!userId) return console.error("Debes iniciar sesión para salir.");
-      const res = await fetch(`http://localhost:8000/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`, {
+      const res = await fetch(`https://padelhere-production.up.railway.app/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`, {
         method: "POST"
       });
       if (!res.ok) throw new Error("No se pudo salir del partido");

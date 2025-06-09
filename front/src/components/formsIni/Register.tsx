@@ -88,7 +88,7 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:8000/v1/${isClub ? "club" : "usuario"}/register`, {
+            const response = await fetch(`https://padelhere-production.up.railway.app/v1/${isClub ? "club" : "usuario"}/register`, {
                 mode: "cors",
                 method: "POST",
                 headers: {

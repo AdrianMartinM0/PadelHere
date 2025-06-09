@@ -86,9 +86,9 @@ export default function Pistas({ clubId }: { clubId: string }) {
   function fetchAllCourtsAndConfigs() {
     setLoading(true);
     Promise.all([
-      fetch(`http://localhost:8000/v1/club/${clubId}/pistas`).then(res => res.json()),
-      fetch(`http://localhost:8000/v1/club/${clubId}/config`).then(res => res.json()),
-      fetch(`http://localhost:8000/v1/club/${clubId}/overrides`).then(res => res.json())
+      fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/pistas`).then(res => res.json()),
+      fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/config`).then(res => res.json()),
+      fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/overrides`).then(res => res.json())
     ])
       .then(([pistasData, configData, overridesData]) => {
         setCourts(pistasData?.courts ?? []);
@@ -132,14 +132,14 @@ export default function Pistas({ clubId }: { clubId: string }) {
 
   // Funciones para gestionar overrides globales...
   function fetchGlobalOverrides() {
-    fetch(`http://localhost:8000/v1/club/${clubId}/overrides`)
+    fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/overrides`)
       .then(res => res.json())
       .then(setGlobalOverrides)
       .catch(() => setGlobalOverrides({}));
   }
 
   function saveGlobalOverride(date: string, override: any) {
-    fetch(`http://localhost:8000/v1/club/${clubId}/overrides/${date}`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/overrides/${date}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(override),
@@ -147,13 +147,13 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   function deleteGlobalOverride(date: string) {
-    fetch(`http://localhost:8000/v1/club/${clubId}/overrides/${date}`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/overrides/${date}`, {
       method: "DELETE",
     }).then(() => fetchGlobalOverrides());
   }
 
   function saveGlobalConfig(nextGlobalDays: any) {
-    fetch(`http://localhost:8000/v1/club/${clubId}/config`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/config`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -163,7 +163,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   function saveCourtConfig(courtId: string, courtConfig: any) {
-    fetch(`http://localhost:8000/v1/pista/${courtId}/config`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/pista/${courtId}/config`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -173,7 +173,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   function addCourt(name: string, desc?: string) {
-    fetch(`http://localhost:8000/v1/club/${clubId}/pistas`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/club/${clubId}/pistas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, desc }),
@@ -201,7 +201,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   function editCourt(courtId: string, name: string, desc?: string) {
-    fetch(`http://localhost:8000/v1/pista/${courtId}`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/pista/${courtId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, desc }),
@@ -220,7 +220,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
 
   function confirmDeleteCourt() {
     if (!deleteModal.courtId) return;
-    fetch(`http://localhost:8000/v1/pista/${deleteModal.courtId}`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/pista/${deleteModal.courtId}`, {
       method: "DELETE"
     }).then(() => {
       const nextCourts = courts.filter(c => c.id !== deleteModal.courtId);
@@ -244,7 +244,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
 
   // Añadir reserva y actualizar ids en AuthContext
   async function confirmReserve(name: string, phone: string) {
-    const res = await fetch(`http://localhost:8000/v1/pista/${selectedCourt}/reservas`, {
+    const res = await fetch(`https://padelhere-production.up.railway.app/v1/pista/${selectedCourt}/reservas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -265,7 +265,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
       return;
     }
     const reserva = await res.json();
-    fetch(`http://localhost:8000/v1/usuario/${userData?.id}/reservas/${reserva._id}`, {
+    fetch(`https://padelhere-production.up.railway.app/v1/usuario/${userData?.id}/reservas/${reserva._id}`, {
       method: "PUT"
     })
       .then(res => {

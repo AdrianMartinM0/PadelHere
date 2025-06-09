@@ -87,7 +87,7 @@ const GraficaHistoryLevel = ({ level, id }: GraficaHistoryLevelProps) => {
 
 
     useEffect(() => {
-        fetch(`http://localhost:8000/v1/history_level/user/${id}`)
+        fetch(`https://padelhere-production.up.railway.app/v1/history_level/user/${id}`)
             .then(res => res.json())
             .then(data => {
                 setHistory(Array.isArray(data) ? data : []);
