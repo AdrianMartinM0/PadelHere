@@ -1,21 +1,21 @@
-from api.database.db import user_collection, club_collection
-from api.database.models.usuario import User
+from database.db import user_collection, club_collection
+from database.models.usuario import User
 from pydantic import BaseModel
 from fastapi import HTTPException
 from datetime import timedelta, timezone
-from api.utils.token_utils import create_access_token
+from utils.token_utils import create_access_token
 import random
 from datetime import datetime
 from fastapi import Request, status
 from jwt import InvalidTokenError
 import jwt
-from api.config import SECRET_KEY, ALGORITHM
-from api.database.db import club_collection
+from config import SECRET_KEY, ALGORITHM
+from database.db import club_collection
 import base64
 from bson import ObjectId
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from api.config import GOOGLE_CLIENT_ID
+from config import GOOGLE_CLIENT_ID
 
 
 class GoogleToken(BaseModel):

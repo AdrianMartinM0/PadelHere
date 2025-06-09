@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from api.controllers import chat_controller
+from controllers import chat_controller
 
 chat_router = APIRouter()
 

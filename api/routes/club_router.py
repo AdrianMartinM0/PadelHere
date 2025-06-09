@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, Body, Depends
-from api.controllers import club_controller
-from api.database.models.club import Club
+from controllers import club_controller
+from database.models.club import Club
 
 from pydantic import EmailStr, BaseModel
 from fastapi.security import OAuth2AuthorizationCodeBearer, OAuth2PasswordBearer

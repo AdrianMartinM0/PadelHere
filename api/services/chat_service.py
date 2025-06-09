@@ -1,4 +1,4 @@
-from api.database.db import chat_collection, mensaje_collection
+from database.db import chat_collection, mensaje_collection
 from fastapi import HTTPException
 from bson import ObjectId
 from datetime import datetime, timedelta

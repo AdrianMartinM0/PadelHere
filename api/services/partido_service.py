@@ -1,9 +1,9 @@
-from api.database.db import partido_collection
+from database.db import partido_collection
 from fastapi import HTTPException
 from bson import ObjectId
 from datetime import datetime
-from api.websockets.partido_ws import notify_new_participant
-from api.utils.level_update import update_levels_and_history_for_4_players
+from websockets.partido_ws import notify_new_participant
+from utils.level_update import update_levels_and_history_for_4_players
 from .chat_service import create_chat_for_partido, add_user_to_chat, remove_user_from_chat
 
 # ----------- SERVICIO: Obtener partido por ID -----------

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends
-from api.controllers import usuario_controller
-from api.database.models.usuario import User
+from controllers import usuario_controller
+from database.models.usuario import User
 from pydantic import EmailStr, BaseModel
 from fastapi.security import OAuth2AuthorizationCodeBearer, OAuth2PasswordBearer
 

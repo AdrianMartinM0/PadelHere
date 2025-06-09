@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from api.services.reserva_service import get_one_reserva, get_reservas_pendientes_by_club_id
+from services.reserva_service import get_one_reserva, get_reservas_pendientes_by_club_id
 
 async def get_one_reserva_controller(reserva_id: str):
     reserva = await get_one_reserva(reserva_id)

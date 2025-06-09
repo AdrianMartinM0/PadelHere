@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, Body
-from api.controllers import pista_controller
+from controllers import pista_controller
 
 pista_router = APIRouter()
 

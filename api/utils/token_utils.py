@@ -1,6 +1,6 @@
 import jwt
 from datetime import datetime, timedelta, timezone
-from api.config import SECRET_KEY, ALGORITHM
+from config import SECRET_KEY, ALGORITHM
 
 def create_access_token(email: str, user_type: str):
     expires_delta = timedelta(days=15)

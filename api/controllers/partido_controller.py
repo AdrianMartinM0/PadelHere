@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from api.services.partido_service import get_partido_by_id, create_partido, list_partidos, join_partido_slot, update_partido_resultado, delete_partido_by_id, leave_partido_slot, list_partidos_usuario, proponer_resultado, confirmar_resultado, rechazar_resultado
+from services.partido_service import get_partido_by_id, create_partido, list_partidos, join_partido_slot, update_partido_resultado, delete_partido_by_id, leave_partido_slot, list_partidos_usuario, proponer_resultado, confirmar_resultado, rechazar_resultado
 
 # ----------- CONTROLLER: Obtener partido por ID -----------
 async def get_partido_controller(partido_id: str):

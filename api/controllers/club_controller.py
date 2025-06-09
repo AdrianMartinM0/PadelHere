@@ -1,12 +1,12 @@
 from fastapi import HTTPException, Request, APIRouter, status
-from api.services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club, update_club_courts, get_overrides, set_override_for_date, delete_override, get_all_clubs, get_one_club_by_id
-from api.database.models.club import Club
+from services.club_service import create_club, get_one_club, login_club_service, recover_pass_service, get_passcode_recover, change_password_service, get_one_club_by_tel, update_desc_service, update_profile_picture_service, get_club_config_by_id, update_club_config_by_id, get_club_courts, add_court_to_club, update_club_courts, get_overrides, set_override_for_date, delete_override, get_all_clubs, get_one_club_by_id
+from database.models.club import Club
 import re
 from pydantic import EmailStr
 from fastapi import Depends
 from jwt import PyJWTError
 import jwt
-from api.utils.token_utils import SECRET_KEY, ALGORITHM
+from utils.token_utils import SECRET_KEY, ALGORITHM
 
 async def create_club_controller(club: Club):
     # Verifica si el club ya existe

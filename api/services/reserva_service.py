@@ -1,4 +1,4 @@
-from api.database.db import reserva_collection, pista_collection, club_collection
+from database.db import reserva_collection, pista_collection, club_collection
 from fastapi import HTTPException
 from bson import ObjectId
 from datetime import date

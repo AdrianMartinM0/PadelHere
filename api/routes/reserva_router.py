@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from api.controllers import reserva_controller
+from controllers import reserva_controller
 
 reserva_router = APIRouter()
 

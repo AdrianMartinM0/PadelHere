@@ -1,6 +1,6 @@
 from typing import List
 from bson import ObjectId
-from api.database.db import history_level_collection
+from database.db import history_level_collection
 
 # Inserta (o crea si no existe) el histórico de un usuario, agregando el nuevo nivel al final del array
 def add_level_to_history(user_id: str, nuevo_nivel: int):

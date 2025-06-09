@@ -1,7 +1,7 @@
-from api.database.db import pista_collection, reserva_collection
+from database.db import pista_collection, reserva_collection
 from fastapi import HTTPException
 from bson import ObjectId
-from api.websockets.reservas_ws import notify_new_reserva
+from websockets.reservas_ws import notify_new_reserva
 
 # ----------- SERVICIOS PARA /pista/:pistaId -----------
 
