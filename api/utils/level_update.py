@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from bson import ObjectId
 
-from ..services.history_level_service import get_last_level, add_level_to_history, init_level_history
-from ..database.db import user_collection
+from services.history_level_service import get_last_level, add_level_to_history, init_level_history
+from database.db import user_collection
 
 def diferencia_sets(resultado: str, ha_ganado: bool) -> int:
     sets = resultado.strip().split()

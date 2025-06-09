@@ -59,7 +59,6 @@ async def get_reservas_by_pista(pista_id, filtro: dict = None):
     query = {"pista_id": ObjectId(pista_id)}
     if filtro:
         query.update(filtro)
-    from ..database.db import reserva_collection
     reservas = list(reserva_collection.find(query))
     # Convertir _id y pista_id a str para cada reserva
     for reserva in reservas:
@@ -114,7 +113,6 @@ async def create_reserva_for_pista(pista_id, reserva_data: dict):
     return created
 
 async def get_reserva_detail(pista_id, reserva_id):
-    from ..database.db import reserva_collection
     reserva = reserva_collection.find_one({
         "_id": ObjectId(reserva_id),
         "pista_id": ObjectId(pista_id)
@@ -128,7 +126,6 @@ async def get_reserva_detail(pista_id, reserva_id):
 
 async def update_reserva_by_id(pista_id, reserva_id, reserva_data: dict):
     """Actualizar una reserva/entrenamiento concreto."""
-    from ..database.db import reserva_collection
     result = reserva_collection.update_one(
         {"_id": ObjectId(reserva_id), "pista_id": ObjectId(pista_id)},
         {"$set": reserva_data}
@@ -139,7 +136,6 @@ async def update_reserva_by_id(pista_id, reserva_id, reserva_data: dict):
 
 async def delete_reserva_by_id(pista_id, reserva_id):
     """Eliminar una reserva/entrenamiento concreto."""
-    from ..database.db import reserva_collection
     result = reserva_collection.delete_one(
         {"_id": ObjectId(reserva_id), "pista_id": ObjectId(pista_id)}
     )
@@ -154,7 +150,6 @@ async def get_pista_disponibilidad(pista_id, fecha: str = None):
     Consultar huecos libres de la pista para una fecha concreta (opcional).
     Implementa lógica de disponibilidad según tu modelo de reservas/configuración.
     """
-    from ..database.db import reserva_collection
     query = {"pista_id": ObjectId(pista_id)}
     if fecha:
         query["fecha"] = fecha
