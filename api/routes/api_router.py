@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from . import usuario_router, club_router, pista_router, reserva_router, partido_router, chat_router, mensaje_router, history_level_router
+from routes import usuario_router, club_router, pista_router, reserva_router, partido_router, chat_router, mensaje_router, history_level_router
 
 router = APIRouter()
 
