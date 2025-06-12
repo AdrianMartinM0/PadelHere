@@ -20,7 +20,7 @@ type UserInfo = {
 
 type UserMap = Record<string, UserInfo>;
 
-const WS_URL = "ws://padelhere-production.up.railway.app/ws/chat";
+const WS_URL = "wss://padelhere-production.up.railway.app/ws/chat";
 
 // Convierte base64 a ObjectURL
 const base64ToObjectURL = (base64: string): string => {
