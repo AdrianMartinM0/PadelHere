@@ -20,17 +20,17 @@ app.add_middleware(
 )
 
 # Handler para peticiones OPTIONS (preflight)
-@app.options("/{full_path:path}")
-async def options_handler(request: Request, full_path: str):
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "http://localhost:5173",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Credentials": "true",
-        }
-    )
+# @app.options("/{full_path:path}")
+# async def options_handler(request: Request, full_path: str):
+#     return Response(
+#         status_code=200,
+#         headers={
+#             "Access-Control-Allow-Origin": "http://localhost:5173",
+#             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+#             "Access-Control-Allow-Headers": "*",
+#             "Access-Control-Allow-Credentials": "true",
+#         }
+#     )
 
 router = APIRouter()
 
