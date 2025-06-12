@@ -134,7 +134,6 @@ export const ChatPanel = () => {
       } catch (e) {}
     };
     return () => ws.close();
-    // eslint-disable-next-line
   }, [userData?.id, incrementUnread]);
 
   // --- MOBILE RENDER LOGIC ---

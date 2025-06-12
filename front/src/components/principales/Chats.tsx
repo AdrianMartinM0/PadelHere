@@ -50,8 +50,6 @@ export const Chats = ({
 useEffect(() => {
   setUnreadMap(unreadMapProp); // Esto es suficiente y correcto
 }, [unreadMapProp]);
-  useEffect(() => {
-  }, [unreadMap]);
 
   // Referencias para estados usados en los listeners
   const selectedChatRef = useRef(selectedChat);
