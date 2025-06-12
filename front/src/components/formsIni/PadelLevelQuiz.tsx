@@ -197,7 +197,6 @@ function PadelLevelQuiz() {
         throw new Error("No se pudo obtener el email del usuario. Por favor, inicia sesión nuevamente.")
       }
 
-      console.log("Enviando datos:", { email, level: totalScore })
 
       // Crear FormData con email del contexto y totalScore como level
       const formData = new FormData()
@@ -213,9 +212,6 @@ function PadelLevelQuiz() {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(`Error ${response.status}: ${errorData.detail || response.statusText}`)
       }
-
-      const result = await response.json()
-      console.log("Level updated:", result)
 
       // ✅ ACTUALIZAR EL CONTEXTO DESPUÉS DE GUARDAR EXITOSAMENTE
 

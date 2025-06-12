@@ -394,7 +394,6 @@ async def get_google_user(token: str):
             }
         }
     except ValueError as e:
-        print(f"Error de validación de token de Google: {e}")
         raise HTTPException(status_code=401, detail=f"Token inválido: {e}")
     
 async def delete_user_service(user_id: str):

@@ -51,7 +51,6 @@ useEffect(() => {
   setUnreadMap(unreadMapProp); // Esto es suficiente y correcto
 }, [unreadMapProp]);
   useEffect(() => {
-    console.log(unreadMap)
   }, [unreadMap]);
 
   // Referencias para estados usados en los listeners

@@ -157,9 +157,9 @@ export default function Pistas({ clubId }: { clubId: string }) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        globalDays: nextGlobalDays,
+      globalDays: nextGlobalDays,
       }),
-    }).then(res => console.log("Config global guardada:", res.status));
+    });
   }
 
   function saveCourtConfig(courtId: string, courtConfig: any) {
@@ -169,7 +169,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
       body: JSON.stringify({
         config: courtConfig,
       }),
-    }).then(res => console.log(`Config de pista ${courtId} guardada:`, res.status));
+    });
   }
 
   function addCourt(name: string, desc?: string) {

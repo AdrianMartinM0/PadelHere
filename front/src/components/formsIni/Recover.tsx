@@ -54,7 +54,6 @@ const Recover = () => {
                 const data = await response.json();
                 const error = !response.ok;
                 // Debug: muestra los datos y el error en consola
-                console.log("data:", data, "error:", error);
                 return { data, error };
             })
             .then(({ data, error }) => {
@@ -68,10 +67,9 @@ const Recover = () => {
                 setName(data.name);
             })
             .catch(error => {
-                if (noRecoverElement.current) {
+                if (error && noRecoverElement.current) {
                     noRecoverElement.current.textContent = "Error al buscar el usuario.";
                 }
-                console.log(error);
             });
     };
 

@@ -17,7 +17,6 @@ async def create_club_controller(club: Club):
     # Verifica si el teléfono ya está registrado
     existing_club_by_phone = await get_one_club_by_tel(club.tel)
     if (existing_club_by_phone):
-        print('existing_club_by_phone')
         raise HTTPException(status_code=400, detail="El número de teléfono ya está registrado")
     
     # Crea el club

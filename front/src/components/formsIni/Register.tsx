@@ -112,7 +112,6 @@ const Register = () => {
 
             if (!response.ok) {
                 // Si el backend devuelve un detalle, úsalo.
-                console.log(data)
                 const errorMsg = data?.detail
                     || data?.message
                     || JSON.stringify(data)

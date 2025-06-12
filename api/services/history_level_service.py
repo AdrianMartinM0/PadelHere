@@ -13,7 +13,6 @@ def add_level_to_history(user_id: str, nuevo_nivel: int):
 # Devuelve el histórico completo de niveles de un usuario (None si no existe)
 def get_level_history(user_id: str) -> List[int]:
     doc = history_level_collection.find_one({"user_id": user_id})
-    print(doc)
     if doc and "niveles" in doc:
         return doc["niveles"]
     return []

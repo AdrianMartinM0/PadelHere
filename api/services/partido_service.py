@@ -127,7 +127,7 @@ async def join_partido_slot(partido_id: str, slot_name: str, user_id: str, user_
     try:
         await add_user_to_chat(partido_id, user_id)
     except Exception as e:
-        print(f"[WARN] No se pudo añadir usuario al chat: {e}")
+        raise HTTPException(status_code=500, detail=f"No se pudo añadir usuario al chat: {e}")
 
     await notify_new_participant(partido_id)
     return {"message": f"Te has unido al partido en {slot_name}."}
@@ -277,7 +277,7 @@ async def leave_partido_slot(partido_id: str, slot_name: str, user_id: str):
     try:
         await remove_user_from_chat(partido_id, user_id)
     except Exception as e:
-        print(f"[WARN] No se pudo quitar usuario del chat: {e}")
+        raise HTTPException(status_code=500, detail=f"No se pudo quitar usuario del chat: {e}")
 
     await notify_new_participant(partido_id)
     return {"message": f"Has salido del partido del slot {slot_name}."}

@@ -446,7 +446,7 @@ const MisPartidos = () => {
 
   useEffect(() => {
     if (wsRef.current) return;
-    const ws = new WebSocket("ws://padelhere-production.up.railway.app/ws/partidos");
+    const ws = new WebSocket("wss://padelhere-production.up.railway.app/ws/partidos");
     wsRef.current = ws;
     ws.onmessage = (event) => {
       try {

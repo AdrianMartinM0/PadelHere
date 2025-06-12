@@ -4,7 +4,7 @@ export function useReservasSocket(onNewReserva: (data: any) => void) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://padelhere-production.up.railway.app/ws/reservas");
+    const ws = new WebSocket("wss://padelhere-production.up.railway.app/ws/reservas");
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
