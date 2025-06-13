@@ -37,7 +37,7 @@ const GoogleAuth = () => {
 
   return (
     <GoogleOAuthProvider clientId="104807231315-t3u5d5uvinf5m97lh840gh4jish41s62.apps.googleusercontent.com">
-      <div className=' w-full'>
+      <div className='flex items-center justify-center w-full'>
         <GoogleLogin
         onSuccess={handleSuccess}
         onError={handleError}
