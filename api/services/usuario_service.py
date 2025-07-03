@@ -91,6 +91,7 @@ async def login_user_service(email: str, password: str):
     # Buscar el usuario en la base de datos por email
     user_data = user_collection.find_one({"email": email})
 
+    
     if not user_data:
         raise HTTPException(
             status_code=400, detail="Email o contraseña incorrectos.")
@@ -103,6 +104,9 @@ async def login_user_service(email: str, password: str):
         password=user_data["password"],
     )
 
+    if not check_not_deleted(user[id]):
+        raise HTTPException(status_code=400, detail="Usuario eliminado temporalmente.")
+            
     # Validar la contraseña usando el método verify_password del modelo User
     if not user.verify_password(password):
         raise HTTPException(
@@ -397,8 +401,16 @@ async def get_google_user(token: str):
         raise HTTPException(status_code=401, detail=f"Token inválido: {e}")
     
 async def delete_user_service(user_id: str):
-    result = user_collection.delete_one({"_id": ObjectId(user_id)})
-    if result.deleted_count == 0:
+    result = user_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"deleted": True}}
+    )
+    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
-    
     return {"message": "Usuario eliminado correctamente."}
+
+def check_not_deleted(user_id: str):
+    user = user_collection.find_one({"_id": ObjectId(user_id)})
+    if not user or user.get("deleted") == True:
+        return False
+    return True
