@@ -58,7 +58,7 @@ useEffect(() => {
             return;
         }
 
-        fetch(`https://padelhere-production.up.railway.app/v1/${isClub == 'true' ? "club" : "usuario"}/changePassword`, {
+        fetch(`https://padelhere.onrender.com/v1/${isClub == 'true' ? "club" : "usuario"}/changePassword`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

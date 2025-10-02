@@ -24,7 +24,7 @@ const Clubs = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch("https://padelhere-production.up.railway.app/v1/club/all-clubs")
+    fetch("https://padelhere.onrender.com/v1/club/all-clubs")
       .then(res => {
         if (!res.ok) throw new Error("Error al cargar los clubes")
         return res.json()

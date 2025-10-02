@@ -42,7 +42,7 @@ export const ChatPanel = () => {
       chatList.map(async (chat) => {
         try {
           const resp = await fetch(
-            `https://padelhere-production.up.railway.app/v1/chat/${chat._id}/unread-count/${userId}`
+            `https://padelhere.onrender.com/v1/chat/${chat._id}/unread-count/${userId}`
           );
           if (resp.ok) {
             const json = await resp.json();
@@ -63,7 +63,7 @@ export const ChatPanel = () => {
     const fetchChats = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://padelhere-production.up.railway.app/v1/chat/user/${userData?.id}`);
+        const res = await fetch(`https://padelhere.onrender.com/v1/chat/user/${userData?.id}`);
         if (!res.ok) throw new Error("No se pudieron cargar los chats");
         const data = await res.json();
         setChats(data);
@@ -96,7 +96,7 @@ export const ChatPanel = () => {
       const markReadAndRefetch = async () => {
         try {
           await fetch(
-            `https://padelhere-production.up.railway.app/v1/chat/${selectedChat}/mark-read/${userData.id}`,
+            `https://padelhere.onrender.com/v1/chat/${selectedChat}/mark-read/${userData.id}`,
             { method: "PATCH" }
           );
         } catch {}

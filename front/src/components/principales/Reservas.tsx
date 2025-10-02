@@ -141,7 +141,7 @@ const Reservas = () => {
     // Peticiones en paralelo
     Promise.all(
       reservaIds.map(id =>
-        fetch(`https://padelhere-production.up.railway.app/v1/reserva/${id}`)
+        fetch(`https://padelhere.onrender.com/v1/reserva/${id}`)
           .then(res => res.ok ? res.json() : null)
           .catch(() => null)
       )

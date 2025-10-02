@@ -203,7 +203,7 @@ function PadelLevelQuiz() {
       formData.append("email", email)
       formData.append("level", totalScore.toString())
 
-      const response = await fetch("https://padelhere-production.up.railway.app/v1/usuario/update-level", {
+      const response = await fetch("https://padelhere.onrender.com/v1/usuario/update-level", {
         method: "POST",
         body: formData,
       })

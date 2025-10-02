@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserData = async (userEmail: string): Promise<UserData | ClubData | null> => {
     try {
       const endpoint = userType === "club" ? "club/club" : "usuario/user";
-      const response = await fetch(`https://padelhere-production.up.railway.app/v1/${endpoint}?email=${userEmail}`);
+      const response = await fetch(`https://padelhere.onrender.com/v1/${endpoint}?email=${userEmail}`);
 
       if (!response.ok) throw new Error("Error al obtener datos del usuario");
 
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       formData.append("email", email);
       formData.append("desc", desc);
 
-      const response = await fetch("https://padelhere-production.up.railway.app/v1/club/update-desc", {
+      const response = await fetch("https://padelhere.onrender.com/v1/club/update-desc", {
         method: "POST",
         body: formData,
       });
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      const response = await fetch("https://padelhere-production.up.railway.app/v1/club/update-info", {
+      const response = await fetch("https://padelhere.onrender.com/v1/club/update-info", {
         method: "POST",
         body: formData,
       });
@@ -198,7 +198,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        const response = await fetch(`https://padelhere-production.up.railway.app/v1/usuario/verify-jwt?token=${token}`);
+        const response = await fetch(`https://padelhere.onrender.com/v1/usuario/verify-jwt?token=${token}`);
 
         if (!response.ok) {
           throw new Error("Token inválido");

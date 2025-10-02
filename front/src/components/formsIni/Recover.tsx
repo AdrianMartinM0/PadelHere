@@ -44,7 +44,7 @@ const Recover = () => {
             noRecoverElement.current.textContent = '';
         }
         // let error = false;
-        fetch(`https://padelhere-production.up.railway.app/v1/${isClub ? "club" : "usuario"}/recover?email=${emailField.value}`, {
+        fetch(`https://padelhere.onrender.com/v1/${isClub ? "club" : "usuario"}/recover?email=${emailField.value}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

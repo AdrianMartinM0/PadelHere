@@ -402,7 +402,7 @@ const MisPartidos = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/usuario/${userData?.id}/mis-partidos`
+        `https://padelhere.onrender.com/v1/partido/usuario/${userData?.id}/mis-partidos`
       );
       if (!res.ok) throw new Error("No se pudieron cargar tus partidos");
       let data: Partido[] = await res.json();
@@ -424,7 +424,7 @@ const MisPartidos = () => {
       if (idsToFetch.length > 0) {
         Promise.all(
           idsToFetch.map((id) =>
-            fetch(`https://padelhere-production.up.railway.app/v1/usuario/${id}`)
+            fetch(`https://padelhere.onrender.com/v1/usuario/${id}`)
               .then((res) => (res.ok ? res.json() : null))
               .then((profile) => (profile ? { id, profile } : null))
           )
@@ -479,7 +479,7 @@ const MisPartidos = () => {
         });
         return;
       }
-      const res = await fetch(`https://padelhere-production.up.railway.app/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
+      const res = await fetch(`https://padelhere.onrender.com/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
         method: "POST"
       });
       if (!res.ok) {
@@ -508,7 +508,7 @@ const MisPartidos = () => {
         return;
       }
       const res = await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`,
+        `https://padelhere.onrender.com/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`,
         {
           method: "POST",
         }
@@ -535,7 +535,7 @@ const MisPartidos = () => {
     if (!partidoId) return;
     try {
       await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/proponer-resultado?propuesto_por=${userData?.id}`,
+        `https://padelhere.onrender.com/v1/partido/${partidoId}/proponer-resultado?propuesto_por=${userData?.id}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -574,7 +574,7 @@ const MisPartidos = () => {
     if (!partidoId) return;
     try {
       await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/confirmar-resultado?user_id=${userData?.id}`,
+        `https://padelhere.onrender.com/v1/partido/${partidoId}/confirmar-resultado?user_id=${userData?.id}`,
         {
           method: "POST",
         }
@@ -593,7 +593,7 @@ const MisPartidos = () => {
     if (!partidoId) return;
     try {
       await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/rechazar-resultado?user_id=${userData?.id}`,
+        `https://padelhere.onrender.com/v1/partido/${partidoId}/rechazar-resultado?user_id=${userData?.id}`,
         {
           method: "POST",
         }

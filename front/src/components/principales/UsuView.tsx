@@ -22,7 +22,7 @@ const UsuView = () => {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://padelhere-production.up.railway.app/v1/usuario/${usu_id}`);
+        const res = await fetch(`https://padelhere.onrender.com/v1/usuario/${usu_id}`);
         if (!res.ok) throw new Error("No se pudo cargar el usuario");
         const data = await res.json();
         setUserData(data);

@@ -46,7 +46,7 @@ const Login = () => {
         if (emailField.error || passwordField.error) return;
 
         try {
-            const response = await fetch(`https://padelhere-production.up.railway.app/v1/${isClub ? "club" : "usuario"}/login`, {
+            const response = await fetch(`https://padelhere.onrender.com/v1/${isClub ? "club" : "usuario"}/login`, {
                 mode: "cors",
                 method: "POST",
                 headers: {

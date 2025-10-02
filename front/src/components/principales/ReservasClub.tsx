@@ -89,7 +89,7 @@ const ReservasClub = () => {
     useEffect(() => {
         if (!clubData?.id) return;
         setLoading(true);
-        fetch(`https://padelhere-production.up.railway.app/v1/reserva/pendientes/${clubData.id}`)
+        fetch(`https://padelhere.onrender.com/v1/reserva/pendientes/${clubData.id}`)
             .then(res => res.json())
             .then(resData => {
                 // Ordenar de la más cercana a la más lejana
