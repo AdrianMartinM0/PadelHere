@@ -122,7 +122,7 @@ export const ChatPanel = () => {
   // WebSocket subscription: incrementa el contador SOLO del chat recibido
   useEffect(() => {
     if (!userData?.id) return;
-    const ws = new WebSocket(`wss://padelhere-production.up.railway.app/ws/chat`);
+    const ws = new WebSocket(`wss://padelhere.onrender.com/ws/chat`);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
