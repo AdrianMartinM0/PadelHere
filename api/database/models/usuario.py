@@ -24,6 +24,7 @@ class User(BaseModel):
     desc: Optional[str] = None
     level: float = Field(default=0)
     reservas: Optional[list] = Field(default_factory=list)
+    deleted: bool = Field(default=False)
 
     @field_validator("password")
     @classmethod
