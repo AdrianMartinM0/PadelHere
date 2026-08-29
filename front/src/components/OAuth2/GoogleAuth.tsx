@@ -1,6 +1,7 @@
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { useContext, } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import { apiClient } from '../../api/apiClient';
 
 const GoogleAuth = () => {
   const { login } = useContext(AuthContext)!;
@@ -9,15 +10,10 @@ const GoogleAuth = () => {
     const token = response.credential;
 
     try {
-      const res = await fetch('https://padelhere.onrender.com/v1/usuario/auth/google', {
+      const data = await apiClient.request<{ access_token?: string, user?: { access_token?: string } }>('/usuario/auth/google', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ token }),
       });
-
-      const data = await res.json();
 
       if (data.access_token) {
         login(data.access_token);

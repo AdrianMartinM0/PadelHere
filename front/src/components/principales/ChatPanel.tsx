@@ -4,6 +4,7 @@ import { Chats } from "./Chats";
 import { ChatView } from "./ChatView";
 import { AuthContext } from "../../context/AuthContext";
 import { ArrowLeft } from "lucide-react";
+import { apiClient } from "../../api/apiClient";
 
 type Chat = {
   _id: string;
@@ -41,15 +42,10 @@ export const ChatPanel = () => {
     await Promise.all(
       chatList.map(async (chat) => {
         try {
-          const resp = await fetch(
-            `https://padelhere.onrender.com/v1/chat/${chat._id}/unread-count/${userId}`
+          const data = await apiClient.request<any>(
+            `/chat/${chat._id}/unread-count/${userId}`
           );
-          if (resp.ok) {
-            const json = await resp.json();
-            map[chat._id] = json.unread_count ?? 0;
-          } else {
-            map[chat._id] = 0;
-          }
+          map[chat._id] = data.unread_count ?? 0;
         } catch {
           map[chat._id] = 0;
         }
@@ -63,9 +59,7 @@ export const ChatPanel = () => {
     const fetchChats = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://padelhere.onrender.com/v1/chat/user/${userData?.id}`);
-        if (!res.ok) throw new Error("No se pudieron cargar los chats");
-        const data = await res.json();
+        const data = await apiClient.request<Chat[]>(`/chat/user/${userData?.id}`);
         setChats(data);
 
         if (userData?.id) {

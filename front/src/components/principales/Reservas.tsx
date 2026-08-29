@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { toTimeStr } from "../Profile/Club/PistasUtils";
 import { Building2, MapPin, CalendarDays, Clock, Phone, FlagTriangleRight } from "lucide-react";
+import { apiClient } from "../../api/apiClient";
 
 interface ClubInfo {
   name: string;
@@ -141,8 +142,7 @@ const Reservas = () => {
     // Peticiones en paralelo
     Promise.all(
       reservaIds.map(id =>
-        fetch(`https://padelhere.onrender.com/v1/reserva/${id}`)
-          .then(res => res.ok ? res.json() : null)
+        apiClient.request<Reserva>(`/reserva/${id}`)
           .catch(() => null)
       )
     ).then(results => {

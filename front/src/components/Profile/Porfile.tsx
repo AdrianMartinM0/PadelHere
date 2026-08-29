@@ -1,5 +1,6 @@
 import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 import DefaultAvatar from "./DefaultAvatar";
 import GraficaHistoryLevel from "./GraficaHistoryLevel";
 import { Settings } from "lucide-react"; // O tu icono preferido
@@ -58,11 +59,10 @@ const Porfile = () => {
       formData.append("email", email!);
       formData.append("desc", descValue);
 
-      const res = await fetch("https://padelhere.onrender.com/v1/usuario/update-desc", {
+      await apiClient.request("/usuario/update-desc", {
         method: "POST",
         body: formData,
       });
-      if (!res.ok) throw new Error("No se pudo actualizar la descripción");
       await refreshUserData();
       setIsEditingDesc(false);
     } catch (err) {

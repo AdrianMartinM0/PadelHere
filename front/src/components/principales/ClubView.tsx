@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom"
 import { ExternalLink, MapPin, Phone } from "lucide-react"
 import DefaultAvatar from "../Profile/DefaultAvatar"
 import Pistas from "../Profile/Club/Pistas"
+import { apiClient } from '../../api/apiClient';
 
 type Club = {
   id: string
@@ -22,11 +23,7 @@ const ClubView = () => {
 
   useEffect(() => {
     if (!club_id) return
-    fetch(`https://padelhere.onrender.com/v1/club/all-clubs/${club_id}`)
-      .then(res => {
-        if (!res.ok) throw new Error("No se pudo cargar el club")
-        return res.json()
-      })
+    apiClient.request<any>(`/club/all-clubs/${club_id}`)
       .then((data: any) => {
         if (data._id && !data.id) data.id = data._id
         setClub(data)

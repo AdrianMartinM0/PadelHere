@@ -4,11 +4,12 @@ import { AuthContext } from "../../../context/AuthContext"
 import { ExternalLink, MapPin, Phone, Settings } from "lucide-react"
 import DefaultAvatar from "../DefaultAvatar"
 import Pistas from "./Pistas"
+import { apiClient } from "../../../api/apiClient"
 
 const ClubProfile = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const { email, clubData, refreshUserData, userData } = useContext(AuthContext)!
+  const { email, clubData, refreshUserData, userData, token } = useContext(AuthContext)!
 
   const [imgPreview, setImgPreview] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -58,11 +59,12 @@ const ClubProfile = () => {
       formData.append("email", email!)
       formData.append("desc", descValue)
 
-      const res = await fetch("https://padelhere.onrender.com/v1/club/update-desc", {
+      await apiClient.request("/club/update-desc", {
         method: "POST",
         body: formData,
+        headers: { "Content-Type": undefined as any },
+        token,
       })
-      if (!res.ok) throw new Error("No se pudo actualizar la descripción")
       await refreshUserData()
       setIsEditingDesc(false)
     } catch (err) {
@@ -87,11 +89,12 @@ const ClubProfile = () => {
     setIsUploading(true)
 
     try {
-      const res = await fetch("https://padelhere.onrender.com/v1/club/update-profile-picture", {
+      await apiClient.request("/club/update-profile-picture", {
         method: "POST",
         body: formData,
+        headers: { "Content-Type": undefined as any },
+        token,
       })
-      if (!res.ok) throw new Error("No se pudo actualizar la foto de perfil")
       await refreshUserData()
       setImgPreview(null)
     } catch (err) {
@@ -298,11 +301,10 @@ const ClubProfile = () => {
                   className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold"
                   onClick={async () => {
                     try {
-                      const res = await fetch(`https://padelhere.onrender.com/v1/usuario/${userData?.id}`, {
+                      await apiClient.request(`/usuario/${userData?.id}`, {
                         method: "DELETE",
-                        headers: { "Content-Type": "application/json" },
+                        token,
                       });
-                      if (!res.ok) throw new Error("No se pudo eliminar el perfil");
                       window.location.href = "/logout";
                     } catch {
                       console.error("Error al eliminar el perfil");

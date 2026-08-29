@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useFormField } from "../../hooks/useFormHooks";
 import { AuthContext } from '../../context/AuthContext';
+import { apiClient } from '../../api/apiClient';
 
 const VerifyPasscode = () => {
     // Valida que el passcode tenga exactamente 6 dígitos numéricos
@@ -28,13 +29,7 @@ const VerifyPasscode = () => {
             return;
         }
         if (email) {
-            fetch(`https://padelhere.onrender.com/v1/${isClub == 'true' ? "club" : "usuario"}/passcode?email=${email}`)
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Error al obtener el código de verificación');
-                    }
-                    return response.json();
-                })
+            apiClient.request<{passcode: string}>(`/${isClub == 'true' ? "club" : "usuario"}/passcode?email=${email}`)
                 .then((data) => {
                     setPasscodeVerify(data.passcode);
                 })

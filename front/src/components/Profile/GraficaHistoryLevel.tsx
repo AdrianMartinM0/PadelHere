@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { apiClient } from "../../api/apiClient";
 
 // Divide el array en tramos de color según si está por encima o por debajo del nivelActual
 function splitIntoColoredSegments(
@@ -87,8 +88,7 @@ const GraficaHistoryLevel = ({ level, id }: GraficaHistoryLevelProps) => {
 
 
     useEffect(() => {
-        fetch(`https://padelhere.onrender.com/v1/history_level/user/${id}`)
-            .then(res => res.json())
+        apiClient.request<number[]>(`/history_level/user/${id}`)
             .then(data => {
                 setHistory(Array.isArray(data) ? data : []);
                 setLoading(false);

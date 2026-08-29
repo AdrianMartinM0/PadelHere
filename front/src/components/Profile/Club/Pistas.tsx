@@ -4,6 +4,7 @@ import CourtPanel from "./CourtPanel";
 import ReserveModal from "./ReserveModal";
 import { AuthContext } from "../../../context/AuthContext";
 import { useReservasSocket } from "../../../hooks/useReservasSocket";
+import { apiClient } from "../../../api/apiClient";
 
 const weekDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const defaultDayConfig = { open: "08:00", close: "23:00", closed: false, hasBreak: true, break: { from: "14:00", to: "16:00" } };
@@ -83,47 +84,47 @@ export default function Pistas({ clubId }: { clubId: string }) {
 });
 
   // Función reutilizable para cargar datos de pistas + configs + overrides
-  function fetchAllCourtsAndConfigs() {
+  async function fetchAllCourtsAndConfigs() {
     setLoading(true);
-    Promise.all([
-      fetch(`https://padelhere.onrender.com/v1/club/${clubId}/pistas`).then(res => res.json()),
-      fetch(`https://padelhere.onrender.com/v1/club/${clubId}/config`).then(res => res.json()),
-      fetch(`https://padelhere.onrender.com/v1/club/${clubId}/overrides`).then(res => res.json())
-    ])
-      .then(([pistasData, configData, overridesData]) => {
-        setCourts(pistasData?.courts ?? []);
-        // Court configs: recolecta la config de cada pista
-        const configs: { [courtId: string]: any } = {};
-        (pistasData?.courts ?? []).forEach((pista: any) => {
-          configs[pista.id] = pista.config ?? makeDefaultCourtConfig();
-        });
-        setCourtConfigs(configs);
-        // Mantener la pista seleccionada si existe, si no, seleccionar la primera
-        setSelectedCourt(prev =>
-          pistasData?.courts?.some((p: any) => p.id === prev)
-            ? prev
-            : pistasData?.courts?.[0]?.id ?? ""
-        );
-        // Config global del club
-        if (configData?.globalDays) {
-          setGlobalDays({
-            ...makeDefaultGlobalDays(),
-            ...configData.globalDays,
-          });
-        } else {
-          setGlobalDays(makeDefaultGlobalDays());
-        }
-        setGlobalOverrides(overridesData || {});
-        setLoading(false);
-      })
-      .catch(() => {
-        setCourts([]);
-        setCourtConfigs({});
-        setSelectedCourt("");
-        setGlobalDays(makeDefaultGlobalDays());
-        setGlobalOverrides({});
-        setLoading(false);
+    try {
+      const [pistasData, configData, overridesData] = await Promise.all([
+        apiClient.request<{ courts: any[] }>(`/club/${clubId}/pistas`),
+        apiClient.request<any>(`/club/${clubId}/config`),
+        apiClient.request<any>(`/club/${clubId}/overrides`)
+      ]);
+
+      setCourts(pistasData?.courts ?? []);
+      // Court configs: recolecta la config de cada pista
+      const configs: { [courtId: string]: any } = {};
+      (pistasData?.courts ?? []).forEach((pista: any) => {
+        configs[pista.id] = pista.config ?? makeDefaultCourtConfig();
       });
+      setCourtConfigs(configs);
+      // Mantener la pista seleccionada si existe, si no, seleccionar la primera
+      setSelectedCourt(prev =>
+        pistasData?.courts?.some((p: any) => p.id === prev)
+          ? prev
+          : pistasData?.courts?.[0]?.id ?? ""
+      );
+      // Config global del club
+      if (configData?.globalDays) {
+        setGlobalDays({
+          ...makeDefaultGlobalDays(),
+          ...configData.globalDays,
+        });
+      } else {
+        setGlobalDays(makeDefaultGlobalDays());
+      }
+      setGlobalOverrides(overridesData || {});
+      setLoading(false);
+    } catch {
+      setCourts([]);
+      setCourtConfigs({});
+      setSelectedCourt("");
+      setGlobalDays(makeDefaultGlobalDays());
+      setGlobalOverrides({});
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -131,86 +132,82 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }, [clubId]);
 
   // Funciones para gestionar overrides globales...
-  function fetchGlobalOverrides() {
-    fetch(`https://padelhere.onrender.com/v1/club/${clubId}/overrides`)
-      .then(res => res.json())
-      .then(setGlobalOverrides)
-      .catch(() => setGlobalOverrides({}));
+  async function fetchGlobalOverrides() {
+    try {
+      const overrides = await apiClient.request<any>(`/club/${clubId}/overrides`);
+      setGlobalOverrides(overrides || {});
+    } catch {
+      setGlobalOverrides({});
+    }
   }
 
-  function saveGlobalOverride(date: string, override: any) {
-    fetch(`https://padelhere.onrender.com/v1/club/${clubId}/overrides/${date}`, {
+  async function saveGlobalOverride(date: string, override: any) {
+    await apiClient.request(`/club/${clubId}/overrides/${date}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(override),
-    }).then(() => fetchGlobalOverrides());
+    });
+    fetchGlobalOverrides();
   }
 
-  function deleteGlobalOverride(date: string) {
-    fetch(`https://padelhere.onrender.com/v1/club/${clubId}/overrides/${date}`, {
+  async function deleteGlobalOverride(date: string) {
+    await apiClient.request(`/club/${clubId}/overrides/${date}`, {
       method: "DELETE",
-    }).then(() => fetchGlobalOverrides());
+    });
+    fetchGlobalOverrides();
   }
 
-  function saveGlobalConfig(nextGlobalDays: any) {
-    fetch(`https://padelhere.onrender.com/v1/club/${clubId}/config`, {
+  async function saveGlobalConfig(nextGlobalDays: any) {
+    await apiClient.request(`/club/${clubId}/config`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
       globalDays: nextGlobalDays,
       }),
     });
   }
 
-  function saveCourtConfig(courtId: string, courtConfig: any) {
-    fetch(`https://padelhere.onrender.com/v1/pista/${courtId}/config`, {
+  async function saveCourtConfig(courtId: string, courtConfig: any) {
+    await apiClient.request(`/pista/${courtId}/config`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         config: courtConfig,
       }),
     });
   }
 
-  function addCourt(name: string, desc?: string) {
-    fetch(`https://padelhere.onrender.com/v1/club/${clubId}/pistas`, {
+  async function addCourt(name: string, desc?: string) {
+    const newCourt = await apiClient.request<any>(`/club/${clubId}/pistas`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, desc }),
-    })
-      .then(res => res.json())
-      .then(newCourt => {
-        const newId = newCourt.id || newCourt._id || newCourt.pista_id;
-        if (!newId) {
-          console.error("Error: El backend no devolvió el id de la pista.");
-          return;
-        }
-        const courtObj = {
-          id: newId,
-          name: newCourt.name || name,
-          desc: newCourt.desc || desc,
-        };
-        const nextCourts = [...courts, courtObj];
-        const nextConfigs = { ...courtConfigs, [newId]: makeDefaultCourtConfig() };
-        setCourts(nextCourts);
-        setCourtConfigs(nextConfigs);
-        setSelectedCourt(newId);
+    });
 
-        saveCourtConfig(newId, makeDefaultCourtConfig());
-      });
+    const newId = newCourt.id || newCourt._id || newCourt.pista_id;
+    if (!newId) {
+      console.error("Error: El backend no devolvió el id de la pista.");
+      return;
+    }
+    const courtObj = {
+      id: newId,
+      name: newCourt.name || name,
+      desc: newCourt.desc || desc,
+    };
+    const nextCourts = [...courts, courtObj];
+    const nextConfigs = { ...courtConfigs, [newId]: makeDefaultCourtConfig() };
+    setCourts(nextCourts);
+    setCourtConfigs(nextConfigs);
+    setSelectedCourt(newId);
+
+    saveCourtConfig(newId, makeDefaultCourtConfig());
   }
 
-  function editCourt(courtId: string, name: string, desc?: string) {
-    fetch(`https://padelhere.onrender.com/v1/pista/${courtId}`, {
+  async function editCourt(courtId: string, name: string, desc?: string) {
+    await apiClient.request(`/pista/${courtId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, desc }),
-    }).then(() => {
-      const nextCourts = courts.map(c =>
-        c.id === courtId ? { ...c, name, desc } : c
-      );
-      setCourts(nextCourts);
     });
+    const nextCourts = courts.map(c =>
+      c.id === courtId ? { ...c, name, desc } : c
+    );
+    setCourts(nextCourts);
   }
 
   function deleteCourt(courtId: string) {
@@ -218,24 +215,23 @@ export default function Pistas({ clubId }: { clubId: string }) {
     setDeleteModal({ show: true, courtId, courtName: court?.name });
   }
 
-  function confirmDeleteCourt() {
+  async function confirmDeleteCourt() {
     if (!deleteModal.courtId) return;
-    fetch(`https://padelhere.onrender.com/v1/pista/${deleteModal.courtId}`, {
+    await apiClient.request(`/pista/${deleteModal.courtId}`, {
       method: "DELETE"
-    }).then(() => {
-      const nextCourts = courts.filter(c => c.id !== deleteModal.courtId);
-      const nextConfigs = { ...courtConfigs };
-      delete nextConfigs[deleteModal.courtId!];
-
-      setCourts(nextCourts);
-      setCourtConfigs(nextConfigs);
-
-      if (selectedCourt === deleteModal.courtId) {
-        setSelectedCourt(nextCourts[0]?.id ?? "");
-      }
-
-      setDeleteModal({ show: false });
     });
+    const nextCourts = courts.filter(c => c.id !== deleteModal.courtId);
+    const nextConfigs = { ...courtConfigs };
+    delete nextConfigs[deleteModal.courtId!];
+
+    setCourts(nextCourts);
+    setCourtConfigs(nextConfigs);
+
+    if (selectedCourt === deleteModal.courtId) {
+      setSelectedCourt(nextCourts[0]?.id ?? "");
+    }
+
+    setDeleteModal({ show: false });
   }
 
   function cancelDeleteCourt() {
@@ -244,39 +240,30 @@ export default function Pistas({ clubId }: { clubId: string }) {
 
   // Añadir reserva y actualizar ids en AuthContext
   async function confirmReserve(name: string, phone: string) {
-    const res = await fetch(`https://padelhere.onrender.com/v1/pista/${selectedCourt}/reservas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        day: modal.day,
-        from: modal.from,
-        to: modal.to,
-        name,
-        phone,
-      }),
-    });
-    if (!res.ok) {
-      let message = "Error al reservar";
-      try {
-        const json = await res.json();
-        message = json.detail || message;
-      } catch {}
-      setErrorModal({ show: true, message });
-      return;
-    }
-    const reserva = await res.json();
-    fetch(`https://padelhere.onrender.com/v1/usuario/${userData?.id}/reservas/${reserva._id}`, {
-      method: "PUT"
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("No se pudo asociar la reserva al usuario");
-        setReservaIds?.((prev: string[]) => Array.from(new Set([...(prev || []), reserva._id])));
+    try {
+      const reserva = await apiClient.request<any>(`/pista/${selectedCourt}/reservas`, {
+        method: "POST",
+        body: JSON.stringify({
+          day: modal.day,
+          from: modal.from,
+          to: modal.to,
+          name,
+          phone,
+        }),
       });
+      
+      await apiClient.request(`/usuario/${userData?.id}/reservas/${reserva._id}`, {
+        method: "PUT"
+      });
+      setReservaIds?.((prev: string[]) => Array.from(new Set([...(prev || []), reserva._id])));
 
-    // Vuelve a pedir todas las pistas/configs/overrides tras reservar
-    fetchAllCourtsAndConfigs();
+      // Vuelve a pedir todas las pistas/configs/overrides tras reservar
+      fetchAllCourtsAndConfigs();
 
-    setModal({ show: false, day: "", from: 0, to: 0 });
+      setModal({ show: false, day: "", from: 0, to: 0 });
+    } catch (err) {
+      setErrorModal({ show: true, message: err instanceof Error ? err.message : "Error al reservar" });
+    }
   }
 
   function handleReserve(day: string, from: number, to: number) {
