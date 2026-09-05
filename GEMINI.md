@@ -721,6 +721,13 @@ Do not create commits unless the user explicitly asks for one.
 
 When asked to create a commit, use a concise and meaningful commit message.
 
+## 25.1 GitHub Workflow (No Forks)
+
+- Always push directly to `AdrianMartinM0/PadelHere`.
+- Do NOT use fork.
+- Use `mcp_github_push_files` for pushing changes to a new branch.
+- Create PRs using `mcp_github_create_pull_request` targeting `develop` branch on `AdrianMartinM0/PadelHere`.
+
 ---
 
 # 26. Existing User Changes
