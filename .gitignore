@@ -7,6 +7,3 @@ __pycache__/
 *.pyc
 .idea/
 .vscode/
-_bmad/dashboard/index.html
-_bmad-output/**/temp_*
-npm/
