@@ -7,7 +7,6 @@ import { useReservasSocket } from "../../../hooks/useReservasSocket";
 import { apiClient } from "../../../api/apiClient";
 import { DayConfig, Training, CourtConfig } from "./CourtPanel";
 import { Reserva } from "../../../components/principales/Reservas";
-import { Block } from "./PistasUtils";
 
 type Court = {
   id: string;
