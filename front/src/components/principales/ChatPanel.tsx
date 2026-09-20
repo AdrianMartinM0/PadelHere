@@ -89,10 +89,10 @@ export const ChatPanel = () => {
     if (selectedChat && userData?.id) {
       const markReadAndRefetch = async () => {
         try {
-          await fetch(
-            `https://padelhere.onrender.com/v1/chat/${selectedChat}/mark-read/${userData.id}`,
-            { method: "PATCH" }
-          );
+        await apiClient.request(
+              `/chat/${selectedChat}/mark-read/${userData.id}`,
+              { method: "PATCH" }
+            );
         } catch {}
         setUnreadMap((prev) => ({ ...prev, [selectedChat]: 0 }));
         setTimeout(() => {

@@ -87,11 +87,7 @@ const Porfile = () => {
     setIsUploading(true);
 
     try {
-      const res = await fetch(
-        "https://padelhere.onrender.com/v1/usuario/update-profile-picture",
-        { method: "POST", body: formData }
-      );
-      if (!res.ok) throw new Error("No se pudo actualizar la foto de perfil");
+      await apiClient.request("/usuario/update-profile-picture", { method: "POST", body: formData });
       await refreshUserData();
       setImgPreview(null);
     } catch (err) {
@@ -250,12 +246,10 @@ const Porfile = () => {
                   className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold"
                   onClick={async () => {
                     try {
-                      const res = await fetch(`https://padelhere.onrender.com/v1/usuario/${userData.id}`, {
+                      await apiClient.request(`/usuario/${userData.id}`, {
                         method: "DELETE",
                         headers: { "Content-Type": "application/json" },
                       });
-                      if (!res.ok) throw new Error("No se pudo eliminar el perfil");
-                      window.location.href = "/logout";
                     } catch {
                       console.error("Error al eliminar el perfil");
                     }

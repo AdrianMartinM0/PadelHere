@@ -1,3 +1,5 @@
+.bmad-output/
+docs/
 .env
 .env.*
 !.env.example
