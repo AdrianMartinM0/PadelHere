@@ -5,6 +5,16 @@ import ReserveModal from "./ReserveModal";
 import { AuthContext } from "../../../context/AuthContext";
 import { useReservasSocket } from "../../../hooks/useReservasSocket";
 import { apiClient } from "../../../api/apiClient";
+import { DayConfig, Training, CourtConfig } from "./CourtPanel";
+import { Reserva } from "../../../components/principales/Reservas";
+import { Block } from "./PistasUtils";
+
+type Court = {
+  id: string;
+  name: string;
+  desc?: string;
+  config?: CourtConfig;
+};
 
 const weekDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const defaultDayConfig = { open: "08:00", close: "23:00", closed: false, hasBreak: true, break: { from: "14:00", to: "16:00" } };
@@ -54,18 +64,18 @@ function ErrorModal({
 }
 
 export default function Pistas({ clubId }: { clubId: string }) {
-  const [courts, setCourts] = useState<any[]>([]);
+  const [courts, setCourts] = useState<Court[]>([]);
   const [selectedCourt, setSelectedCourt] = useState<string>("");
-  const [courtConfigs, setCourtConfigs] = useState<{ [courtId: string]: any }>({});
-  const [globalDays, setGlobalDays] = useState<{ [day: string]: any }>(makeDefaultGlobalDays());
-  const [modal, setModal] = useState<{ show: boolean, day: string, from: number, to: number }>({ show: false, day: "", from: 0, to: 0 });
+  const [courtConfigs, setCourtConfigs] = useState<{ [courtId: string]: CourtConfig }>({});
+  const [globalDays, setGlobalDays] = useState<{ [day: string]: DayConfig }>(makeDefaultGlobalDays());
+  const [modal, setModal] = useState<{ show: boolean; day: string; from: number; to: number }>({ show: false, day: "", from: 0, to: 0 });
   const [loading, setLoading] = useState(true);
 
   // Estado para modal de eliminar
   const [deleteModal, setDeleteModal] = useState<{ show: boolean, courtId?: string, courtName?: string }>({ show: false });
 
   // Estado para los overrides globales
-  const [globalOverrides, setGlobalOverrides] = useState<{ [date: string]: any }>({});
+  const [globalOverrides, setGlobalOverrides] = useState<{ [date: string]: DayConfig }>({});
 
   // Estado para modal de error de reserva
   const [errorModal, setErrorModal] = useState<{ show: boolean; message: string }>({
@@ -88,21 +98,20 @@ export default function Pistas({ clubId }: { clubId: string }) {
     setLoading(true);
     try {
       const [pistasData, configData, overridesData] = await Promise.all([
-        apiClient.request<{ courts: any[] }>(`/club/${clubId}/pistas`),
-        apiClient.request<any>(`/club/${clubId}/config`),
-        apiClient.request<any>(`/club/${clubId}/overrides`)
+        apiClient.request<{ courts: Court[] }>(`/club/${clubId}/pistas`),
+        apiClient.request<{ globalDays: { [day: string]: DayConfig }; [key: string]: unknown }>(`/club/${clubId}/config`),
+        apiClient.request<{ [date: string]: DayConfig }>(`/club/${clubId}/overrides`)
       ]);
 
       setCourts(pistasData?.courts ?? []);
       // Court configs: recolecta la config de cada pista
-      const configs: { [courtId: string]: any } = {};
-      (pistasData?.courts ?? []).forEach((pista: any) => {
+const configs: { [courtId: string]: CourtConfig } = {};
+      (pistasData?.courts ?? []).forEach((pista: Court) => {
         configs[pista.id] = pista.config ?? makeDefaultCourtConfig();
       });
       setCourtConfigs(configs);
-      // Mantener la pista seleccionada si existe, si no, seleccionar la primera
       setSelectedCourt(prev =>
-        pistasData?.courts?.some((p: any) => p.id === prev)
+        pistasData?.courts?.some((p: Court) => p.id === prev)
           ? prev
           : pistasData?.courts?.[0]?.id ?? ""
       );
@@ -134,14 +143,14 @@ export default function Pistas({ clubId }: { clubId: string }) {
   // Funciones para gestionar overrides globales...
   async function fetchGlobalOverrides() {
     try {
-      const overrides = await apiClient.request<any>(`/club/${clubId}/overrides`);
+      const overrides = await apiClient.request<{ [date: string]: DayConfig }>(`/club/${clubId}/overrides`);
       setGlobalOverrides(overrides || {});
     } catch {
       setGlobalOverrides({});
     }
   }
 
-  async function saveGlobalOverride(date: string, override: any) {
+  async function saveGlobalOverride(date: string, override: DayConfig) {
     await apiClient.request(`/club/${clubId}/overrides/${date}`, {
       method: "PUT",
       body: JSON.stringify(override),
@@ -156,7 +165,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
     fetchGlobalOverrides();
   }
 
-  async function saveGlobalConfig(nextGlobalDays: any) {
+  async function saveGlobalConfig(nextGlobalDays: { [day: string]: DayConfig }) {
     await apiClient.request(`/club/${clubId}/config`, {
       method: "PUT",
       body: JSON.stringify({
@@ -165,7 +174,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
     });
   }
 
-  async function saveCourtConfig(courtId: string, courtConfig: any) {
+  async function saveCourtConfig(courtId: string, courtConfig: CourtConfig) {
     await apiClient.request(`/pista/${courtId}/config`, {
       method: "PUT",
       body: JSON.stringify({
@@ -175,7 +184,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
   }
 
   async function addCourt(name: string, desc?: string) {
-    const newCourt = await apiClient.request<any>(`/club/${clubId}/pistas`, {
+    const newCourt = await apiClient.request<Court>(`/club/${clubId}/pistas`, {
       method: "POST",
       body: JSON.stringify({ name, desc }),
     });
@@ -241,7 +250,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
   // Añadir reserva y actualizar ids en AuthContext
   async function confirmReserve(name: string, phone: string) {
     try {
-      const reserva = await apiClient.request<any>(`/pista/${selectedCourt}/reservas`, {
+      const reserva = await apiClient.request<Reserva>(`/pista/${selectedCourt}/reservas`, {
         method: "POST",
         body: JSON.stringify({
           day: modal.day,
@@ -270,7 +279,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
     setModal({ show: true, day, from, to });
   }
 
-  function handleSetGlobalDays(days: { [day: string]: any }) {
+  function handleSetGlobalDays(days: { [day: string]: DayConfig }) {
     setGlobalDays(days);
     saveGlobalConfig(days);
   }

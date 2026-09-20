@@ -10,7 +10,7 @@ import { Reserva } from "../../../components/principales/Reservas";
 
 const weekDays = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-type DayConfig = {
+export type DayConfig = {
   open: string;
   close: string;
   closed: boolean;
@@ -19,13 +19,13 @@ type DayConfig = {
   trainings?: { from: string; duration: number }[];
 };
 
-type Training = {
+export type Training = {
   day: string;
   from: string;
   duration: number;
 };
 
-type CourtConfig = {
+export type CourtConfig = {
   overrides?: { [date: string]: DayConfig };
   trainings: Training[];
   pistaPricePerPerson?: number;
