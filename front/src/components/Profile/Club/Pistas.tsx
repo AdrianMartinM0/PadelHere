@@ -5,7 +5,7 @@ import ReserveModal from "./ReserveModal";
 import { AuthContext } from "../../../context/AuthContext";
 import { useReservasSocket } from "../../../hooks/useReservasSocket";
 import { apiClient } from "../../../api/apiClient";
-import { DayConfig, Training, CourtConfig } from "./CourtPanel";
+import { DayConfig, CourtConfig } from "./CourtPanel";
 import { Reserva } from "../../../components/principales/Reservas";
 
 type Court = {

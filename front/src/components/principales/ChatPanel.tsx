@@ -42,7 +42,7 @@ export const ChatPanel = () => {
     await Promise.all(
       chatList.map(async (chat) => {
         try {
-          const data = await apiClient.request<any>(
+          const data = await apiClient.request<{ unread_count: number }>(
             `/chat/${chat._id}/unread-count/${userId}`
           );
           map[chat._id] = data.unread_count ?? 0;
@@ -65,7 +65,7 @@ export const ChatPanel = () => {
         if (userData?.id) {
           fetchUnreadCounts(data, userData.id);
         }
-      } catch (e) {
+      } catch {
         setChats([]);
         setUnreadMap({});
       }

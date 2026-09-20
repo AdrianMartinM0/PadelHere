@@ -65,7 +65,7 @@ const Porfile = () => {
       });
       await refreshUserData();
       setIsEditingDesc(false);
-    } catch (err) {
+    } catch {
       console.error("Error al actualizar la descripción");
     }
   };

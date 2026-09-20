@@ -79,7 +79,7 @@ export function getBlocks(cfg: DayConfigInput, date: string): Block[] {
   const breakTo = cfg.hasBreak && cfg.break?.to ? toMinutes(cfg.break.to) : null;
   if (breakFrom !== null && breakTo !== null && breakTo <= breakFrom) breakTo += 24 * 60;
   const entrenos = (cfg.trainings || []).map((t: Training) => {
-    let from = toMinutes(t.from);
+    const from = toMinutes(t.from);
     const to = from + t.duration;
     if (to <= from) to += 24 * 60;
     return { from, to, type: "reserva" as const };
