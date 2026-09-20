@@ -111,7 +111,7 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
     const results = await Promise.all(
       idsToFetch.map(async (id) => {
         try {
-          const data = await apiClient.request<any>(`/usuario/${id}`);
+          const data = await apiClient.request<{ name: string; img_perfil?: string }>(`/usuario/${id}`);
           return { id, nombre: data.name, img_perfil: data.img_perfil };
         } catch {
           return { id, nombre: id, img_perfil: undefined };

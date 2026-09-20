@@ -103,7 +103,7 @@ useEffect(() => {
           const partido = partidos[chat.partido_id];
           if (!partido || !isPartidoHoyOFuturo(partido.fecha)) return;
           try {
-            const json = await apiClient.request<any>(
+            const json = await apiClient.request<{ unread_count: number }>(
               `/chat/${chat._id}/unread-count/${userData.id}`
             );
             map[chat._id] = json.unread_count ?? 0;
@@ -128,7 +128,9 @@ useEffect(() => {
         await apiClient.request(`/chat/${chatId}/mark-read/${userData.id}`, {
           method: "PATCH",
         });
-      } catch {}
+      } catch {
+        /* noop */
+      }
       setUnreadMap((prev) => ({ ...prev, [chatId]: 0 }));
     }
   };

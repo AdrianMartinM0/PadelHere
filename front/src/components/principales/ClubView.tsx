@@ -23,8 +23,8 @@ const ClubView = () => {
 
   useEffect(() => {
     if (!club_id) return
-    apiClient.request<any>(`/club/all-clubs/${club_id}`)
-      .then((data: any) => {
+    apiClient.request<Club>(`/club/all-clubs/${club_id}`)
+      .then((data: Club) => {
         if (data._id && !data.id) data.id = data._id
         setClub(data)
         setLoading(false)

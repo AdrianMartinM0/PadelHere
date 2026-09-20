@@ -93,7 +93,7 @@ export const ChatPanel = () => {
               `/chat/${selectedChat}/mark-read/${userData.id}`,
               { method: "PATCH" }
             );
-        } catch {}
+        } catch {
         setUnreadMap((prev) => ({ ...prev, [selectedChat]: 0 }));
         setTimeout(() => {
           fetchUnreadCounts(chatsRef.current, userData.id);
@@ -125,7 +125,7 @@ export const ChatPanel = () => {
         if (chatExists) {
           incrementUnread(String(chat_id));
         }
-      } catch (e) {}
+      } catch {
     };
     return () => ws.close();
   }, [userData?.id, incrementUnread]);

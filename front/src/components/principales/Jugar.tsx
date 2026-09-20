@@ -123,7 +123,7 @@ const Jugar = () => {
           setUserCache(prev => ({ ...prev, ...newCache }))
         })
       }
-    } catch (error) {
+    } catch {
       setPartidos([])
     }
     setLoadingPartidos(false)
@@ -139,7 +139,7 @@ const Jugar = () => {
         if (data.event === "new_player") {
           fetchPartidos();
         }
-      } catch (e) {}
+      } catch {
     };
     ws.onclose = () => { wsRef.current = null; };
     return () => { ws.close(); };
