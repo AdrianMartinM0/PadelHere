@@ -72,17 +72,17 @@ const ProponerResultadoModal = ({
       case 1:
         valB = player === 1 ? set1p2 : set1p1;
         [valA, valB] = player === 1 ? autoCorrectSet(valA, valB) : autoCorrectSet(valB, valA).reverse();
-        player === 1 ? (setSet1p1(valA), setSet1p2(valB)) : (setSet1p2(valA), setSet1p1(valB));
+        if (player === 1) { setSet1p1(valA); setSet1p2(valB); } else { setSet1p2(valA); setSet1p1(valB); }
         break;
       case 2:
         valB = player === 1 ? set2p2 : set2p1;
         [valA, valB] = player === 1 ? autoCorrectSet(valA, valB) : autoCorrectSet(valB, valA).reverse();
-        player === 1 ? (setSet2p1(valA), setSet2p2(valB)) : (setSet2p2(valA), setSet2p1(valB));
+        if (player === 1) { setSet2p1(valA); setSet2p2(valB); } else { setSet2p2(valA); setSet2p1(valB); }
         break;
       case 3:
         valB = player === 1 ? set3p2 : set3p1;
         [valA, valB] = player === 1 ? autoCorrectSet(valA, valB) : autoCorrectSet(valB, valA).reverse();
-        player === 1 ? (setSet3p1(valA), setSet3p2(valB)) : (setSet3p2(valA), setSet3p1(valB));
+        if (player === 1) { setSet3p1(valA); setSet3p2(valB); } else { setSet3p2(valA); setSet3p1(valB); }
         break;
       default:
         break;
@@ -436,7 +436,7 @@ const MisPartidos = () => {
           setUserCache((prev) => ({ ...prev, ...newCache }));
         });
       }
-    } catch (error) {
+    } catch {
       setPartidos([]);
     }
     setLoading(false);
@@ -452,7 +452,9 @@ const MisPartidos = () => {
         if (data.event === "new_player") {
           fetchPartidosUsuario();
         }
-      } catch (e) { }
+      } catch {
+        /* noop */
+      }
     };
     ws.onclose = () => {
       wsRef.current = null;
@@ -480,7 +482,7 @@ const MisPartidos = () => {
       await apiClient.request(`/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
         method: "POST"
       });
-    } catch (e) {
+    } catch {
       setModal({
         show: true,
         type: null,
@@ -504,7 +506,7 @@ const MisPartidos = () => {
           method: "POST",
         }
       );
-    } catch (e) {
+    } catch {
       setModal({
         show: true,
         type: null,
@@ -533,7 +535,7 @@ const MisPartidos = () => {
       );
       setModal({ show: false });
       setTimeout(fetchPartidosUsuario, 700);
-    } catch (e) {
+    } catch {
       setModal({ show: false });
     }
   };
@@ -570,7 +572,7 @@ const MisPartidos = () => {
       );
       setModal({ show: false });
       setTimeout(fetchPartidosUsuario, 700);
-    } catch (e) {
+    } catch {
       setModal({ show: false });
     } finally {
       setIsSubmitting(false);
@@ -589,7 +591,7 @@ const MisPartidos = () => {
       );
       setModal({ show: false });
       setTimeout(fetchPartidosUsuario, 700);
-    } catch (e) {
+    } catch {
       setModal({ show: false });
     }
   };
