@@ -12,12 +12,14 @@ interface ClubInfo {
 
 interface Reserva {
   _id: string;
-  day: string;   // formato: YYYY-MM-DD
-  from: number;  // minutos desde 00:00
+  day: string;
+  from: number;
   to: number;
   pista: string;
   club: ClubInfo;
 }
+
+export type { Reserva };
 
 function getMapsLink(address: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;

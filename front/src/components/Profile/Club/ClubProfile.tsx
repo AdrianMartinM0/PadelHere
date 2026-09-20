@@ -62,12 +62,12 @@ const ClubProfile = () => {
       await apiClient.request("/club/update-desc", {
         method: "POST",
         body: formData,
-        headers: { "Content-Type": undefined as any },
+        headers: { "Content-Type": undefined },
         token,
       })
       await refreshUserData()
       setIsEditingDesc(false)
-    } catch (err) {
+    } catch {
       console.error("Error al actualizar la descripción")
     }
   }
@@ -92,7 +92,7 @@ const ClubProfile = () => {
       await apiClient.request("/club/update-profile-picture", {
         method: "POST",
         body: formData,
-        headers: { "Content-Type": undefined as any },
+        headers: { "Content-Type": undefined as unknown as string },
         token,
       })
       await refreshUserData()

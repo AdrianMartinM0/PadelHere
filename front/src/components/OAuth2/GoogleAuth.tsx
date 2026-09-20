@@ -1,4 +1,4 @@
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useContext, } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { apiClient } from '../../api/apiClient';
@@ -6,7 +6,7 @@ import { apiClient } from '../../api/apiClient';
 const GoogleAuth = () => {
   const { login } = useContext(AuthContext)!;
 
-  const handleSuccess = async (response: any) => {
+  const handleSuccess = async (response: CredentialResponse) => {
     const token = response.credential;
 
     try {

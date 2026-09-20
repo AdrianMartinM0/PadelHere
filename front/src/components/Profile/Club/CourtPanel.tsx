@@ -3,10 +3,10 @@ import Legend from "./Legend";
 import TimeRuler from "./TimeRuler";
 import DayRow from "./DayRow";
 import { toMinutes, toTimeStr } from "./PistasUtils";
-import { getNext14Days } from "./PistasUtils";
 import { useContext, useState } from "react";
 import { Trash2 } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
+import { Reserva } from "../../../components/principales/Reservas";
 
 const weekDays = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -49,25 +49,20 @@ export default function CourtPanel({
   setGlobalDays: (days: { [day: string]: DayConfig }) => void,
   config: CourtConfig,
   setConfig: (cfg: CourtConfig) => void,
-  reservas: any[],
+  reservas: Reserva[],
   onReserve: (day: string, from: number, to: number) => void,
   globalOverrides?: { [date: string]: DayConfig },
   saveGlobalOverride?: (date: string, override: DayConfig) => void,
   deleteGlobalOverride?: (date: string) => void,
 }) {
-  if (!court) return null;
-
+  const { userType } = useContext(AuthContext)!;
   const [weekIndex, setWeekIndex] = useState(0);
-
-  const daysWithDates = getNext14Days();
-  const weekDaysToShow = daysWithDates.slice(weekIndex * 7, (weekIndex + 1) * 7);
-
-  // Para el modal de edición del override global
   const [overrideEdit, setOverrideEdit] = useState<{
     show: boolean;
     date: string;
     dayConfig?: DayConfig;
   }>({ show: false, date: "" });
+  if (!court) return null;
 
   // Busca el primer día no cerrado, prioridad: override global > override pista > globalDays
   let firstConfig: DayConfig | null = null;
@@ -108,7 +103,6 @@ export default function CourtPanel({
       )
       : {}),
   };
-  const { userType } = useContext(AuthContext)!;
 
   // ----------- MOSTRAR PRECIO POR PERSONA PARA EL USUARIO (Fuera de ConfigPanel) -----------
   // Ahora soporta ambos nombres de campo
@@ -159,7 +153,7 @@ export default function CourtPanel({
                   {type === "pista" && (
                     <>
                       <button className="text-red-500 dark:text-red-400" onClick={() => {
-                        const { [date]: _, ...rest } = config.overrides || {};
+                        const rest = Object.fromEntries(Object.entries(config.overrides || {}).filter(([d]) => d !== date));
                         setConfig({ ...config, overrides: rest, trainings: config.trainings });
                       }} title="Eliminar excepción de pista"><Trash2 className="w-4" /></button>
                     </>
@@ -243,11 +237,11 @@ function OverrideGlobalModal({
   onClose,
 }: {
   date: string;
-  initialConfig?: any;
-  onSave: (date: string, config: any) => void;
+  initialConfig?: DayConfig;
+  onSave: (date: string, config: DayConfig) => void;
   onClose: () => void;
 }) {
-  const [form, setForm] = useState<any>(
+  const [form, setForm] = useState<DayConfig>(
     initialConfig || {
       open: "08:00",
       close: "23:00",
@@ -274,7 +268,7 @@ function OverrideGlobalModal({
             <input
               type="checkbox"
               checked={form.closed}
-              onChange={e => setForm((f: any) => ({ ...f, closed: e.target.checked }))}
+              onChange={e => setForm((f: DayConfig) => ({ ...f, closed: e.target.checked }))}
             />
           </div>
           {!form.closed && (
@@ -284,7 +278,7 @@ function OverrideGlobalModal({
                 <input
                   type="time"
                   value={form.open}
-                  onChange={e => setForm((f: any) => ({ ...f, open: e.target.value }))}
+                  onChange={e => setForm((f: DayConfig) => ({ ...f, open: e.target.value }))}
                   className="border px-2 py-1 rounded text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 w-full"
                   required
                 />
@@ -294,7 +288,7 @@ function OverrideGlobalModal({
                 <input
                   type="time"
                   value={form.close}
-                  onChange={e => setForm((f: any) => ({ ...f, close: e.target.value }))}
+                  onChange={e => setForm((f: DayConfig) => ({ ...f, close: e.target.value }))}
                   className="border px-2 py-1 rounded text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 w-full"
                   required
                 />
@@ -304,7 +298,7 @@ function OverrideGlobalModal({
                 <input
                   type="checkbox"
                   checked={form.hasBreak}
-                  onChange={e => setForm((f: any) => ({ ...f, hasBreak: e.target.checked }))}
+                  onChange={e => setForm((f: DayConfig) => ({ ...f, hasBreak: e.target.checked }))}
                 />
               </div>
               {form.hasBreak && (
@@ -314,7 +308,7 @@ function OverrideGlobalModal({
                     <input
                       type="time"
                       value={form.break.from}
-                      onChange={e => setForm((f: any) => ({ ...f, break: { ...f.break, from: e.target.value } }))}
+                      onChange={e => setForm((f: DayConfig) => ({ ...f, break: { ...f.break, from: e.target.value } }))}
                       className="border px-2 py-1 rounded text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 w-full"
                     />
                   </div>
@@ -323,7 +317,7 @@ function OverrideGlobalModal({
                     <input
                       type="time"
                       value={form.break.to}
-                      onChange={e => setForm((f: any) => ({ ...f, break: { ...f.break, to: e.target.value } }))}
+                      onChange={e => setForm((f: DayConfig) => ({ ...f, break: { ...f.break, to: e.target.value } }))}
                       className="border px-2 py-1 rounded text-gray-800 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 w-full"
                     />
                   </div>
