@@ -10,7 +10,7 @@ export const validateEmail = (value: string) => {
 export const validatePassword = (value: string) => {
     if (!value) return "La contraseña es obligatoria.";
     if (value.length < 8) return "La contraseña debe tener al menos 8 caracteres.";
-    if (!/[A-Z]/.test(value) || !/\d/.test(value) || !/[!@#$%^&*(),.?\":{}|<>]/.test(value)) {
+    if (!/[A-Z]/.test(value) || !/\d/.test(value) || !/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
         return "Debe incluir una letra mayúscula, un número y un carácter especial.";
     }
     return "";
@@ -37,8 +37,8 @@ export const validatePhone = (value: string) => {
 // Hook para campos de formulario con validación
 export function useFormField<T>(
     initialValue: T,
-    validate: (value: T, ...args: any[]) => string,
-    ...validateArgs: any[]
+    validate: (value: T, ...args: unknown[]) => string,
+    ...validateArgs: unknown[]
 ) {
     const [value, setValue] = useState<T>(initialValue);
     const [error, setError] = useState<string>("");

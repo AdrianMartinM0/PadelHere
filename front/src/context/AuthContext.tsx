@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserData = async (userEmail: string): Promise<UserData | ClubData | null> => {
     try {
       const endpoint = userType === "club" ? "/club/club" : "/usuario/user";
-      const data = await apiClient.request<any>(`${endpoint}?email=${userEmail}`);
+      const data = await apiClient.request<UserData | ClubData>(`${endpoint}?email=${userEmail}`);
 
       if (userType === "club") {
         return {
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await apiClient.request("/club/update-desc", {
         method: "POST",
         body: formData,
-        headers: { 'Content-Type': undefined } as any,
+        headers: { 'Content-Type': undefined },
       });
 
       await refreshUserData();
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await apiClient.request("/club/update-info", {
         method: "POST",
         body: formData,
-        headers: { 'Content-Type': undefined } as any,
+        headers: { 'Content-Type': undefined },
       });
 
       await refreshUserData();
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        const data = await apiClient.request<any>(`/usuario/verify-jwt?token=${token}`);
+        const data = await apiClient.request<{ email: string; user_type: string }>(`/usuario/verify-jwt?token=${token}`);
 
         if (data.email && data.user_type) {
           setIsLoggedIn(true);
