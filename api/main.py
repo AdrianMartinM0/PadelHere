@@ -1,7 +1,15 @@
 from fastapi import FastAPI, APIRouter, Request, Response
+import sentry_sdk
+import os
 from routes import api_router
 from fastapi.middleware.cors import CORSMiddleware
 from websockets import reservas_ws, partido_ws, chat_ws
+from config import SECRET_KEY # Ensure config is loaded
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    traces_sample_rate=0.05,
+)
 
 app = FastAPI()
 

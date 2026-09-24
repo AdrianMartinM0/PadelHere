@@ -4,7 +4,7 @@ function toMinutes(t: string) { const [h, m] = t.split(":").map(Number); return 
 // Regla de horas visual solo de apertura a cierre
 function TimeRuler({from,to}:{from:string,to:string}) {
   const start = toMinutes(from), end = toMinutes(to);
-  let marks = [];
+  const marks: { minWidth: string; borderLeft: string; height: string; position: string }[] = [];
   for (let t = start; t <= end; t += 30) {
     const label = t%60===0 ? `${pad(Math.floor((t/60)%24))}:00` : "";
     marks.push(

@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiClient } from "../api/apiClient";
 
 interface UserData {
   id: string;
@@ -54,12 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Función para obtener datos del usuario o club
   const fetchUserData = async (userEmail: string): Promise<UserData | ClubData | null> => {
     try {
-      const endpoint = userType === "club" ? "club/club" : "usuario/user";
-      const response = await fetch(`https://padelhere.onrender.com/v1/${endpoint}?email=${userEmail}`);
+      const endpoint = userType === "club" ? "/club/club" : "/usuario/user";
+      const data = await apiClient.request<UserData | ClubData>(`${endpoint}?email=${userEmail}`);
 
-      if (!response.ok) throw new Error("Error al obtener datos del usuario");
-
-      const data = await response.json();
       if (userType === "club") {
         return {
           id: data._id,
@@ -121,12 +119,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       formData.append("email", email);
       formData.append("desc", desc);
 
-      const response = await fetch("https://padelhere.onrender.com/v1/club/update-desc", {
+      await apiClient.request("/club/update-desc", {
         method: "POST",
         body: formData,
+        headers: { 'Content-Type': undefined },
       });
-
-      if (!response.ok) throw new Error("No se pudo actualizar la descripción");
 
       await refreshUserData();
       return true;
@@ -150,12 +147,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      const response = await fetch("https://padelhere.onrender.com/v1/club/update-info", {
+      await apiClient.request("/club/update-info", {
         method: "POST",
         body: formData,
+        headers: { 'Content-Type': undefined },
       });
-
-      if (!response.ok) throw new Error("No se pudo actualizar la información");
 
       await refreshUserData();
       return true;
@@ -198,13 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       try {
-        const response = await fetch(`https://padelhere.onrender.com/v1/usuario/verify-jwt?token=${token}`);
-
-        if (!response.ok) {
-          throw new Error("Token inválido");
-        }
-
-        const data = await response.json();
+        const data = await apiClient.request<{ email: string; user_type: string }>(`/usuario/verify-jwt?token=${token}`);
 
         if (data.email && data.user_type) {
           setIsLoggedIn(true);

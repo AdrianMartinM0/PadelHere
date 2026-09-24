@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useParams, Link } from "react-router-dom";
 import DefaultAvatar from "../Profile/DefaultAvatar";
+import { apiClient } from "../../api/apiClient";
 
 type Mensaje = {
   _id: string;
@@ -54,14 +55,15 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       setLoading(true);
-      const res = await fetch(`https://padelhere.onrender.com/v1/mensaje/chat/${chatId}/mensajes`);
-      if (res.ok) {
-        const data = await res.json();
+      try {
+        const data = await apiClient.request<Mensaje[]>(`/mensaje/chat/${chatId}/mensajes`);
         setMensajes(data);
 
         // Extrae autores únicos
         const uniqueIds = Array.from(new Set(data.map((m: Mensaje) => m.autor))) as string[];
         fetchUserInfos(uniqueIds);
+      } catch (e) {
+        console.error(e);
       }
       setLoading(false);
       setHasLoaded(true); // <- Marcar como mensajes ya cargados
@@ -108,12 +110,12 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
     if (idsToFetch.length === 0) return;
     const results = await Promise.all(
       idsToFetch.map(async (id) => {
-        const res = await fetch(`https://padelhere.onrender.com/v1/usuario/${id}`);
-        if (res.ok) {
-          const data = await res.json();
+        try {
+          const data = await apiClient.request<{ name: string; img_perfil?: string }>(`/usuario/${id}`);
           return { id, nombre: data.name, img_perfil: data.img_perfil };
+        } catch {
+          return { id, nombre: id, img_perfil: undefined };
         }
-        return { id, nombre: id, img_perfil: undefined };
       })
     );
     setUserMap((prev) =>
@@ -146,23 +148,25 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
     const lastMessageId = mensajes[mensajes.length - 1]?._id;
     if (!lastMessageId) return; // <-- Evita enviar 'undefined'
     // Llama al endpoint para setear el último mensaje leído (no esperes la respuesta)
-    fetch(
-      `https://padelhere.onrender.com/v1/chat/${chatId}/last-read?user_id=${userData.id}&last_message_id=${lastMessageId}`,
-      { method: "POST" }
-    );
+    apiClient.request(`/chat/${chatId}/last-read?user_id=${userData.id}&last_message_id=${lastMessageId}`, {
+      method: "POST"
+    }).catch(e => console.error(e));
   }, [chatId, userData?.id, mensajes]);
 
   // --- Enviar mensaje ---
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    await fetch(`https://padelhere.onrender.com/v1/mensaje/chat/${chatId}/mensaje`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ autor_id: userData?.id, texto: input }),
-    });
-    setInput("");
-    // El mensaje llegará por WebSocket
+    try {
+      await apiClient.request(`/mensaje/chat/${chatId}/mensaje`, {
+        method: "POST",
+        body: JSON.stringify({ autor_id: userData?.id, texto: input }),
+      });
+      setInput("");
+      // El mensaje llegará por WebSocket
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // --- Obtener imagen de perfil formato src para cada usuario ---

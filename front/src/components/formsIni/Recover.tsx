@@ -3,6 +3,7 @@ import emailjs from 'emailjs-com'
 import { useNavigate } from "react-router-dom";
 import { useFormField, validateEmail } from "../../hooks/useFormHooks";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 
 const Recover = () => {
     const emailField = useFormField<string>("", validateEmail);
@@ -44,31 +45,19 @@ const Recover = () => {
             noRecoverElement.current.textContent = '';
         }
         // let error = false;
-        fetch(`https://padelhere.onrender.com/v1/${isClub ? "club" : "usuario"}/recover?email=${emailField.value}`, {
+        apiClient.request(`/${isClub ? "club" : "usuario"}/recover?email=${emailField.value}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
             },
         })
-            .then(async response => {
-                const data = await response.json();
-                const error = !response.ok;
-                // Debug: muestra los datos y el error en consola
-                return { data, error };
-            })
-            .then(({ data, error }) => {
-                if (error) {
-                    if (noRecoverElement.current) {
-                        noRecoverElement.current.textContent = data.detail || "Usuario no encontrado.";
-                    }
-                    return;
-                }
+            .then(data => {
                 setPasscode(data.passcode);
                 setName(data.name);
             })
             .catch(error => {
-                if (error && noRecoverElement.current) {
-                    noRecoverElement.current.textContent = "Error al buscar el usuario.";
+                if (noRecoverElement.current) {
+                    noRecoverElement.current.textContent = error.message || "Error al buscar el usuario.";
                 }
             });
     };
