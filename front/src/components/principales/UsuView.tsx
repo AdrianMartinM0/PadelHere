@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import DefaultAvatar from "../Profile/DefaultAvatar";
 import GraficaHistoryLevel from "../Profile/GraficaHistoryLevel";
+import { apiClient } from "../../api/apiClient";
 
 type UserProfile = {
   name: string;
@@ -22,9 +23,7 @@ const UsuView = () => {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://padelhere.onrender.com/v1/usuario/${usu_id}`);
-        if (!res.ok) throw new Error("No se pudo cargar el usuario");
-        const data = await res.json();
+        const data = await apiClient.request<UserProfile>(`/usuario/${usu_id}`);
         setUserData(data);
       } catch {
         setUserData(null);

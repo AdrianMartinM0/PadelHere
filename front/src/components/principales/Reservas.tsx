@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { toTimeStr } from "../Profile/Club/PistasUtils";
 import { Building2, MapPin, CalendarDays, Clock, Phone, FlagTriangleRight } from "lucide-react";
+import { apiClient } from "../../api/apiClient";
 
 interface ClubInfo {
   name: string;
@@ -11,12 +12,14 @@ interface ClubInfo {
 
 interface Reserva {
   _id: string;
-  day: string;   // formato: YYYY-MM-DD
-  from: number;  // minutos desde 00:00
+  day: string;
+  from: number;
   to: number;
   pista: string;
   club: ClubInfo;
 }
+
+export type { Reserva };
 
 function getMapsLink(address: string) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
@@ -141,8 +144,7 @@ const Reservas = () => {
     // Peticiones en paralelo
     Promise.all(
       reservaIds.map(id =>
-        fetch(`https://padelhere.onrender.com/v1/reserva/${id}`)
-          .then(res => res.ok ? res.json() : null)
+        apiClient.request<Reserva>(`/reserva/${id}`)
           .catch(() => null)
       )
     ).then(results => {

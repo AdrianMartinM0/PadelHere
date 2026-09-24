@@ -1,6 +1,7 @@
 import { useContext, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { AuthContext } from "../../context/AuthContext"
+import { apiClient } from "../../api/apiClient"
 
 interface Question {
   id: string
@@ -203,15 +204,10 @@ function PadelLevelQuiz() {
       formData.append("email", email)
       formData.append("level", totalScore.toString())
 
-      const response = await fetch("https://padelhere.onrender.com/v1/usuario/update-level", {
+      await apiClient.request("/usuario/update-level", {
         method: "POST",
         body: formData,
       })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(`Error ${response.status}: ${errorData.detail || response.statusText}`)
-      }
 
       // ✅ ACTUALIZAR EL CONTEXTO DESPUÉS DE GUARDAR EXITOSAMENTE
 

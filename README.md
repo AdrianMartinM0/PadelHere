@@ -49,15 +49,17 @@ Este proyecto utiliza un entorno virtual (virtualenv) para gestionar las depende
     ```bash
         pip install -r requirements.txt
     ```
----
-### 4. Ejecutar la API
-1. Después de haber instalado las dependencias, puedes arrancar la API con el siguiente comando:
+
+### 4. Configurar el entorno
+1. Crea un archivo `.env` en la carpeta `api/` basándote en `api/.env.example`.
+2. Completa los valores de las variables necesarias (MONGO_URI, SECRET_KEY, etc.).
+
+### 5. Ejecutar la API
+1. Después de haber configurado el entorno, puedes arrancar la API con el siguiente comando:
     ```bash
         fastapi dev main.py
     ```
----
----
-# Tras arrancar la API
+
 - FastAPI crea documentacion de la API de forma automatica
     ### FastAPI/Docs
     ```bash

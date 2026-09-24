@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 
 type Chat = {
   _id: string;
@@ -67,17 +68,16 @@ useEffect(() => {
         const nuevas: Record<string, Partido> = {};
         await Promise.all(
           partidosFaltan.map(async (partidoId: string) => {
-            const resp = await fetch(
-              `https://padelhere.onrender.com/v1/partido/${partidoId}`
-            );
-            if (resp.ok) {
-              const partido = await resp.json();
+            try {
+              const partido = await apiClient.request<Partido>(`/partido/${partidoId}`);
               nuevas[partidoId] = {
                 _id: partido._id,
                 fecha: partido.fecha,
                 hora: partido.hora,
                 localizacion: partido.localizacion,
               };
+            } catch (e) {
+              console.error(e);
             }
           })
         );
@@ -103,13 +103,10 @@ useEffect(() => {
           const partido = partidos[chat.partido_id];
           if (!partido || !isPartidoHoyOFuturo(partido.fecha)) return;
           try {
-            const resp = await fetch(
-              `https://padelhere.onrender.com/v1/chat/${chat._id}/unread-count/${userData.id}`
+            const json = await apiClient.request<{ unread_count: number }>(
+              `/chat/${chat._id}/unread-count/${userData.id}`
             );
-            if (resp.ok) {
-              const json = await resp.json();
-              map[chat._id] = json.unread_count ?? 0;
-            }
+            map[chat._id] = json.unread_count ?? 0;
           } catch {
             map[chat._id] = 0;
           }
@@ -128,11 +125,12 @@ useEffect(() => {
     navigate(`/app/chats/${chatId}`);
     if (userData && userData.id) {
       try {
-        await fetch(
-          `https://padelhere.onrender.com/v1/chat/${chatId}/mark-read/${userData.id}`,
-          { method: "PATCH" }
-        );
-      } catch {}
+        await apiClient.request(`/chat/${chatId}/mark-read/${userData.id}`, {
+          method: "PATCH",
+        });
+      } catch {
+        /* noop */
+      }
       setUnreadMap((prev) => ({ ...prev, [chatId]: 0 }));
     }
   };

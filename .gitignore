@@ -1,7 +1,11 @@
+.bmad-output/
+docs/
 .env
-.vscode/
-.idea/
-__pycache__/
-*.pyc
+.env.*
+!.env.example
 /node_modules/
 .venv/
+__pycache__/
+*.pyc
+.idea/
+.vscode/
