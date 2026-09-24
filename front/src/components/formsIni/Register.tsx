@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormField, validateName, validateEmail, validatePhone, validatePassword, validateConfirmPassword } from "../../hooks/useFormHooks";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 
 const Register = () => {
     const nameField = useFormField<string>("", validateName);
@@ -88,8 +89,7 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch(`https://padelhere-production.up.railway.app/v1/${isClub ? "club" : "usuario"}/register`, {
-                mode: "cors",
+            const data = await apiClient.request<{ token: string, detail?: string, message?: string }>(`${isClub ? "/club" : "/usuario"}/register`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -102,23 +102,6 @@ const Register = () => {
                     password: passwordField.value,
                 }),
             });
-
-            let data;
-            try {
-                data = await response.json();
-            } catch {
-                data = null;
-            }
-
-            if (!response.ok) {
-                // Si el backend devuelve un detalle, úsalo.
-                const errorMsg = data?.detail
-                    || data?.message
-                    || JSON.stringify(data)
-                    || `Error HTTP ${response.status}`;
-                noRegisterElement.current!.textContent = errorMsg;
-                throw new Error(errorMsg);
-            }
 
             if (data.token) {
                 login(data.token);

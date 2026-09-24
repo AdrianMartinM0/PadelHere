@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { FlagTriangleRight, CalendarDays, Clock, Phone, User2 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 
 // Helpers
 function toTimeStr(num: number) {
@@ -89,8 +90,7 @@ const ReservasClub = () => {
     useEffect(() => {
         if (!clubData?.id) return;
         setLoading(true);
-        fetch(`https://padelhere-production.up.railway.app/v1/reserva/pendientes/${clubData.id}`)
-            .then(res => res.json())
+        apiClient.request<Reserva[]>(`/reserva/pendientes/${clubData.id}`)
             .then(resData => {
                 // Ordenar de la más cercana a la más lejana
                 const sorted = [...(resData || [])].sort((a, b) => {

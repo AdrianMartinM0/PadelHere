@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { MapPin, Calendar, Clock, X, Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 
 // ----------- MODAL COMPONENTS ----------------
 
@@ -71,17 +72,17 @@ const ProponerResultadoModal = ({
       case 1:
         valB = player === 1 ? set1p2 : set1p1;
         [valA, valB] = player === 1 ? autoCorrectSet(valA, valB) : autoCorrectSet(valB, valA).reverse();
-        player === 1 ? (setSet1p1(valA), setSet1p2(valB)) : (setSet1p2(valA), setSet1p1(valB));
+        if (player === 1) { setSet1p1(valA); setSet1p2(valB); } else { setSet1p2(valA); setSet1p1(valB); }
         break;
       case 2:
         valB = player === 1 ? set2p2 : set2p1;
         [valA, valB] = player === 1 ? autoCorrectSet(valA, valB) : autoCorrectSet(valB, valA).reverse();
-        player === 1 ? (setSet2p1(valA), setSet2p2(valB)) : (setSet2p2(valA), setSet2p1(valB));
+        if (player === 1) { setSet2p1(valA); setSet2p2(valB); } else { setSet2p2(valA); setSet2p1(valB); }
         break;
       case 3:
         valB = player === 1 ? set3p2 : set3p1;
         [valA, valB] = player === 1 ? autoCorrectSet(valA, valB) : autoCorrectSet(valB, valA).reverse();
-        player === 1 ? (setSet3p1(valA), setSet3p2(valB)) : (setSet3p2(valA), setSet3p1(valB));
+        if (player === 1) { setSet3p1(valA); setSet3p2(valB); } else { setSet3p2(valA); setSet3p1(valB); }
         break;
       default:
         break;
@@ -401,16 +402,14 @@ const MisPartidos = () => {
   const fetchPartidosUsuario = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/usuario/${userData?.id}/mis-partidos`
+      const data: Partido[] = await apiClient.request<Partido[]>(
+        `/partido/usuario/${userData?.id}/mis-partidos`
       );
-      if (!res.ok) throw new Error("No se pudieron cargar tus partidos");
-      let data: Partido[] = await res.json();
       // Ordena partidos por fecha y hora (más cercano primero)
-      data = data.sort((a, b) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime());
-      setPartidos(data);
+      const sortedData = data.sort((a, b) => getPartidoDate(a).getTime() - getPartidoDate(b).getTime());
+      setPartidos(sortedData);
       const allIds = new Set<string>();
-      data.forEach((p) => {
+      sortedData.forEach((p) => {
         [
           p.pareja1_jugador1,
           p.pareja1_jugador2,
@@ -424,21 +423,20 @@ const MisPartidos = () => {
       if (idsToFetch.length > 0) {
         Promise.all(
           idsToFetch.map((id) =>
-            fetch(`https://padelhere-production.up.railway.app/v1/usuario/${id}`)
-              .then((res) => (res.ok ? res.json() : null))
-              .then((profile) => (profile ? { id, profile } : null))
+            apiClient.request<UserProfile>(`/usuario/${id}`)
+              .catch(() => null)
           )
         ).then((results) => {
           const newCache: Record<string, UserProfile> = {};
           results.forEach((res) => {
-            if (res && res.profile) {
-              newCache[res.id] = res.profile;
+            if (res) {
+              newCache[res._id] = res;
             }
           });
           setUserCache((prev) => ({ ...prev, ...newCache }));
         });
       }
-    } catch (error) {
+    } catch {
       setPartidos([]);
     }
     setLoading(false);
@@ -446,7 +444,7 @@ const MisPartidos = () => {
 
   useEffect(() => {
     if (wsRef.current) return;
-    const ws = new WebSocket("wss://padelhere-production.up.railway.app/ws/partidos");
+    const ws = new WebSocket("wss://padelhere.onrender.com/ws/partidos");
     wsRef.current = ws;
     ws.onmessage = (event) => {
       try {
@@ -454,7 +452,9 @@ const MisPartidos = () => {
         if (data.event === "new_player") {
           fetchPartidosUsuario();
         }
-      } catch (e) { }
+      } catch {
+        /* noop */
+      }
     };
     ws.onclose = () => {
       wsRef.current = null;
@@ -479,17 +479,10 @@ const MisPartidos = () => {
         });
         return;
       }
-      const res = await fetch(`https://padelhere-production.up.railway.app/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
+      await apiClient.request(`/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
         method: "POST"
       });
-      if (!res.ok) {
-        setModal({
-          show: true,
-          type: null,
-        });
-        return;
-      }
-    } catch (e) {
+    } catch {
       setModal({
         show: true,
         type: null,
@@ -507,14 +500,13 @@ const MisPartidos = () => {
         });
         return;
       }
-      const res = await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`,
+      await apiClient.request(
+        `/partido/${partidoId}/leave/${slot}?user_id=${userId}`,
         {
           method: "POST",
         }
       );
-      if (!res.ok) throw new Error("No se pudo salir del partido");
-    } catch (e) {
+    } catch {
       setModal({
         show: true,
         type: null,
@@ -534,17 +526,16 @@ const MisPartidos = () => {
     const partidoId = modal.partidoId;
     if (!partidoId) return;
     try {
-      await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/proponer-resultado?propuesto_por=${userData?.id}`,
+      await apiClient.request(
+        `/partido/${partidoId}/proponer-resultado?propuesto_por=${userData?.id}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(resultado),
         }
       );
       setModal({ show: false });
       setTimeout(fetchPartidosUsuario, 700);
-    } catch (e) {
+    } catch {
       setModal({ show: false });
     }
   };
@@ -573,15 +564,15 @@ const MisPartidos = () => {
     const partidoId = modal.partidoId;
     if (!partidoId) return;
     try {
-      await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/confirmar-resultado?user_id=${userData?.id}`,
+      await apiClient.request(
+        `/partido/${partidoId}/confirmar-resultado?user_id=${userData?.id}`,
         {
           method: "POST",
         }
       );
       setModal({ show: false });
       setTimeout(fetchPartidosUsuario, 700);
-    } catch (e) {
+    } catch {
       setModal({ show: false });
     } finally {
       setIsSubmitting(false);
@@ -592,15 +583,15 @@ const MisPartidos = () => {
     const partidoId = modal.partidoId;
     if (!partidoId) return;
     try {
-      await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/${partidoId}/rechazar-resultado?user_id=${userData?.id}`,
+      await apiClient.request(
+        `/partido/${partidoId}/rechazar-resultado?user_id=${userData?.id}`,
         {
           method: "POST",
         }
       );
       setModal({ show: false });
       setTimeout(fetchPartidosUsuario, 700);
-    } catch (e) {
+    } catch {
       setModal({ show: false });
     }
   };

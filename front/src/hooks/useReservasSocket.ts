@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
-export function useReservasSocket(onNewReserva: (data: any) => void) {
+export function useReservasSocket(onNewReserva: (data: Record<string, unknown>) => void) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket("wss://padelhere-production.up.railway.app/ws/reservas");
+    const ws = new WebSocket("wss://padelhere.onrender.com/ws/reservas");
     wsRef.current = ws;
 
     ws.onmessage = (event) => {
@@ -13,7 +13,7 @@ export function useReservasSocket(onNewReserva: (data: any) => void) {
         if (msg.event === "new_reserva") {
           onNewReserva(msg);
         }
-      } catch (e) {
+      } catch {
         // Puedes loggear el error si quieres
       }
     };

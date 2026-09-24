@@ -1,5 +1,6 @@
 import { useContext, useRef, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 import DefaultAvatar from "./DefaultAvatar";
 import GraficaHistoryLevel from "./GraficaHistoryLevel";
 import { Settings } from "lucide-react"; // O tu icono preferido
@@ -58,14 +59,13 @@ const Porfile = () => {
       formData.append("email", email!);
       formData.append("desc", descValue);
 
-      const res = await fetch("https://padelhere-production.up.railway.app/v1/usuario/update-desc", {
+      await apiClient.request("/usuario/update-desc", {
         method: "POST",
         body: formData,
       });
-      if (!res.ok) throw new Error("No se pudo actualizar la descripción");
       await refreshUserData();
       setIsEditingDesc(false);
-    } catch (err) {
+    } catch {
       console.error("Error al actualizar la descripción");
     }
   };
@@ -87,11 +87,7 @@ const Porfile = () => {
     setIsUploading(true);
 
     try {
-      const res = await fetch(
-        "https://padelhere-production.up.railway.app/v1/usuario/update-profile-picture",
-        { method: "POST", body: formData }
-      );
-      if (!res.ok) throw new Error("No se pudo actualizar la foto de perfil");
+      await apiClient.request("/usuario/update-profile-picture", { method: "POST", body: formData });
       await refreshUserData();
       setImgPreview(null);
     } catch (err) {
@@ -250,12 +246,10 @@ const Porfile = () => {
                   className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-bold"
                   onClick={async () => {
                     try {
-                      const res = await fetch(`https://padelhere-production.up.railway.app/v1/usuario/${userData.id}`, {
+                      await apiClient.request(`/usuario/${userData.id}`, {
                         method: "DELETE",
                         headers: { "Content-Type": "application/json" },
                       });
-                      if (!res.ok) throw new Error("No se pudo eliminar el perfil");
-                      window.location.href = "/logout";
                     } catch {
                       console.error("Error al eliminar el perfil");
                     }

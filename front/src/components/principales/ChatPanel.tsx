@@ -4,6 +4,7 @@ import { Chats } from "./Chats";
 import { ChatView } from "./ChatView";
 import { AuthContext } from "../../context/AuthContext";
 import { ArrowLeft } from "lucide-react";
+import { apiClient } from "../../api/apiClient";
 
 type Chat = {
   _id: string;
@@ -41,15 +42,10 @@ export const ChatPanel = () => {
     await Promise.all(
       chatList.map(async (chat) => {
         try {
-          const resp = await fetch(
-            `https://padelhere-production.up.railway.app/v1/chat/${chat._id}/unread-count/${userId}`
+          const data = await apiClient.request<{ unread_count: number }>(
+            `/chat/${chat._id}/unread-count/${userId}`
           );
-          if (resp.ok) {
-            const json = await resp.json();
-            map[chat._id] = json.unread_count ?? 0;
-          } else {
-            map[chat._id] = 0;
-          }
+          map[chat._id] = data.unread_count ?? 0;
         } catch {
           map[chat._id] = 0;
         }
@@ -63,15 +59,13 @@ export const ChatPanel = () => {
     const fetchChats = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`https://padelhere-production.up.railway.app/v1/chat/user/${userData?.id}`);
-        if (!res.ok) throw new Error("No se pudieron cargar los chats");
-        const data = await res.json();
+        const data = await apiClient.request<Chat[]>(`/chat/user/${userData?.id}`);
         setChats(data);
 
         if (userData?.id) {
           fetchUnreadCounts(data, userData.id);
         }
-      } catch (e) {
+      } catch {
         setChats([]);
         setUnreadMap({});
       }
@@ -95,11 +89,11 @@ export const ChatPanel = () => {
     if (selectedChat && userData?.id) {
       const markReadAndRefetch = async () => {
         try {
-          await fetch(
-            `https://padelhere-production.up.railway.app/v1/chat/${selectedChat}/mark-read/${userData.id}`,
-            { method: "PATCH" }
-          );
-        } catch {}
+        await apiClient.request(
+              `/chat/${selectedChat}/mark-read/${userData.id}`,
+              { method: "PATCH" }
+            );
+        } catch {
         setUnreadMap((prev) => ({ ...prev, [selectedChat]: 0 }));
         setTimeout(() => {
           fetchUnreadCounts(chatsRef.current, userData.id);
@@ -122,7 +116,7 @@ export const ChatPanel = () => {
   // WebSocket subscription: incrementa el contador SOLO del chat recibido
   useEffect(() => {
     if (!userData?.id) return;
-    const ws = new WebSocket(`wss://padelhere-production.up.railway.app/ws/chat`);
+    const ws = new WebSocket(`wss://padelhere.onrender.com/ws/chat`);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -131,7 +125,7 @@ export const ChatPanel = () => {
         if (chatExists) {
           incrementUnread(String(chat_id));
         }
-      } catch (e) {}
+      } catch {
     };
     return () => ws.close();
   }, [userData?.id, incrementUnread]);

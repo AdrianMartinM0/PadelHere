@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFormField, validatePassword, validateConfirmPassword } from "../../hooks/useFormHooks";
 import { AuthContext } from '../../context/AuthContext';
+import { apiClient } from "../../api/apiClient";
 
 const SetNewPassword = () => {
     const location = useLocation();
@@ -58,23 +59,14 @@ useEffect(() => {
             return;
         }
 
-        fetch(`https://padelhere-production.up.railway.app/v1/${isClub == 'true' ? "club" : "usuario"}/changePassword`, {
+        apiClient.request(`/${isClub == 'true' ? "club" : "usuario"}/changePassword`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 email: email,
                 passcode: passcode,
                 new_password: newPasswordField.value,
             }),
         })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Error al cambiar la contraseña');
-                }
-                return response.json();
-            })
             .then(() => {
                 setSuccess(true);
             })

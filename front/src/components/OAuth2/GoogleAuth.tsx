@@ -1,23 +1,19 @@
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { useContext, } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import { apiClient } from '../../api/apiClient';
 
 const GoogleAuth = () => {
   const { login } = useContext(AuthContext)!;
 
-  const handleSuccess = async (response: any) => {
+  const handleSuccess = async (response: CredentialResponse) => {
     const token = response.credential;
 
     try {
-      const res = await fetch('https://padelhere-production.up.railway.app/v1/usuario/auth/google', {
+      const data = await apiClient.request<{ access_token?: string, user?: { access_token?: string } }>('/usuario/auth/google', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ token }),
       });
-
-      const data = await res.json();
 
       if (data.access_token) {
         login(data.access_token);

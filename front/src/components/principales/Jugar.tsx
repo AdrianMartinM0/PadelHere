@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react"
 import { Plus, MapPin, Calendar, Clock, X } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { AuthContext } from "../../context/AuthContext"
+import { apiClient } from "../../api/apiClient"
 
 type Club = {
   id: string
@@ -88,9 +89,7 @@ const Jugar = () => {
   const fetchPartidos = async () => {
     setLoadingPartidos(true)
     try {
-      const res = await fetch("https://padelhere-production.up.railway.app/v1/partido/")
-      if (!res.ok) throw new Error("No se pudieron cargar los partidos")
-      let data = await res.json()
+      let data: Partido[] = await apiClient.request<Partido[]>("/partido/")
       data = data
         .filter((p: Partido) => {
           // Mostrar todos los partidos que no estén completos y no estén pasados
@@ -110,9 +109,9 @@ const Jugar = () => {
       if (idsToFetch.length > 0) {
         Promise.all(
           idsToFetch.map(id =>
-            fetch(`https://padelhere-production.up.railway.app/v1/usuario/${id}`)
-              .then(res => res.ok ? res.json() : null)
+            apiClient.request<UserProfile>(`/usuario/${id}`)
               .then(profile => profile ? { id, profile } : null)
+              .catch(() => null)
           )
         ).then(results => {
           const newCache: Record<string, UserProfile> = {}
@@ -124,7 +123,7 @@ const Jugar = () => {
           setUserCache(prev => ({ ...prev, ...newCache }))
         })
       }
-    } catch (error) {
+    } catch {
       setPartidos([])
     }
     setLoadingPartidos(false)
@@ -132,7 +131,7 @@ const Jugar = () => {
 
   useEffect(() => {
     if (wsRef.current) return;
-    const ws = new WebSocket("wss://padelhere-production.up.railway.app/ws/partidos");
+    const ws = new WebSocket("wss://padelhere.onrender.com/ws/partidos");
     wsRef.current = ws;
     ws.onmessage = (event) => {
       try {
@@ -140,7 +139,7 @@ const Jugar = () => {
         if (data.event === "new_player") {
           fetchPartidos();
         }
-      } catch (e) {}
+      } catch {
     };
     ws.onclose = () => { wsRef.current = null; };
     return () => { ws.close(); };
@@ -194,18 +193,10 @@ const Jugar = () => {
       }
       const userId = userData?.id
 
-      const res = await fetch(
-        `https://padelhere-production.up.railway.app/v1/partido/?user_id=${userId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      )
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.detail || "Error creando el partido")
-      }
+      await apiClient.request(`/partido/?user_id=${userId}`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      })
 
       await fetchPartidos();
 
@@ -230,10 +221,9 @@ const Jugar = () => {
     try {
       const userId = userData?.id;
       if (!userId) return console.error("Debes iniciar sesión para unirte.");
-      const res = await fetch(`https://padelhere-production.up.railway.app/v1/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
+      await apiClient.request(`/partido/${partidoId}/join/${slot}?user_id=${userId}`, {
         method: "POST"
       });
-      if (!res.ok) throw new Error("No se pudo unir al partido");
       // No hace falta recargar aquí: el WebSocket lo hará
     } catch (e) {
       console.error("Error al unirse al partido");
@@ -245,10 +235,9 @@ const Jugar = () => {
     try {
       const userId = userData?.id;
       if (!userId) return console.error("Debes iniciar sesión para salir.");
-      const res = await fetch(`https://padelhere-production.up.railway.app/v1/partido/${partidoId}/leave/${slot}?user_id=${userId}`, {
+      await apiClient.request(`/partido/${partidoId}/leave/${slot}?user_id=${userId}`, {
         method: "POST"
       });
-      if (!res.ok) throw new Error("No se pudo salir del partido");
       // El WebSocket actualizará los slots
     } catch (e) {
       console.error("Error al salir del partido");

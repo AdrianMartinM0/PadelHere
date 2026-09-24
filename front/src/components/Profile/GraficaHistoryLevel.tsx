@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import { apiClient } from "../../api/apiClient";
 
 // Divide el array en tramos de color según si está por encima o por debajo del nivelActual
 function splitIntoColoredSegments(
@@ -40,7 +41,8 @@ function splitIntoColoredSegments(
 }
 
 // Custom dot: small blue cross, or a vertical blue line for intersection points
-const CustomDot = (props: any) => {
+type DotProps = { cx?: number; cy?: number; payload?: { isIntersection?: boolean } };
+const CustomDot = (props: DotProps) => {
     const { cx, cy, payload } = props;
     if (typeof cx !== "number" || typeof cy !== "number") return null;
 
@@ -62,11 +64,11 @@ const CustomDot = (props: any) => {
 };
 
 // Custom tooltip: only show the first valid value, and skip intersections
-const CustomTooltip = (props: any) => {
+type TooltipProps = { active?: boolean; payload?: { value?: number; payload?: { isIntersection?: boolean } }[]; label?: string };
+const CustomTooltip = (props: TooltipProps) => {
     const { active, payload, label } = props;
     if (!active || !payload || !payload.length) return null;
-    // Busca el primer valor válido que no sea un punto de intersección
-    const firstValid = payload.find((p: any) => typeof p.value === "number" && !isNaN(p.value) && !(p.payload && p.payload.isIntersection));
+    const firstValid = payload.find((p: { value?: number; payload?: { isIntersection?: boolean } }) => typeof p.value === "number" && !isNaN(p.value) && !(p.payload && p.payload.isIntersection));
     if (!firstValid) return null;
     return (
         <div style={{ background: "#fff", color: "#000", padding: 8, borderRadius: 6 }}>
@@ -87,8 +89,7 @@ const GraficaHistoryLevel = ({ level, id }: GraficaHistoryLevelProps) => {
 
 
     useEffect(() => {
-        fetch(`https://padelhere-production.up.railway.app/v1/history_level/user/${id}`)
-            .then(res => res.json())
+        apiClient.request<number[]>(`/history_level/user/${id}`)
             .then(data => {
                 setHistory(Array.isArray(data) ? data : []);
                 setLoading(false);
@@ -149,7 +150,7 @@ const GraficaHistoryLevel = ({ level, id }: GraficaHistoryLevelProps) => {
                             fill={seg.color === "red" ? "#ffd6d6" : "#d3ffd6"}
                             isAnimationActive={false}
                             connectNulls
-                            dot={(dotProps: any) => <CustomDot {...dotProps} />}
+                            dot={(dotProps: DotProps) => <CustomDot {...dotProps} />}
                             activeDot={false}
                         />
                     ))}

@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useFormField, validateEmail, validatePassword } from "../../hooks/useFormHooks";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import { apiClient } from "../../api/apiClient";
 
 const Login = () => {
     const emailField = useFormField<string>("", validateEmail);
@@ -46,8 +47,7 @@ const Login = () => {
         if (emailField.error || passwordField.error) return;
 
         try {
-            const response = await fetch(`https://padelhere-production.up.railway.app/v1/${isClub ? "club" : "usuario"}/login`, {
-                mode: "cors",
+            const data = await apiClient.request<{ token: string }>(`${isClub ? "/club" : "/usuario"}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -55,9 +55,6 @@ const Login = () => {
                 body: JSON.stringify({ email, password }),
             });
 
-            if (!response.ok) throw new Error("Login failed");
-
-            const data = await response.json();
             if (data.token) {
                 login(data.token);
                 if (!loading && isLoggedIn)

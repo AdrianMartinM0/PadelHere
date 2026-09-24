@@ -3,6 +3,8 @@ import { getBlocks, Block, toTimeStr } from "./PistasUtils";
 import SlotBlock from "./SlotBlock";
 import { BadgeInfo } from "lucide-react";
 import { AuthContext } from "../../../context/AuthContext";
+import { DayConfig, Training } from "./CourtPanel";
+import { Reserva } from "../../../components/principales/Reservas";
 
 function isPast(date: string) {
   const today = new Date();
@@ -25,9 +27,9 @@ export default function DayRow({
 }: {
   dayLabel: string,
   date: string,
-  config: any,
-  trainings: any[],
-  reservas: any[],
+  config: DayConfig,
+  trainings: Training[],
+  reservas: Reserva[],
   minStart: number,
   maxEnd: number,
   closed?: boolean,
@@ -40,7 +42,7 @@ export default function DayRow({
   const past = isPast(date);
 
   // Estado para modal de detalle de reserva
-  const [reservaDetalle, setReservaDetalle] = useState<any | null>(null);
+  const [reservaDetalle, setReservaDetalle] = useState<Reserva | null>(null);
 
   // Busca una reserva para un bloque concreto
   function getReservaForBlock(block: Block) {

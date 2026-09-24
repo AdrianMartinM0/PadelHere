@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import DefaultAvatar from "../Profile/DefaultAvatar"
+import { apiClient } from "../../api/apiClient"
 
 type Club = {
   _id: string
@@ -24,17 +25,13 @@ const Clubs = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetch("https://padelhere-production.up.railway.app/v1/club/all-clubs")
-      .then(res => {
-        if (!res.ok) throw new Error("Error al cargar los clubes")
-        return res.json()
-      })
-      .then((data: Club[]) => {
+    apiClient.request<Club[]>('/club/all-clubs')
+      .then((data) => {
         setClubs(data)
         setLoading(false)
       })
       .catch((err) => {
-        setError(err.message)
+        setError(err instanceof Error ? err.message : "Error al cargar los clubes")
         setLoading(false)
       })
   }, [])
