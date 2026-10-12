@@ -15,14 +15,14 @@ Automatización de validaciones, despliegues y desacoplamiento de entorno.
 - [x] **[CI-13]** Extraer lógica API de `Pistas.tsx` a servicios dedicados *(Prioridad: Media)*
 - [x] **[CI-07]** Secretos y variables de entorno en CI (`.env.example`) *(Prioridad: Alta)*
 - [x] **[CI-11]** Check / linter para evitar URLs hardcodeadas (`wss`/`fetch`) *(Prioridad: Media)*
-- [ ] **[CI-04]** Cobertura mínima de tests en backend *(Prioridad: Media)*
-- [ ] **[CI-05]** Cobertura mínima de tests en frontend *(Prioridad: Media)*
+- [x] **[CI-04]** Cobertura mínima de tests en backend *(Prioridad: Media)*
+- [x] **[CI-05]** Cobertura mínima de tests en frontend *(Prioridad: Media)*
 - [x] **[CI-06]** Caché de dependencias (`pip`/`npm`) en GitHub Actions *(Prioridad: Media)*
-- [ ] **[CI-08]** Pipeline de despliegue a staging/develop *(Prioridad: Alta)*
-- [ ] **[CI-09]** Pipeline de despliegue a producción (`main`) *(Prioridad: Alta)*
-- [ ] **[CI-10]** Healthcheck post-deploy *(Prioridad: Media)*
-- [ ] **[CI-14]** Badges de CI y build en `README.md` *(Prioridad: Baja)*
-- [ ] **[CI-15]** Documentar flujo de deployment y rollback *(Prioridad: Media)*
+- [x] **[CI-08]** Pipeline de despliegue a staging/develop *(Prioridad: Alta)*
+- [x] **[CI-09]** Pipeline de despliegue a producción (`main`) *(Prioridad: Alta)*
+- [x] **[CI-10]** Healthcheck post-deploy *(Prioridad: Media)*
+- [x] **[CI-14]** Badges de CI y build en `README.md` *(Prioridad: Baja)*
+- [x] **[CI-15]** Documentar flujo de deployment y rollback *(Prioridad: Media)*
 
 ---
 

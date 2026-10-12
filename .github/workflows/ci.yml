@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend-lint-test:
-    name: Backend (Python & Pytest)
+    name: Backend (Tests & Cobertura)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -29,11 +29,11 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run backend tests
-        run: pytest tests/
+      - name: Run backend tests with coverage (CI-04)
+        run: pytest --cov=. --cov-report=term-missing tests/
 
   frontend-ci:
-    name: Frontend (ESLint, Vitest & Build)
+    name: Frontend (ESLint, Vitest, Coverage & Build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -62,11 +62,51 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
-      - name: Run Vitest
-        run: npm run test -- --run
+      - name: Run Vitest with coverage (CI-05)
+        run: npm run test -- --run --coverage
 
       - name: Build project
         env:
           VITE_API_URL: "https://padelhere.onrender.com"
           VITE_WS_URL: "wss://padelhere.onrender.com"
         run: npm run build
+
+  deploy-staging:
+    name: Deploy to Staging (CI-08 & CI-10)
+    needs: [backend-lint-test, frontend-ci]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Trigger Staging Deploy
+        run: |
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK_STAGING }}" ]; then
+            curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_STAGING }}"
+          else
+            echo "Aviso: RENDER_DEPLOY_HOOK_STAGING no configurado."
+          fi
+
+      - name: Post-deploy Healthcheck
+        run: ./scripts/healthcheck.sh "https://padelhere.onrender.com/health"
+
+  deploy-production:
+    name: Deploy to Production (CI-09 & CI-10)
+    needs: [backend-lint-test, frontend-ci]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Trigger Production Deploy
+        run: |
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}" ]; then
+            curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}"
+          else
+            echo "Aviso: RENDER_DEPLOY_HOOK_PROD no configurado."
+          fi
+
+      - name: Post-deploy Healthcheck
+        run: ./scripts/healthcheck.sh "https://padelhere.onrender.com/health"
