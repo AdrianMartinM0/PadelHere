@@ -1,14 +1,15 @@
+import { apiClient } from "../../../api/apiClient";
 import { useContext, useEffect, useState } from "react";
 import CourtSelector from "./CourtSelector";
 import CourtPanel from "./CourtPanel";
 import ReserveModal from "./ReserveModal";
 import { AuthContext } from "../../../context/AuthContext";
 import { useReservasSocket } from "../../../hooks/useReservasSocket";
-import { apiClient } from "../../../api/apiClient";
+import { pistasService } from "../../../services/pistasService";
 import { DayConfig, CourtConfig } from "./CourtPanel";
 import { Reserva } from "../../../components/principales/Reservas";
 
-type Court = {
+export type Court = {
   id: string;
   name: string;
   desc?: string;
@@ -99,7 +100,7 @@ export default function Pistas({ clubId }: { clubId: string }) {
       const [pistasData, configData, overridesData] = await Promise.all([
         apiClient.request<{ courts: Court[] }>(`/club/${clubId}/pistas`),
         apiClient.request<{ globalDays: { [day: string]: DayConfig }; [key: string]: unknown }>(`/club/${clubId}/config`),
-        apiClient.request<{ [date: string]: DayConfig }>(`/club/${clubId}/overrides`)
+        pistasService.getGlobalOverrides(clubId)
       ]);
 
       setCourts(pistasData?.courts ?? []);
@@ -142,7 +143,7 @@ const configs: { [courtId: string]: CourtConfig } = {};
   // Funciones para gestionar overrides globales...
   async function fetchGlobalOverrides() {
     try {
-      const overrides = await apiClient.request<{ [date: string]: DayConfig }>(`/club/${clubId}/overrides`);
+      const overrides = await pistasService.getGlobalOverrides(clubId);
       setGlobalOverrides(overrides || {});
     } catch {
       setGlobalOverrides({});
@@ -225,9 +226,7 @@ const configs: { [courtId: string]: CourtConfig } = {};
 
   async function confirmDeleteCourt() {
     if (!deleteModal.courtId) return;
-    await apiClient.request(`/pista/${deleteModal.courtId}`, {
-      method: "DELETE"
-    });
+    await pistasService.deleteCourt(deleteModal.courtId);
     const nextCourts = courts.filter(c => c.id !== deleteModal.courtId);
     const nextConfigs = { ...courtConfigs };
     delete nextConfigs[deleteModal.courtId!];

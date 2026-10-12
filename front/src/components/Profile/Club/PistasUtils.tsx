@@ -20,7 +20,7 @@ export type Block = {
 };
 
 type Training = { from: string; duration: number };
-type Reserva = { day: string; from: number; to: number };
+export type Reserva = { day: string; from: number; to: number };
 
 export type DayConfigInput = {
   open: string;

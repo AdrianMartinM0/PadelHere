@@ -12,7 +12,7 @@ Automatización de validaciones, despliegues y desacoplamiento de entorno.
 - [x] **[CI-02]** Pipeline Frontend (eslint + vitest + build) *(Prioridad: Alta)*
 - [x] **[CI-03]** Gate de PR obligatorio en develop/main *(Prioridad: Alta)*
 - [x] **[CI-12]** Migrar URLs `wss://` a constantes configurables *(Prioridad: Media)*
-- [ ] **[CI-13]** Extraer lógica API de `Pistas.tsx` a servicios dedicados *(Prioridad: Media)*
+- [x] **[CI-13]** Extraer lógica API de `Pistas.tsx` a servicios dedicados *(Prioridad: Media)*
 - [x] **[CI-07]** Secretos y variables de entorno en CI (`.env.example`) *(Prioridad: Alta)*
 - [x] **[CI-11]** Check / linter para evitar URLs hardcodeadas (`wss`/`fetch`) *(Prioridad: Media)*
 - [ ] **[CI-04]** Cobertura mínima de tests en backend *(Prioridad: Media)*
