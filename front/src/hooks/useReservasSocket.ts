@@ -1,10 +1,11 @@
+import { WS_URL } from "../api/apiClient";
 import { useEffect, useRef } from "react";
 
 export function useReservasSocket(onNewReserva: (data: Record<string, unknown>) => void) {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket("wss://padelhere.onrender.com/ws/reservas");
+    const ws = new WebSocket(`${WS_URL}/ws/reservas`);
     wsRef.current = ws;
 
     ws.onmessage = (event) => {

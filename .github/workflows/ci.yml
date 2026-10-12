@@ -52,6 +52,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit hardcoded URLs (CI-11)
+        run: |
+          if grep -rn --exclude="apiClient.ts" "wss://" src/ || grep -rn --exclude="apiClient.ts" "padelhere.onrender.com" src/; then
+            echo "ERROR: URLs hardcodeadas detectadas. Usa WS_URL o API_URL."
+            exit 1
+          fi
+
       - name: Run ESLint
         run: npm run lint
 

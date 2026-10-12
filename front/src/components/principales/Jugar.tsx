@@ -1,3 +1,4 @@
+import { WS_URL } from "../../api/apiClient";
 import { useContext, useEffect, useRef, useState } from "react"
 import { Plus, MapPin, Calendar, Clock, X } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
@@ -131,7 +132,7 @@ const Jugar = () => {
 
   useEffect(() => {
     if (wsRef.current) return;
-    const ws = new WebSocket("wss://padelhere.onrender.com/ws/partidos");
+    const ws = new WebSocket(`${WS_URL}/ws/partidos`);
     wsRef.current = ws;
     ws.onmessage = (event) => {
       try {

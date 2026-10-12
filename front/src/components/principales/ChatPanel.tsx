@@ -1,3 +1,4 @@
+import { WS_URL } from "../../api/apiClient";
 import { useEffect, useState, useContext, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Chats } from "./Chats";
@@ -116,7 +117,7 @@ export const ChatPanel = () => {
   // WebSocket subscription: incrementa el contador SOLO del chat recibido
   useEffect(() => {
     if (!userData?.id) return;
-    const ws = new WebSocket(`wss://padelhere.onrender.com/ws/chat`);
+    const ws = new WebSocket(`${WS_URL}/ws/chat`);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);

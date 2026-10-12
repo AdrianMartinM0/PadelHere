@@ -1,5 +1,6 @@
 // Centralized API configuration
 export const API_URL = import.meta.env.VITE_API_URL || 'https://padelhere.onrender.com/v1';
+export const WS_URL = import.meta.env.VITE_WS_URL || 'wss://padelhere.onrender.com';
 
 interface RequestOptions extends RequestInit {
   token?: string | null;

@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useParams, Link } from "react-router-dom";
 import DefaultAvatar from "../Profile/DefaultAvatar";
-import { apiClient } from "../../api/apiClient";
+import { apiClient , WS_URL} from "../../api/apiClient";
 
 type Mensaje = {
   _id: string;
@@ -21,7 +21,7 @@ type UserInfo = {
 
 type UserMap = Record<string, UserInfo>;
 
-const WS_URL = "wss://padelhere.onrender.com/ws/chat";
+const CHAT_WS_URL = `${WS_URL}/ws/chat`;
 
 // Convierte base64 a ObjectURL
 const base64ToObjectURL = (base64: string): string => {
@@ -74,7 +74,7 @@ export const ChatView = ({ chatId: propChatId }: { chatId?: string }) => {
   // --- WebSocket: recibir mensajes en tiempo real ---
   useEffect(() => {
     if (!chatId) return;
-    ws.current = new WebSocket(WS_URL);
+    ws.current = new WebSocket(CHAT_WS_URL);
     ws.current.onopen = () => {
       // Opcional: puedes enviar un identificador de chat al conectar si lo necesitas
     };
