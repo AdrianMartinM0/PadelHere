@@ -28,6 +28,10 @@ app.add_middleware(
 )
 
 # Handler para peticiones OPTIONS (preflight)
+@app.get("/health", tags=["health"])
+async def health_check():
+    return {"status": "ok"}
+
 @app.options("/{full_path:path}")
 async def options_handler(request: Request, full_path: str):
     return Response(
