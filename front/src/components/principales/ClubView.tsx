@@ -25,7 +25,7 @@ const ClubView = () => {
     if (!club_id) return
     apiClient.request<Club>(`/club/all-clubs/${club_id}`)
       .then((data: Club) => {
-        if (data._id && !data.id) data.id = data._id
+        if ((data as any)._id && !data.id) data.id = (data as any)._id
         setClub(data)
         setLoading(false)
       })

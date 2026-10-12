@@ -62,7 +62,7 @@ const ClubProfile = () => {
       await apiClient.request("/club/update-desc", {
         method: "POST",
         body: formData,
-        headers: { "Content-Type": undefined },
+        headers: {},
         token,
       })
       await refreshUserData()

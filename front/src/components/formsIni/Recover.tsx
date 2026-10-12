@@ -52,8 +52,8 @@ const Recover = () => {
             },
         })
             .then(data => {
-                setPasscode(data.passcode);
-                setName(data.name);
+                setPasscode((data as any).passcode);
+                setName((data as any).name);
             })
             .catch(error => {
                 if (noRecoverElement.current) {

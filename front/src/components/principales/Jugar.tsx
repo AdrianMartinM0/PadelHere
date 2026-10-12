@@ -139,7 +139,7 @@ const Jugar = () => {
         if (data.event === "new_player") {
           fetchPartidos();
         }
-      } catch {
+      } catch {}
     };
     ws.onclose = () => { wsRef.current = null; };
     return () => { ws.close(); };

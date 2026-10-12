@@ -89,11 +89,11 @@ export const ChatPanel = () => {
     if (selectedChat && userData?.id) {
       const markReadAndRefetch = async () => {
         try {
-        await apiClient.request(
-              `/chat/${selectedChat}/mark-read/${userData.id}`,
-              { method: "PATCH" }
-            );
-        } catch {
+          await apiClient.request(
+            `/chat/${selectedChat}/mark-read/${userData.id}`,
+            { method: "PATCH" }
+          );
+        } catch {}
         setUnreadMap((prev) => ({ ...prev, [selectedChat]: 0 }));
         setTimeout(() => {
           fetchUnreadCounts(chatsRef.current, userData.id);
@@ -125,7 +125,7 @@ export const ChatPanel = () => {
         if (chatExists) {
           incrementUnread(String(chat_id));
         }
-      } catch {
+      } catch {}
     };
     return () => ws.close();
   }, [userData?.id, incrementUnread]);

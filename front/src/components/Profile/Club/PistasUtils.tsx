@@ -76,11 +76,11 @@ export function getBlocks(cfg: DayConfigInput, date: string): Block[] {
   let close = toMinutes(cfg.close);
   if (close <= open) close += 24 * 60;
   const breakFrom = cfg.hasBreak && cfg.break?.from ? toMinutes(cfg.break.from) : null;
-  const breakTo = cfg.hasBreak && cfg.break?.to ? toMinutes(cfg.break.to) : null;
+  let breakTo = cfg.hasBreak && cfg.break?.to ? toMinutes(cfg.break.to) : null;
   if (breakFrom !== null && breakTo !== null && breakTo <= breakFrom) breakTo += 24 * 60;
   const entrenos = (cfg.trainings || []).map((t: Training) => {
     const from = toMinutes(t.from);
-    const to = from + t.duration;
+    let to = from + t.duration;
     if (to <= from) to += 24 * 60;
     return { from, to, type: "reserva" as const };
   });

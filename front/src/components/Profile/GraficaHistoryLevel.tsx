@@ -73,7 +73,7 @@ const CustomTooltip = (props: TooltipProps) => {
     return (
         <div style={{ background: "#fff", color: "#000", padding: 8, borderRadius: 6 }}>
             <div><b>Partido:</b> {label}</div>
-            <div><b>Nivel:</b> {firstValid.value.toLocaleString()}</div>
+            <div><b>Nivel:</b> {firstValid.value?.toLocaleString()}</div>
         </div>
     );
 };

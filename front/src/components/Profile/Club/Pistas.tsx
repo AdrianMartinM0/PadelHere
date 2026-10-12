@@ -188,7 +188,7 @@ const configs: { [courtId: string]: CourtConfig } = {};
       body: JSON.stringify({ name, desc }),
     });
 
-    const newId = newCourt.id || newCourt._id || newCourt.pista_id;
+    const newId = newCourt.id || (newCourt as any)._id || (newCourt as any).pista_id;
     if (!newId) {
       console.error("Error: El backend no devolvió el id de la pista.");
       return;
@@ -337,7 +337,7 @@ const configs: { [courtId: string]: CourtConfig } = {};
             return { ...prev, [selectedCourt]: cfg };
           });
         }}
-        reservas={courtConfigs[selectedCourt]?.reservas ?? []}
+        reservas={(courtConfigs[selectedCourt] as any)?.reservas ?? []}
         onReserve={handleReserve}
         globalOverrides={globalOverrides}
         saveGlobalOverride={saveGlobalOverride}

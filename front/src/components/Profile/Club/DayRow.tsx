@@ -118,10 +118,10 @@ export default function DayRow({
               <span className="font-semibold dark:text-gray-100">Reserva</span>
             </div>
             <div className="mb-1 text-sm dark:text-gray-100">
-              <span className="font-semibold">Nombre:</span> {reservaDetalle.name || <span className="italic text-gray-400 dark:text-gray-500">Sin nombre</span>}
+              <span className="font-semibold">Nombre:</span> {(reservaDetalle as any).name || <span className="italic text-gray-400 dark:text-gray-500">Sin nombre</span>}
             </div>
             <div className="mb-1 text-sm dark:text-gray-100">
-              <span className="font-semibold">Teléfono:</span> {reservaDetalle.phone || <span className="italic text-gray-400 dark:text-gray-500">No indicado</span>}
+              <span className="font-semibold">Teléfono:</span> {(reservaDetalle as any).phone || <span className="italic text-gray-400 dark:text-gray-500">No indicado</span>}
             </div>
             <div className="mb-1 text-sm dark:text-gray-100">
               <span className="font-semibold">Horario:</span> {toTimeStr(reservaDetalle.from)} - {toTimeStr(reservaDetalle.to)}

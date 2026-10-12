@@ -149,7 +149,7 @@ const Reservas = () => {
       )
     ).then(results => {
       if (!cancel) {
-        setReservas(results.filter(Boolean));
+        setReservas(results.filter(Boolean) as Reserva[]);
         setLoading(false);
         setIsFirstLoad(false);
       }

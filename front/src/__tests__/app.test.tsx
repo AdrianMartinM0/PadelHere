@@ -44,7 +44,7 @@ describe('App', () => {
 
     render(
       <BrowserRouter>
-        <AuthContext.Provider value={mockAuth}>
+        <AuthContext.Provider value={mockAuth as any}>
           <App />
         </AuthContext.Provider>
       </BrowserRouter>

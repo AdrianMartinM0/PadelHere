@@ -19,6 +19,26 @@ export type DayConfig = {
   trainings?: { from: string; duration: number }[];
 };
 
+
+function getWeekDays(weekIndex: number) {
+  const now = new Date();
+  const currentDay = now.getDay();
+  // Ajuste al lunes de la semana actual
+  const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday + weekIndex * 7);
+
+  const days: { label: string; date: string }[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dayName = weekDays[d.getDay()];
+    const dateStr = d.toISOString().split("T")[0];
+    days.push({ label: `${dayName} ${d.getDate()}`, date: dateStr });
+  }
+  return days;
+}
+
 export type Training = {
   day: string;
   from: string;
@@ -57,6 +77,7 @@ export default function CourtPanel({
 }) {
   const { userType } = useContext(AuthContext)!;
   const [weekIndex, setWeekIndex] = useState(0);
+  const weekDaysToShow = getWeekDays(weekIndex);
   const [overrideEdit, setOverrideEdit] = useState<{
     show: boolean;
     date: string;
@@ -205,7 +226,7 @@ export default function CourtPanel({
                   dayLabel={label}
                   date={date}
                   config={dayConfig}
-                  trainings={trainingsForDay}
+                  trainings={trainingsForDay.map((t: any) => ({ ...t, day: t.day ?? dayName }))}
                   reservas={reservas}
                   minStart={toMinutes(dayConfig.open)}
                   maxEnd={toMinutes(dayConfig.close)}

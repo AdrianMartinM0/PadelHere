@@ -60,23 +60,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (userType === "club") {
         return {
-          id: data._id,
+          id: (data as any)._id ?? (data as any).id,
           name: data.name,
-          tel: data.tel,
+          tel: (data as any).tel ?? 0,
           desc: data.desc || null,
           img_perfil: data.img_perfil,
-          direccion: data.direccion,
+          direccion: (data as any).direccion ?? "",
         };
       } else {
-        setReservaIds(data.reservas || []);
+        setReservaIds((data as any).reservas || []);
         return {
-          id: data._id,
+          id: (data as any)._id ?? (data as any).id,
           name: data.name,
-          level: data.level,
+          level: (data as any).level ?? 0,
           desc: data.desc || "",
           img_perfil: data.img_perfil,
-          tel: data.tel,
-          reservas: data.reservas || [], // Solo los IDs
+          tel: (data as any).tel ?? 0,
+          reservas: (data as any).reservas || [], // Solo los IDs
         };
       }
     } catch (error) {
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await apiClient.request("/club/update-desc", {
         method: "POST",
         body: formData,
-        headers: { 'Content-Type': undefined },
+        headers: {},
       });
 
       await refreshUserData();
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await apiClient.request("/club/update-info", {
         method: "POST",
         body: formData,
-        headers: { 'Content-Type': undefined },
+        headers: {},
       });
 
       await refreshUserData();
