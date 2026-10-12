@@ -1,35 +1,45 @@
-# Roadmap de Desarrollo — PadelHere
+# Roadmap Oficial de Desarrollo — PadelHere
 
-Este documento recopila las épicas, mejoras técnicas y objetivos funcionales planificados para el proyecto PadelHere, priorizando una arquitectura web convencional (FastAPI + React + MongoDB) sin dependencias de IA.
-
----
-
-## 1. Saneamiento Técnico e Infraestructura (Prioridad Actual)
-- [x] **Limpieza de IA y agentes:** Eliminación de tooling externo (`_bmad/`, dependencias y configuraciones de agentes).
-- [x] **Blindaje de repositorio:** Configuración estricta de `.gitignore` e identidad de Git propia.
-- [x] **Pipeline CI básico:** Tests y linter de backend (pytest) y frontend (vitest/eslint) en GitHub Actions (`ci.yml`).
-- [ ] **Desacoplamiento de URLs hardcodeadas:** Migrar todas las URLs de API y WebSockets (`wss://`) a variables de entorno (`.env`).
-- [ ] **Centralización de servicios API en frontend:** Extraer peticiones `fetch` dispersas en componentes (`Pistas.tsx`, `CourtPanel.tsx`) a servicios dedicados.
-- [ ] **Cobertura de tests:** Ampliar la suite de pruebas unitarias y de integración en backend (`api/tests/`) y frontend.
+Este documento consolida la planificación técnica, historias de usuario y mejoras del proyecto PadelHere.
+Sigue una arquitectura web convencional (FastAPI + React + MongoDB) sin dependencias ni tooling de IA.
 
 ---
 
-## 2. Observabilidad y Monitoreo (Futuro)
-- [ ] **Configuración de Sentry (Opcional):**
-  - Integrar DSN mediante variables de entorno (`SENTRY_DSN`).
-  - Configurar filtro de datos sensibles / PII en `before_send` para no filtrar información privada de usuarios.
+## 1. CI, Infraestructura y Pipelines (En Progreso)
+Automatización de validaciones, despliegues y desacoplamiento de entorno.
+
+- [x] **[CI-01]** Pipeline Backend (lint + pytest) *(Prioridad: Alta)*
+- [x] **[CI-02]** Pipeline Frontend (eslint + vitest + build) *(Prioridad: Alta)*
+- [x] **[CI-03]** Gate de PR obligatorio en develop/main *(Prioridad: Alta)*
+- [ ] **[CI-12]** Migrar URLs `wss://` a constantes configurables *(Prioridad: Media)*
+- [ ] **[CI-13]** Extraer lógica API de `Pistas.tsx` a servicios dedicados *(Prioridad: Media)*
+- [ ] **[CI-07]** Secretos y variables de entorno en CI (`.env.example`) *(Prioridad: Alta)*
+- [ ] **[CI-11]** Check / linter para evitar URLs hardcodeadas (`wss`/`fetch`) *(Prioridad: Media)*
+- [ ] **[CI-04]** Cobertura mínima de tests en backend *(Prioridad: Media)*
+- [ ] **[CI-05]** Cobertura mínima de tests en frontend *(Prioridad: Media)*
+- [ ] **[CI-06]** Caché de dependencias (`pip`/`npm`) en GitHub Actions *(Prioridad: Media)*
+- [ ] **[CI-08]** Pipeline de despliegue a staging/develop *(Prioridad: Alta)*
+- [ ] **[CI-09]** Pipeline de despliegue a producción (`main`) *(Prioridad: Alta)*
+- [ ] **[CI-10]** Healthcheck post-deploy *(Prioridad: Media)*
+- [ ] **[CI-14]** Badges de CI y build en `README.md` *(Prioridad: Baja)*
+- [ ] **[CI-15]** Documentar flujo de deployment y rollback *(Prioridad: Media)*
 
 ---
 
-## 3. Funcionalidades de Negocio (Core)
-- [ ] **Gestión de Torneos:** Cuadros de competición, emparejamientos y resultados.
-- [ ] **Reservas Recurrentes:** Reglas de reserva periódica para usuarios y clubes.
-- [ ] **Sistema de Pagos:** Integración de pasarela de pago para reservas y torneos.
-- [ ] **Panel de Analíticas para Clubes:** Estadísticas de ocupación, horas punta e ingresos.
-- [ ] **Roles y Verificación:** Distinción granular entre jugadores, administradores de club y superusuarios.
+## 2. Saneamiento de la Capa de Comunicación API (Completado)
+Estandarización del cliente HTTP y manejo de tokens.
+
+- [x] **[API-01]** Infraestructura de Entorno y Cliente API Base (`apiClient`) *(Prioridad: Alta)*
+- [x] **[API-02]** Migración del Contexto de Autenticación a `apiClient` *(Prioridad: Media)*
+- [x] **[API-03]** Migración Progresiva de Componentes core *(Prioridad: Media)*
 
 ---
 
-## 4. Mejoras de Despliegue y Base de Datos (Largo Plazo)
-- [ ] Evaluar estabilidad del backend frente al spin-down de la capa gratuita de Render (opciones: keep-alive convencional, servicio permanente o migración de infraestructura si se justifica).
-- [ ] Scripts de inicialización y migración controlada de esquemas en MongoDB.
+## 3. Funcionalidades de Negocio (Core PadelHere)
+Próximas épicas funcionales para la gestión de pádel y clubes.
+
+- [ ] **Torneos y Competiciones:** Generación de cuadros clasificatorios, horarios y registro de resultados.
+- [ ] **Reservas Recurrentes:** Lógica de reservas fijas semanales para socios y pistas de club.
+- [ ] **Pasarela de Pagos:** Integración para cobro de reservas de pista y cuotas de torneo.
+- [ ] **Estadísticas y Analíticas:** Panel de ocupación de pistas e ingresos para administradores de club.
+- [ ] **Roles y Permisos Granulares:** Distinción estricta entre Administrador de Club, Jugador y Superadmin.
