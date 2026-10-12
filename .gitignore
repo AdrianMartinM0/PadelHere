@@ -9,3 +9,16 @@ __pycache__/
 *.pyc
 .idea/
 .vscode/
+
+# ==========================================
+# Exclusiones de IA, agentes y herramientas
+# ==========================================
+_bmad/
+.bmad/
+.gemini/
+.open-code/
+.qwen/
+.claude/
+.cursor/
+ROADMAP_AI.md
+auditoria_*.txt
